@@ -2,9 +2,9 @@ const userService = require('../services/userService')
 
 exports.create = async (req, res) => {
     try {
-        const { nome, usuario, senha } = req.body
+        const { nome, usuario, senha, cargo } = req.body
 
-        const user = await userService.create(nome, usuario, senha)
+        const user = await userService.create(nome, usuario, senha, cargo)
 
         res.status(201).json(user)
     } catch (error) {

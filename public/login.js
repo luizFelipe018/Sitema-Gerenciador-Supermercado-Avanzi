@@ -15,6 +15,8 @@ async function fazerLogin() {
     if (response.ok) {
         localStorage.setItem('token', data.token)
         localStorage.setItem('usuarioNome', data.user.nome)
+        localStorage.setItem('usuario', data.user.usuario)
+        localStorage.setItem('usuarioCargo', data.user.cargo || 'atendente')
         window.location.href = 'home.html'
     } else {
         document.getElementById('erro').innerText = data.error

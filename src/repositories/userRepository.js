@@ -8,15 +8,16 @@ exports.findByUsuario = async (usuario) => {
     return rows[0]
 }
 
-exports.create = async ({ nome, usuario, senha }) => {
+exports.create = async ({ nome, usuario, senha, cargo }) => {
     const [result] = await db.query(
-        'INSERT INTO usuarios (nome, usuario, senha) VALUES (?, ?, ?)',
-        [nome, usuario, senha]
+        'INSERT INTO usuarios (nome, usuario, senha, cargo) VALUES (?, ?, ?, ?)',
+        [nome, usuario, senha, cargo || 'atendente']
     )
 
     return {
         id: result.insertId,
         nome,
-        usuario
+        usuario,
+        cargo: cargo || 'atendente'
     }
 }

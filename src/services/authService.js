@@ -25,7 +25,8 @@ exports.login = async (usuario, senha) => {
         user: {
             id: user.id,
             nome: user.nome,
-            usuario: user.usuario
+            usuario: user.usuario,
+            cargo: user.cargo || 'atendente'
         },
         token
     }

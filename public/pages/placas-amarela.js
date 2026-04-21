@@ -1,23 +1,22 @@
-let placasBancoAmarela = []
-let placasSalvasAmarela = JSON.parse(localStorage.getItem('placasSalvasAmarela')) || []
-let paginaPlacasAmarela = 0
-const placasPorPaginaAmarela = 8  // 4 placas por folha (altura 24.3%), 2 colunas = 8
-let placaClicadaAmarela = null
-let imprimindo = false;
+var plaquesBancoAmarela = []
+var plaquesSalvasAmarela = JSON.parse(localStorage.getItem(`placasSalvasAmarela_${window.getUsuario()}`)) || []
+var paginaPlacasAmarela = 0
+const plaquesPorPaginaAmarela = 8  // 4 linhas x 2 colunas = 8
+var placaClicadaAmarela = null
+var imprimindo = false;
 
 function carregarEstilos() {
-    // Verifica se o link já existe para não duplicar
-    if (!document.getElementById('style.css')) {
-        const link = document.createElement('link');
-        link.id = 'estilo-placas';
-        link.rel = 'stylesheet';
-        link.type = 'text/css';
-        link.href = 'style.css'; // Certifique-se que o arquivo está na mesma pasta
-        document.head.appendChild(link);
+    if (!document.getElementById('placas-main-style')) {
+        const link = document.createElement('link')
+        link.id = 'placas-main-style'
+        link.rel = 'stylesheet'
+        link.href = 'style.css'
+        document.head.appendChild(link)
     }
 }
 
 async function carregarPlacasAmarela() {
+    carregarEstilos()
     setActive('btn-placas-amarela')
     setConteudo(`
         <div class="controls-placas bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-5">
@@ -53,13 +52,12 @@ async function carregarPlacasAmarela() {
         <div id="container-placas-am"></div>
     `, 'Placas Amarelas')
 
-    // Carrega banco se ainda não carregou (compartilha com placas brancas)
-    if (placasBancoAmarela.length === 0) {
+    if (plaquesBancoAmarela.length === 0) {
         try {
             const res = await fetch('http://localhost:3000/produtos', { headers: authHeaders() })
             const data = await res.json()
             if (Array.isArray(data)) {
-                placasBancoAmarela = data.map(p => ({
+                plaquesBancoAmarela = data.map(p => ({
                     ...p,
                     preco_venda: parseFloat(p.preco_venda),
                     quantidade_kg_l: parseFloat(p.quantidade_kg_l || 0)
@@ -89,7 +87,7 @@ function vincularEventosPlacasAmarela() {
     document.getElementById('btn-pag-ant-am').onclick = () => mudarPaginaPlacasAmarela(-1)
     document.getElementById('btn-pag-prox-am').onclick = () => mudarPaginaPlacasAmarela(1)
     document.getElementById('btn-limpar-am').onclick = () => {
-        if (confirm('Limpar todas as placas amarelas?')) { placasSalvasAmarela = []; salvarERenderizarAmarela() }
+        if (confirm('Limpar todas as placas amarelas?')) { plaquesSalvasAmarela = []; salvarERenderizarAmarela() }
     }
 
     eanInput.addEventListener('keyup', (e) => {
@@ -114,12 +112,12 @@ function adicionarPlacaAmarela() {
     const quantidade = parseInt(document.getElementById('qtd-input-am').value) || 1
     if (!ean || isNaN(preco)) return
 
-    const prod = placasBancoAmarela.find(p => p.ean === ean) || placasBancoAmarela.find(p => p.codigo === ean)
+    const prod = plaquesBancoAmarela.find(p => p.ean === ean) || plaquesBancoAmarela.find(p => p.codigo === ean)
     if (prod) {
         const qtdKgL = parseFloat(prod.quantidade_kg_l)
         const precoUn = qtdKgL > 0 ? (preco / qtdKgL).toFixed(2).replace('.', ',') : prod.preco_venda
         for (let i = 0; i < quantidade; i++) {
-            placasSalvasAmarela.push({ ...prod, preco, preco_info: precoUn, id_unico: Date.now() + Math.random() })
+            plaquesSalvasAmarela.push({ ...prod, preco, preco_info: precoUn, id_unico: Date.now() + Math.random() })
         }
         salvarERenderizarAmarela()
         const novasPlacasAm = []
@@ -141,13 +139,13 @@ function renderizarPlacasAmarela() {
     if (!container) return
     container.innerHTML = ''
 
-    const totalPaginas = Math.ceil(placasSalvasAmarela.length / placasPorPaginaAmarela) || 1
+    const totalPaginas = Math.ceil(plaquesSalvasAmarela.length / plaquesPorPaginaAmarela) || 1
     if (paginaPlacasAmarela >= totalPaginas) paginaPlacasAmarela = totalPaginas - 1
 
     const contadorEl = document.getElementById('contador-pagina-am')
     if (contadorEl) contadorEl.innerText = `Página ${paginaPlacasAmarela + 1} de ${totalPaginas}`
 
-    const lista = placasSalvasAmarela.slice(paginaPlacasAmarela * placasPorPaginaAmarela, (paginaPlacasAmarela + 1) * placasPorPaginaAmarela)
+    const lista = plaquesSalvasAmarela.slice(paginaPlacasAmarela * plaquesPorPaginaAmarela, (paginaPlacasAmarela + 1) * plaquesPorPaginaAmarela)
     if (!lista.length) return
 
     const folha = document.createElement('div')
@@ -163,7 +161,7 @@ function renderizarPlacasAmarela() {
         div.innerHTML = `
             <h1 style="font-size:40px;  text-decoration: underline;">OFERTA</h1>
             <h1 style="font-size:16px;" data-field="descricao">${p.descricao || ''}</h1>
-            <h1 style="font-size:92px;" data-field="preco"><span style="font-size:18px;">R$</span> ${parseFloat(p.preco).toFixed(2).replace('.', ',')}</h1>
+            <h1 style="font-size:92px;" data-field="preco"><span style="font-size:18px; position:relative; top:25px;">R$</span> ${parseFloat(p.preco).toFixed(2).replace('.', ',')}</h1>
             <h1 style="font-size:16px;" data-field="info">${p.preco_info ? `NESTA EMBALAGEM ${art} ${uni} SAI R$ ${p.preco_info}` : ''}</h1>
             <h1 style="font-size:16px;" data-field="ean">${textoEan}</h1>
         `
@@ -213,35 +211,36 @@ function renderizarPlacasAmarela() {
 }
 
 function onExcluirPlacaAmarela() {
-    placasSalvasAmarela = placasSalvasAmarela.filter(p => p !== placaClicadaAmarela)
+    plaquesSalvasAmarela = plaquesSalvasAmarela.filter(p => p !== placaClicadaAmarela)
     salvarERenderizarAmarela()
 }
 
 function salvarERenderizarAmarela() {
-    localStorage.setItem('placasSalvasAmarela', JSON.stringify(placasSalvasAmarela))
+    localStorage.setItem(`placasSalvasAmarela_${getUsuario()}`, JSON.stringify(plaquesSalvasAmarela))
     renderizarPlacasAmarela()
 }
 
 function mudarPaginaPlacasAmarela(v) {
-    const total = Math.ceil(placasSalvasAmarela.length / placasPorPaginaAmarela)
+    const total = Math.ceil(plaquesSalvasAmarela.length / plaquesPorPaginaAmarela)
     paginaPlacasAmarela = Math.max(0, Math.min(paginaPlacasAmarela + v, total - 1))
     renderizarPlacasAmarela()
 }
 
 function imprimirTudoAmarela() {
-    if (imprimindo) return; // 🔥 trava múltiplos prints
+    if (imprimindo) return;
     imprimindo = true;
 
     const container = document.getElementById('container-placas-am');
     if (!container) return;
 
+    const paginaOriginal = paginaPlacasAmarela;
     container.innerHTML = '';
 
-    for (let i = 0; i < placasSalvasAmarela.length; i += 8) {
+    for (let i = 0; i < plaquesSalvasAmarela.length; i += plaquesPorPaginaAmarela) {
         const folha = document.createElement('div');
         folha.className = 'folha-amarela';
 
-        placasSalvasAmarela.slice(i, i + 8).forEach(p => {
+        plaquesSalvasAmarela.slice(i, i + plaquesPorPaginaAmarela).forEach(p => {
             const div = document.createElement('div');
             div.className = 'placa-amarela';
 
@@ -253,7 +252,7 @@ function imprimirTudoAmarela() {
                 <h1 style="font-size:40px; text-decoration: underline; margin:0;">OFERTA</h1>
                 <h1 style="font-size:16px;">${p.descricao || ''}</h1>
                 <h1 style="font-size:92px;">
-                    <span style="font-size:18px;">R$</span> ${parseFloat(p.preco).toFixed(2).replace('.', ',')}
+                    <span style="font-size:18px; position:relative; top:25px;">R$</span> ${parseFloat(p.preco).toFixed(2).replace('.', ',')}
                 </h1>
                 <h1 style="font-size:16px;">
                     ${p.preco_info ? `NESTA EMBALAGEM ${art} ${uni} SAI R$ ${p.preco_info}` : ''}
@@ -266,11 +265,10 @@ function imprimirTudoAmarela() {
         container.appendChild(folha);
     }
 
-    requestAnimationFrame(() => {
+    setTimeout(() => {
         window.print();
-    });
+    }, 500);
 
-    // 🔥 Libera depois que terminou
     setTimeout(() => {
         imprimindo = false;
         renderizarPlacasAmarela();
@@ -288,7 +286,7 @@ function onBuscaNomeKeydownAmarela(e) {
     if (e.key !== 'Enter') return
     const termo = e.target.value.trim().toUpperCase()
     if (!termo) return
-    const resultados = placasBancoAmarela.filter(p =>
+    const resultados = plaquesBancoAmarela.filter(p =>
         p.descricao?.toUpperCase().includes(termo) ||
         p.codigo?.includes(termo) ||
         p.ean?.includes(termo)
@@ -334,13 +332,13 @@ function processarImportacaoAmarela() {
             const descProcurada = colunas[0].trim().toUpperCase()
             const precoNovo = parseFloat(colunas[1].replace('R$', '').replace(/\s/g, '').replace(',', '.').trim())
             if (!isNaN(precoNovo)) {
-                const prod = placasBancoAmarela.find(p => p.descricao?.toUpperCase() === descProcurada) ||
-                             placasBancoAmarela.find(p => p.descricao?.toUpperCase().includes(descProcurada))
+                const prod = plaquesBancoAmarela.find(p => p.descricao?.toUpperCase() === descProcurada) ||
+                             plaquesBancoAmarela.find(p => p.descricao?.toUpperCase().includes(descProcurada))
                 if (prod) {
                     const qtdKgL = parseFloat(prod.quantidade_kg_l)
                     const precoUn = qtdKgL > 0 ? (precoNovo / qtdKgL).toFixed(2).replace('.', ',') : prod.preco_venda
                     for (let i = 0; i < qtdGlobal; i++) {
-                        placasSalvasAmarela.push({ ...prod, preco: precoNovo, preco_info: precoUn, id_unico: Date.now() + Math.random() })
+                        plaquesSalvasAmarela.push({ ...prod, preco: precoNovo, preco_info: precoUn, id_unico: Date.now() + Math.random() })
                     }
                     contador++
                 } else { itensErros.push(descProcurada) }
@@ -364,64 +362,3 @@ function fecharModaisAmarela() {
     document.getElementById('modal-import-am').style.display = 'none'
     document.getElementById('log-erros-am').style.display = 'none'
 }
-
-
-const styleAmarela = document.createElement('style');
-styleAmarela.innerHTML = `
-@media print {
-  @page {
-    size: A4;
-    margin: 0;
-  }
-
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: #ffffff !important;
-  }
-
-  /* 🔥 corrige bug do PDF */
-  body {
-    zoom: 0.99;
-  }
-
-  #container-placas-am {
-    display: block;
-  }
-
-  .folha-amarela {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(4, 1fr);
-
-    width: 210mm;
-    height: 297mm;
-
-    background: #ffffff !important; /* 🔥 garante fundo branco */
-    page-break-after: always;
-    break-after: page;
-  }
-
-  .placa-amarela {
-    width: 100%;
-    height: 100%;
-
-    border: 1px solid #000;
-    background: #ffe400 !important; /* 🔥 amarelo só na placa */
-
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-
-    box-sizing: border-box;
-
-    break-inside: avoid;
-    page-break-inside: avoid;
-
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-}
-`;
-document.head.appendChild(styleAmarela);

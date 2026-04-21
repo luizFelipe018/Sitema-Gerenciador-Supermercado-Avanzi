@@ -40,7 +40,7 @@ function buscarImagem(pasta, nomeArquivo) {
 
 // GET /imagem?nome=FRUTA AMEIXA
 // GET /imagem?codigo=1000
-router.get('/imagem', authMiddleware, async (req, res) => {
+router.get('/imagem', async (req, res) => {
     console.log('[IMAGEM] Query:', req.query)
     try {
         let nomeArquivo = null
@@ -66,6 +66,19 @@ router.get('/imagem', authMiddleware, async (req, res) => {
         console.log('[IMAGEM] Caminho encontrado:', caminho)
 
         if (!caminho) {
+            // Fallback: buscar no Open Food Facts
+            console.log('[IMAGEM] Não encontrada localmente, buscando no Open Food Facts...')
+            try {
+                const nomeBusca = req.query.nome || req.query.codigo
+                const produtoOFF = await buscarOpenFoodFacts(nomeBusca)
+                if (produtoOFF && produtoOFF.image_url) {
+                    console.log('[IMAGEM] Encontrada no OFF, usando proxy:', produtoOFF.image_url)
+                    const proxyUrl = `http://localhost:3000/off-image?url=${encodeURIComponent(produtoOFF.image_url)}`
+                    return res.redirect(proxyUrl)
+                }
+            } catch (e) {
+                console.log('[IMAGEM] Erro no OFF:', e.message)
+            }
             return res.status(404).json({ error: 'Imagem não encontrada', nome: nomeArquivo })
         }
 
@@ -73,6 +86,107 @@ router.get('/imagem', authMiddleware, async (req, res) => {
 
     } catch (err) {
         console.error('Erro ao buscar imagem:', err)
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// Função para buscar no Open Food Facts
+async function buscarOpenFoodFacts(termo) {
+    const https = require('https')
+    console.log('[OFF] Iniciando busca por:', termo)
+    
+    return new Promise((resolve, reject) => {
+        const isCodigo = /^\d+$/.test(String(termo))
+        let url = ''
+        
+        if (isCodigo && String(termo).length >= 8) {
+            url = `https://world.openfoodfacts.org/api/v0/product/${termo}.json`
+            console.log('[OFF] URL (codigo):', url)
+        } else {
+            url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(termo)}&search_simple=1&action=process&json=1&page_size=1`
+            console.log('[OFF] URL (nome):', url)
+        }
+        
+        https.get(url, (res) => {
+            let data = ''
+            res.on('data', chunk => data += chunk)
+            res.on('end', () => {
+                try {
+                    const json = JSON.parse(data)
+                    if (isCodigo) {
+                        if (json.status === 1 && json.product) {
+                            const p = json.product
+                            resolve({
+                                image_url: p.image_front_url || p.image_url || p.image_small_url,
+                                image_small_url: p.image_front_small_url || p.image_small_url,
+                                product_name: p.product_name || p.product_name_pt,
+                                brands: p.brands,
+                                categories: p.categories
+                            })
+                        } else {
+                            resolve(null)
+                        }
+                    } else {
+                        if (json.products && json.products.length > 0) {
+                            const p = json.products[0]
+                            resolve({
+                                image_url: p.image_front_url || p.image_front_small_url || p.image_small_url || p.image_url,
+                                image_small_url: p.image_front_small_url || p.image_small_url,
+                                product_name: p.product_name || p.product_name_pt,
+                                brands: p.brands,
+                                categories: p.categories
+                            })
+                        } else {
+                            resolve(null)
+                        }
+                    }
+                } catch (e) {
+                    reject(e)
+                }
+            })
+        }).on('error', reject)
+    })
+}
+
+// Proxy de imagem do Open Food Facts (evita CSP do Electron)
+router.get('/off-image', (req, res) => {
+    const { url } = req.query
+    if (!url) return res.status(400).json({ error: 'URL obrigatória' })
+    
+    try {
+        const https = require('https')
+        https.get(url, (imgRes) => {
+            if (imgRes.statusCode !== 200) {
+                return res.status(404).json({ error: 'Imagem não encontrada' })
+            }
+            res.setHeader('Content-Type', imgRes.headers['content-type'] || 'image/jpeg')
+            res.setHeader('Cache-Control', 'public, max-age=86400')
+            imgRes.pipe(res)
+        }).on('error', (e) => {
+            res.status(500).json({ error: e.message })
+        })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// ── Open Food Facts - API pública ─────────────────────────
+router.get('/off-buscar', async (req, res) => {
+    try {
+        const { q, ean, codigo } = req.query
+        if (!q && !ean && !codigo) {
+            return res.status(400).json({ error: 'Informe q, ean ou codigo' })
+        }
+        
+        const termo = q || ean || codigo
+        const resultado = await buscarOpenFoodFacts(termo)
+        
+        if (resultado) {
+            res.json(resultado)
+        } else {
+            res.status(404).json({ error: 'Produto não encontrado no Open Food Facts' })
+        }
+    } catch (err) {
         res.status(500).json({ error: err.message })
     }
 })
@@ -907,7 +1021,147 @@ router.post('/imagens/verificacao/:codigo', authMiddleware, async (req, res) => 
     } catch (err) { res.status(500).json({ error: err.message }) }
 })
 
+// ── Dashboard ────────────────────────────────────────
+router.get('/dashboard', authMiddleware, async (req, res) => {
+    try {
+        const db = require('./config/database')
 
+        // Produtos por departamento
+        const [porDepto] = await db.query(`
+            SELECT
+                COALESCE(descricao_departamento, CONCAT('Depto ', departamento), 'Sem Departamento') AS depto,
+                COUNT(*) AS total
+            FROM produtos
+            GROUP BY depto
+            ORDER BY total DESC
+            LIMIT 15
+        `)
+
+        // Total geral de produtos
+        const [[{ totalProdutos }]] = await db.query('SELECT COUNT(*) AS totalProdutos FROM produtos')
+
+        // Produtos sem EAN
+        const [[{ semEan }]] = await db.query("SELECT COUNT(*) AS semEan FROM produtos WHERE ean IS NULL OR ean = ''")
+
+        // Produtos sem imagem verificada
+        const [[{ semImagem }]] = await db.query(`
+            SELECT COUNT(*) AS semImagem FROM produtos p
+            LEFT JOIN imagens_verificacao iv ON iv.codigo = p.codigo
+            WHERE iv.status = 'sem_imagem' OR iv.status IS NULL
+        `)
+
+        // Placas por tipo no mês atual
+        const [[placasMes]] = await db.query(`
+            SELECT
+                SUM(tipo_placa = 'branca')  AS branca,
+                SUM(tipo_placa = 'amarela') AS amarela,
+                SUM(tipo_placa = 'grande')  AS grande,
+                COUNT(*)                    AS total
+            FROM log_placas
+            WHERE MONTH(criado_em) = MONTH(CURDATE())
+              AND YEAR(criado_em)  = YEAR(CURDATE())
+        `)
+
+        // Placas impressas vs geradas no mês
+        const [[impressasMes]] = await db.query(`
+            SELECT
+                SUM(impressa = 1) AS impressas,
+                SUM(impressa = 0) AS geradas
+            FROM log_placas
+            WHERE MONTH(criado_em) = MONTH(CURDATE())
+              AND YEAR(criado_em)  = YEAR(CURDATE())
+        `)
+
+        // Placas por dia nos últimos 30 dias
+        const [placasDias] = await db.query(`
+            SELECT
+                DATE(criado_em) AS dia,
+                COUNT(*)        AS total
+            FROM log_placas
+            WHERE criado_em >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+            GROUP BY dia
+            ORDER BY dia ASC
+        `)
+
+        // Top 10 produtos mais placas geradas no mês
+        const [topProdutos] = await db.query(`
+            SELECT descricao, tipo_placa, COUNT(*) AS total
+            FROM log_placas
+            WHERE MONTH(criado_em) = MONTH(CURDATE())
+              AND YEAR(criado_em)  = YEAR(CURDATE())
+            GROUP BY descricao, tipo_placa
+            ORDER BY total DESC
+            LIMIT 10
+        `)
+
+        // Listas criadas no mês
+        const [[{ listasMes }]] = await db.query(`
+            SELECT COUNT(*) AS listasMes FROM listas_precos
+            WHERE MONTH(criado_em) = MONTH(CURDATE())
+              AND YEAR(criado_em)  = YEAR(CURDATE())
+        `)
+
+        res.json({
+            totalProdutos,
+            semEan,
+            semImagem,
+            porDepto,
+            placasMes,
+            impressasMes,
+            placasDias,
+            topProdutos,
+            listasMes
+        })
+    } catch (err) {
+        console.error('[DASHBOARD]', err)
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// ── Migração Cargos ──────────────────────────────────
+router.post('/migrar-cargos', async (req, res) => {
+    try {
+        const db = require('./config/database')
+        const [cols] = await db.query('SHOW COLUMNS FROM usuarios LIKE "cargo"')
+        if (cols.length > 0) {
+            return res.json({ ok: true, message: 'Coluna cargo já existe' })
+        }
+        await db.query("ALTER TABLE usuarios ADD COLUMN cargo ENUM('administrador', 'gerente', 'atendente') DEFAULT 'atendente'")
+        await db.query("UPDATE usuarios SET cargo = 'administrador' WHERE usuario = 'luiz'")
+        res.json({ ok: true, message: 'Migração concluída: coluna cargo adicionada' })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// ── Rotas de Usuários (Admin) ───────────────────────────
+router.get('/usuarios', authMiddleware, async (req, res) => {
+    try {
+        const db = require('./config/database')
+        const [rows] = await db.query('SELECT id, nome, usuario, cargo, created_at FROM usuarios ORDER BY nome')
+        res.json(rows)
+    } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
+router.put('/usuarios/:id/cargo', authMiddleware, async (req, res) => {
+    try {
+        const db = require('./config/database')
+        const { cargo } = req.body
+        if (!['administrador', 'gerente', 'atendente'].includes(cargo)) {
+            return res.status(400).json({ error: 'Cargo inválido' })
+        }
+        await db.query('UPDATE usuarios SET cargo = ? WHERE id = ?', [cargo, req.params.id])
+        res.json({ ok: true })
+    } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
+router.delete('/usuarios/:id', authMiddleware, async (req, res) => {
+    try {
+        const db = require('./config/database')
+        await db.query('DELETE FROM usuarios WHERE id = ?', [req.params.id])
+        res.json({ ok: true })
+    } catch (err) { res.status(500).json({ error: err.message }) }
+})
 
 // ── Rotas existentes ──────────────────────────────────
 router.get('/', (req, res) => res.json({ message: 'API OK 🔥' }))

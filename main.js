@@ -1,14 +1,24 @@
 const { app, BrowserWindow } = require('electron')
-require('./server')
 const path = require('path')
+
+// Carrega .env — funciona em dev e no build (extraResources)
+const envPath = app.isPackaged
+    ? path.join(process.resourcesPath, '.env')
+    : path.join(__dirname, '.env')
+
+require('dotenv').config({ path: envPath })
+
+// Inicia o servidor Express
+require('./server')
 
 function createWindow() {
     const win = new BrowserWindow({
-        width: 1000,
-        height: 700,
+        width: 1280,
+        height: 800,
         webPreferences: {
             nodeIntegration: false,
-            contextIsolation: true
+            contextIsolation: true,
+            webSecurity: false // Permite carregar imagens externas
         }
     })
 
@@ -17,4 +27,8 @@ function createWindow() {
 
 app.whenReady().then(() => {
     createWindow()
+})
+
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') app.quit()
 })

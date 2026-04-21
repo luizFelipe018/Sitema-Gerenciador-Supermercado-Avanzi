@@ -1,21 +1,29 @@
 
 
 let placasBanco = []
-let placasSalvas = JSON.parse(localStorage.getItem('placasSalvas')) || []
+let placasSalvas = JSON.parse(localStorage.getItem(`placasSalvas_${window.getUsuario()}`)) || []
 let paginaPlacas = 0
 const placasPorPagina = 10
 let placaClicada = null
 
+function getStorageKey(tipo) {
+    const usuario = localStorage.getItem('usuario') || 'default'
+    return `placasSalvas_${tipo}_${usuario}`
+}
+
+function salvarPlacas(tipo, dados) {
+    localStorage.setItem(getStorageKey(tipo), JSON.stringify(dados))
+}
+
 
 function carregarEstilos() {
-    // Verifica se o link já existe para não duplicar
-    if (!document.getElementById('style.css')) {
-        const link = document.createElement('link');
-        link.id = 'estilo-placas';
-        link.rel = 'stylesheet';
-        link.type = 'text/css';
-        link.href = 'style.css'; // Certifique-se que o arquivo está na mesma pasta
-        document.head.appendChild(link);
+    // Carrega o style.css se ainda não foi carregado
+    if (!document.getElementById('placas-main-style')) {
+        const link = document.createElement('link')
+        link.id = 'placas-main-style'
+        link.rel = 'stylesheet'
+        link.href = 'style.css'
+        document.head.appendChild(link)
     }
 }
 
@@ -173,7 +181,7 @@ function renderizarPlacas() {
 
         div.innerHTML = `
             <h1 style="font-size:16px;" data-field="descricao">${p.descricao || ''}</h1>
-            <h1 style="font-size:92px;" data-field="preco"><span style="font-size:18px;">R$</span> ${parseFloat(p.preco).toFixed(2).replace('.', ',')}</h1>
+            <h1 style="font-size:92px;" data-field="preco"><span style="font-size:18px; position:relative; top:25px;color:#000;">R$</span> ${parseFloat(p.preco).toFixed(2).replace('.', ',')}</h1>
             <h1 style="font-size:16px;" data-field="info">${p.preco_info ? `NESTA EMBALAGEM ${art} ${uni} SAI R$ ${p.preco_info}` : ''}</h1>
             <h1 style="font-size:16px;" data-field="ean">${textoEan}</h1>
         `
@@ -228,7 +236,7 @@ function onExcluirPlaca() {
 }
 
 function salvarERenderizar() {
-    localStorage.setItem('placasSalvas', JSON.stringify(placasSalvas))
+    localStorage.setItem(`placasSalvas_${usuario}`, JSON.stringify(placasSalvas))
     renderizarPlacas()
 }
 
@@ -242,12 +250,11 @@ function imprimirTudo() {
     const container = document.getElementById('container-placas');
     const paginaOriginal = paginaPlacas;
     
-    // Limpa e reconstrói todas as folhas para a impressora
     container.innerHTML = '';
     
     for (let i = 0; i < placasSalvas.length; i += placasPorPagina) {
         const folha = document.createElement('div');
-        folha.className = 'folha'; // O CSS injetado acima cuidará da quebra de página aqui
+        folha.className = 'folha';
 
         placasSalvas.slice(i, i + placasPorPagina).forEach(p => {
             const div = document.createElement('div');
@@ -257,7 +264,7 @@ function imprimirTudo() {
             
             div.innerHTML = `
                 <h1 style="font-size:16px;">${p.descricao || ''}</h1>
-                <h1 style="font-size:92px;"><span style="font-size:18px;">R$</span> ${parseFloat(p.preco).toFixed(2).replace('.', ',')}</h1>
+                <h1 style="font-size:92px;"><span style="font-size:18px; position:relative; top:15px;">R$</span> ${parseFloat(p.preco).toFixed(2).replace('.', ',')}</h1>
                 <h1 style="font-size:16px;">${p.preco_info ? `NESTA EMBALAGEM ${art} ${uni} SAI R$ ${p.preco_info}` : ''}</h1>
                 <h1 style="font-size:16px;">${p.ean ? `Cód.${p.ean}` : ''}</h1>
             `;
@@ -266,12 +273,12 @@ function imprimirTudo() {
         container.appendChild(folha);
     }
 
-    // O pulo do gato: Esperar o Electron renderizar os elementos antes de imprimir
     setTimeout(() => {
         window.print();
-        // Volta ao normal após imprimir
-        paginaPlacas = paginaOriginal;
-        renderizarPlacas();
+        setTimeout(() => {
+            paginaPlacas = paginaOriginal;
+            renderizarPlacas();
+        }, 1000);
     }, 500);
 }
 
@@ -356,85 +363,3 @@ function processarImportacao() {
     salvarERenderizar()
     document.getElementById('import-texto').value = ''
 }
-
-
-
-const style = document.createElement('style');
-style.innerHTML = `
-  /* Estilos para a tela (visualização) */
-  #container-placas {
-    background: #f0f0f0;
-    padding: 20px;
-  }
-
-  .folha {
-    background: white;
-    width: 210mm;
-    min-height: 297mm;
-    margin: 0 auto 20px auto;
-    padding: 5mm;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    
-    /* ORGANIZAÇÃO EM DUAS COLUNAS */
-    display: flex !important;
-    flex-wrap: wrap !important;
-    align-content: flex-start;
-    justify-content: flex-start;
-    gap: 0; /* Ajuste se quiser espaço entre elas */
-  }
-
-  /* CADA PLACA OCUPA 50% DA LARGURA */
-  .placa {
-    width: 50% !important;
-    box-sizing: border-box;
-    border: 1px solid #000; /* Borda para visualização/corte */
-    padding: 10px;
-  }
-
-  /* CONFIGURAÇÃO DE IMPRESSÃO */
-  @media print {
-    /* Oculta interface do sistema */
-    .sidebar, .controls-placas, .context-menu, .modal-overlay, 
-    #popupProdutos, #modalImport, .btn-limpar, nav, header { 
-        display: none !important; 
-    }
-
-    @page { 
-        size: A4; 
-        margin: 0; 
-    }
-
-    html, body, .main, #container-placas {
-        background: #fff !important;
-        height: auto !important;
-        overflow: visible !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        display: block !important;
-    }
-
-    folha {
-    background: white;
-    width: 210mm;
-    min-height: 297mm;
-    margin: 0 auto 20px auto;
-    padding: 5mm;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    
-    /* ORGANIZAÇÃO EM DUAS COLUNAS */
-    display: flex !important;
-    flex-wrap: wrap !important;
-    align-content: flex-start;
-    justify-content: flex-start;
-    gap: 0; /* Ajuste se quiser espaço entre elas */
-  }
-
-    placa {
-    width: 4% !important;
-    box-sizing: border-box;
-    border: 1px solid #000; /* Borda para visualização/corte */
-    padding: 10px;
-  }
-  }
-`;
-document.head.appendChild(style);

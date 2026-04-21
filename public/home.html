@@ -3,116 +3,1231 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https://superavanzi.com.br blob: data: http://localhost:3000; connect-src 'self' http://localhost:3000;">
+    content="default-src 'self' https://images.openfoodfacts.org https://static.openfoodfacts.org; script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com; img-src 'self' https://superavanzi.com.br blob: data: http://localhost:3000 https://images.openfoodfacts.org https://static.openfoodfacts.org http://*.openfoodfacts.org https://*.openfoodfacts.com; connect-src 'self' http://localhost:3000 https://images.openfoodfacts.org https://static.openfoodfacts.org https://world.openfoodfacts.org; worker-src 'self' blob:;">
     <title>ERP Avanzi</title>
+    <meta name="theme-color" content="#b51515">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Avanzi ERP">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Fontes locais do sistema */
-        @font-face {
-            font-family: 'Impact';
-            src: local('Impact'), local('impact');
-        }
-        @font-face {
-            font-family: 'Arial';
-            src: local('Arial'), local('arial');
+:root {
+            --primary: #b51515;
+            --primary-dark: #8a0f0f;
+            --primary-light: #d42020;
+            --primary-glow: rgba(181, 21, 21, 0.4);
+            --sidebar-bg: #0a0a0a;
+            --sidebar-hover: #141414;
+            --sidebar-active: #b51515;
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --bg-main: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%);
+            --bg-card: #141414;
+            --bg-header: rgba(255, 255, 255, 0.03);
+            --bg-content: #121212;
+            --bg-input: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.08);
         }
 
-        body { font-family: 'Segoe UI', system-ui, sans-serif; }
+        /* LIGHT THEME */
+        body.theme-light {
+            --primary: #b51515;
+            --primary-dark: #a11212;
+            --primary-glow: rgba(181, 21, 21, 0.25);
+            --sidebar-bg: #f8f9fa;
+            --sidebar-hover: #f1f3f5;
+            --sidebar-active: #b51515;
+            --glass: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+            --text-muted: #9ca3af;
+            --bg-main: #f3f4f6 !important;
+            --bg-card: #ffffff;
+            --bg-header: rgba(255, 255, 255, 0.9);
+            --bg-content: #f3f4f6 !important;
+            --bg-input: #ffffff;
+            --border-color: #e5e7eb;
+            background: #f3f4f6 !important;
+        }
 
-        /* ── SIDEBAR ── */
-        /* ── SIDEBAR ── */
+        * { 
+            box-sizing: border-box; 
+        }
+
+        /* Transição suave para elementos do tema */
+        .glass, .sidebar, .sidebar-btn, .submenu-btn, .submenu3-btn, .card-3d, .modal-box, .input-modern, #page-title, #data-atual {
+            transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Header textos - padrão escuro */
+        #page-title { color: #fff; }
+        #data-atual { color: rgba(255,255,255,0.4); }
+
+        /* Header textos - tema claro */
+        body.theme-light #page-title { color: #111827; }
+        body.theme-light #data-atual { color: #9ca3af; }
+
+        /* Botões do header - padrão escuro */
+        #btn-global-search { color: rgba(255,255,255,0.5); }
+        #btn-theme-toggle { color: rgba(255,255,255,0.5); }
+
+        /* Botões do header - tema claro */
+        body.theme-light #btn-global-search { color: #4b5563; }
+        body.theme-light #btn-theme-toggle { color: #4b5563; }
+
+        /* Área de conteúdo principal */
+        #conteudo {
+            background: #121212;
+        }
+
+        body.theme-light #conteudo {
+            background: #f3f4f6;
+        }
+
+        /* Cards e containers internos - FORÇAR tema escuro (padrão) */
+        #conteudo .bg-white,
+        #conteudo [class*="bg-white"],
+        .bg-white {
+            background: #1a1a1a !important;
+            border-color: rgba(255,255,255,0.08) !important;
+        }
+
+        /* Elementos com fundo branco que devem ser escuros */
+        #conteudo > div:first-child {
+            background: #1a1a1a !important;
+        }
+
+        /* Tabelas no conteúdo */
+        #conteudo table {
+            background: #1a1a1a !important;
+        }
+
+        #conteudo thead th {
+            background: #252525 !important;
+            color: #a1a1aa !important;
+            border-bottom-color: rgba(255,255,255,0.08) !important;
+        }
+
+        #conteudo tbody td {
+            color: #e5e5e5 !important;
+            border-bottom-color: rgba(255,255,255,0.06) !important;
+        }
+
+        #conteudo tbody tr:hover {
+            background: #252525 !important;
+        }
+
+        /* Inputs dentro do conteúdo */
+        #conteudo input,
+        #conteudo textarea,
+        #conteudo select {
+            background: #252525 !important;
+            border-color: rgba(255,255,255,0.1) !important;
+            color: #fafafa !important;
+        }
+
+        #conteudo input::placeholder,
+        #conteudo textarea::placeholder {
+            color: #71717a !important;
+        }
+
+        /* Títulos e textos */
+        #conteudo h1, #conteudo h2, #conteudo h3, #conteudo h4 {
+            color: #fafafa !important;
+        }
+
+        #conteudo p, #conteudo span {
+            color: #a1a1aa !important;
+        }
+
+        /* Tema claro - Sobrescrever elementos dentro do conteúdo */
+        body.theme-light #conteudo .bg-white,
+        body.theme-light #conteudo [class*="bg-white"],
+        body.theme-light #conteudo [class*="rounded"] {
+            background: #ffffff !important;
+            border-color: #e5e7eb !important;
+        }
+
+        body.theme-light #conteudo .border {
+            border-color: #e5e7eb !important;
+        }
+
+        body.theme-light #conteudo table {
+            background: #ffffff !important;
+        }
+
+        body.theme-light #conteudo thead th {
+            background: #f3f4f6 !important;
+            color: #374151 !important;
+            border-bottom-color: #e5e7eb !important;
+        }
+
+        body.theme-light #conteudo tbody td {
+            color: #1f2937 !important;
+            border-bottom-color: #f3f4f6 !important;
+        }
+
+        body.theme-light #conteudo tbody tr {
+            background: #ffffff !important;
+        }
+
+        body.theme-light #conteudo tbody tr:hover {
+            background: #f9fafb !important;
+        }
+
+        body.theme-light #conteudo input,
+        body.theme-light #conteudo textarea,
+        body.theme-light #conteudo select {
+            background: #ffffff !important;
+            border-color: #d1d5db !important;
+            color: #111827 !important;
+        }
+
+        body.theme-light #conteudo input:focus,
+        body.theme-light #conteudo textarea:focus {
+            border-color: #b51515 !important;
+            box-shadow: 0 0 0 3px rgba(181,21,21,0.1) !important;
+        }
+
+        body.theme-light #conteudo input::placeholder,
+        body.theme-light #conteudo textarea::placeholder {
+            color: #9ca3af !important;
+        }
+
+        body.theme-light #conteudo h1, 
+        body.theme-light #conteudo h2, 
+        body.theme-light #conteudo h3, 
+        body.theme-light #conteudo h4 {
+            color: #111827 !important;
+        }
+
+        body.theme-light #conteudo p, 
+        body.theme-light #conteudo span,
+        body.theme-light #conteudo label {
+            color: #374151 !important;
+        }
+
+        /* Elementos específicos de status/badges */
+        body.theme-light .bg-green-50 { background: #f0fdf4 !important; }
+        body.theme-light .bg-yellow-50 { background: #fefce8 !important; }
+        body.theme-light .bg-red-50 { background: #fef2f2 !important; }
+        body.theme-light .bg-blue-50 { background: #eff6ff !important; }
+
+        /* Containers com cores de texto específicas */
+        body.theme-light .text-green-600 { color: #16a34a !important; }
+        body.theme-light .text-red-600 { color: #dc2626 !important; }
+        body.theme-light .text-red-500 { color: #ef4444 !important; }
+        body.theme-light .text-yellow-600 { color: #ca8a04 !important; }
+        body.theme-light .text-yellow-500 { color: #eab308 !important; }
+        body.theme-light .text-blue-600 { color: #2563eb !important; }
+
+        body.theme-light .text-gray-900,
+        body.theme-light .text-gray-800,
+        body.theme-light .text-gray-700,
+        body.theme-light .text-gray-600 {
+            color: #111827 !important;
+        }
+
+        body.theme-light .text-gray-500 {
+            color: #374151 !important;
+        }
+
+        body.theme-light .text-gray-400 {
+            color: #6b7280 !important;
+        }
+
+        body.theme-light .text-gray-300 {
+            color: #9ca3af !important;
+        }
+
+        body.theme-light .text-gray-200 {
+            color: #d1d5db !important;
+        }
+
+        /* Cores negativas - textos que podem estar errado */
+        body.theme-light .text-\#111,
+        body.theme-light .text-black {
+            color: #111827 !important;
+        }
+
+        body.theme-light [style*="color: #fff"],
+        body.theme-light [style*="color:#fff"],
+        body.theme-light [style*="color: white"],
+        body.theme-light [style*="color:white"],
+        body.theme-light [style*="color: #fafafa"],
+        body.theme-light [style*="color:#fafafa"],
+        body.theme-light [style*="color: #e5e5e5"] {
+            color: #374151 !important;
+        }
+
+        body.theme-light .border-gray-100,
+        body.theme-light .border-gray-200 {
+            border-color: #e5e7eb !important;
+        }
+
+        /* Tabelas */
+        body.theme-light table {
+            background: #ffffff !important;
+        }
+
+        body.theme-light th {
+            background: #f9fafb !important;
+            color: #374151 !important;
+        }
+
+        body.theme-light td {
+            color: #1f2937 !important;
+            border-bottom: 1px solid #e5e7eb !important;
+        }
+
+        body.theme-light tr:hover {
+            background: #f9fafb !important;
+        }
+
+        /* Buttons e elementos interativos */
+        body.theme-light button {
+            color: #374151 !important;
+        }
+
+        body.theme-light button[class*="bg-"] {
+            color: #ffffff !important;
+        }
+
+        /* FORÇAR cor de fundo principal do conteúdo */
+        body.theme-light main,
+        body.theme-light #main-content {
+            background: #f3f4f6 !important;
+        }
+
+        /* Garantir que o main tenha fundo claro */
+        body.theme-light > div:last-child {
+            background: #f3f4f6 !important;
+}
+
+        /* Placas no modo escuro - texto sempre preto (apenas nas placas) */
+        #container-placas .placa,
+        #container-placas .folha,
+        #container-placas-am .placa-amarela,
+        #container-placas-am .folha-amarela,
+        #container-placas-g .placa-grande,
+        #container-placas-g .folha-grande {
+            background: #fff !important;
+            color: #000 !important;
+        }
+
+#container-placas .placa h1,
+        #container-placas .placa span,
+        #container-placas .placa div,
+        #container-placas-am .placa-amarela h1,
+        #container-placas-am .placa-amarela span,
+        #container-placas-am .placa-amarela div,
+        #container-placas-g .placa-grande h1,
+        #container-placas-g .placa-grande span,
+        #container-placas-g .placa-grande div {
+            color: #000 !important;
+        }
+
+        /* Placas amarelas com fundo amarelo */
+        #container-placas-am .folha-amarela {
+            background: #ffe400 !important;
+        }
+
+        #container-placas-am .placa-amarela {
+            background: #ffe400 !important;
+            color: #000 !important;
+        }
+
+        #container-placas-am .placa-amarela h1,
+        #container-placas-am .placa-amarela span,
+        #container-placas-am .placa-amarela div {
+            color: #000 !important;
+        }
+
+        body.theme-light .placa {
+            background: #fff !important;
+            color: #000 !important;
+        }
+
+        body.theme-light .placa h1,
+        body.theme-light .placa span,
+        body.theme-light .placa div {
+            color: #000 !important;
+        }
+
+        body.theme-light .placa-amarela {
+            background: #ffe400 !important;
+            color: #000 !important;
+        }
+
+        body.theme-light .placa-amarela h1,
+        body.theme-light .placa-amarela span,
+        body.theme-light .placa-amarela div {
+            color: #000 !important;
+        }
+
+        /* Placas amarelas com fundo amarelo */
+        #container-placas-am .folha-amarela {
+            background: #ffe400 !important;
+        }
+
+        #container-placas-am .placa-amarela {
+            background: #ffe400 !important;
+            color: #000 !important;
+        }
+
+        #container-placas-am .placa-amarela h1,
+        #container-placas-am .placa-amarela span {
+            color: #000 !important;
+        }
+
+        body.theme-light #container-placas,
+        body.theme-light #container-placas-am,
+        body.theme-light #container-placas-g {
+            background: transparent !important;
+        }
+
+        body.theme-light .folha {
+            background: #fff !important;
+        }
+
+        body.theme-light .folha-amarela {
+            background: #ffe400 !important;
+        }
+
+        body.theme-light .placa {
+            background: #fff !important;
+            color: #000 !important;
+        }
+
+        body.theme-light .placa h1,
+        body.theme-light .placa span {
+            color: #000 !important;
+        }
+
+        body.theme-light .placa-amarela {
+            background: #ffe400 !important;
+            color: #000 !important;
+        }
+
+        body.theme-light .placa-amarela h1,
+        body.theme-light .placa-amarela span {
+            color: #000 !important;
+        }
+
+        /* Inputs em geral */
+        body.theme-light input,
+        body.theme-light textarea,
+        body.theme-light select {
+            background: #ffffff !important;
+            border-color: #e5e7eb !important;
+            color: #111827 !important;
+        }
+
+        body.theme-light input::placeholder,
+        body.theme-light textarea::placeholder {
+            color: #9ca3af !important;
+        }
+
+        /* Badges e status */
+        body.theme-light .bg-green-100,
+        body.theme-light .bg-yellow-100,
+        body.theme-light .bg-red-100,
+        body.theme-light .bg-gray-100 {
+            background-color: #f3f4f6 !important;
+        }
+
+        /* Avatars e ícones de usuário */
+        body.theme-light #user-avatar,
+        body.theme-light #user-avatar-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark)) !important;
+            color: #fff !important;
+        }
+
+        /* Sidebar user footer */
+        body.theme-light .text-white\/50 {
+            color: #6b7280 !important;
+        }
+
+        body.theme-light .text-white\/30 {
+            color: #9ca3af !important;
+        }
+
+        /* Ícone de logout */
+        body.theme-light #btn-logout {
+            color: #6b7280 !important;
+        }
+
+        body.theme-light #btn-logout:hover {
+            color: #ef4444 !important;
+            background: rgba(239, 68, 68, 0.1) !important;
+        }
+
+        /* Tema claro - elementos específicos */
+        body.theme-light #main-header {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        body.theme-light #page-title {
+            color: #111827;
+        }
+
+        body.theme-light #data-atual {
+            color: #9ca3af;
+        }
+
+        body.theme-light .sidebar-btn {
+            color: #4b5563;
+        }
+
+        body.theme-light .sidebar-btn:hover {
+            background: rgba(0, 0, 0, 0.04);
+            color: #111827;
+        }
+
+        body.theme-light .sidebar-btn.active {
+            color: #fff;
+        }
+
+        body.theme-light .submenu-btn {
+            color: #6b7280;
+        }
+
+        body.theme-light .submenu-btn:hover {
+            background: rgba(0, 0, 0, 0.04);
+            color: #111827;
+        }
+
+        body.theme-light .submenu3-btn {
+            color: #9ca3af;
+        }
+
+        body.theme-light .submenu3-btn:hover {
+            background: rgba(0, 0, 0, 0.03);
+            color: #374151;
+        }
+
+        body.theme-light .cat-title {
+            color: #d1d5db;
+        }
+
+        body.theme-light .kbd {
+            background: rgba(0, 0, 0, 0.06);
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #6b7280;
+        }
+
+        body.theme-light .text-white\/40 {
+            color: rgba(0, 0, 0, 0.4);
+        }
+
+        body.theme-light .text-white\/50 {
+            color: rgba(0, 0, 0, 0.5);
+        }
+
+        body.theme-light .text-white\/30 {
+            color: rgba(0, 0, 0, 0.3);
+        }
+
+body.theme-light .hover\:bg-white\/10:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Sidebar no tema claro */
+        body.theme-light .sidebar {
+            background: #f8fafc !important;
+            border-color: #e2e8f0 !important;
+        }
+
+        body.theme-light .sidebar-btn {
+            color: #475569 !important;
+        }
+
+        body.theme-light .sidebar-btn:hover {
+            background: #f1f5f9 !important;
+            color: #0f172a !important;
+        }
+
+        body.theme-light .sidebar-btn.active {
+            background: #b51515 !important;
+            color: #ffffff !important;
+        }
+
+        body.theme-light .submenu-btn {
+            color: #64748b !important;
+        }
+
+        body.theme-light .submenu-btn:hover {
+            background: #f1f5f9 !important;
+            color: #0f172a !important;
+        }
+
+        body.theme-light .submenu-btn.active {
+            background: rgba(181,21,21,0.15) !important;
+            color: #b51515 !important;
+        }
+
+        body.theme-light .submenu3-btn {
+            color: #94a3b8 !important;
+        }
+
+        body.theme-light .submenu3-btn:hover {
+            background: #f1f5f9 !important;
+            color: #374151 !important;
+        }
+
+        body.theme-light .submenu3-btn.active {
+            background: rgba(181,21,21,0.1) !important;
+            color: #b51515 !important;
+        }
+
+        body.theme-light .cat-title {
+            color: #64748b !important;
+        }
+
+        body.theme-light .kbd {
+            background: #f1f5f9 !important;
+            color: #64748b !important;
+            border-color: #e2e8f0 !important;
+        }
+
+        /* Footer da sidebar */
+        body.theme-light #nomeUsuario {
+            color: #64748b !important;
+        }
+
+        body.theme-light #btn-logout {
+            color: #94a3b8 !important;
+        }
+
+        body.theme-light #btn-logout:hover {
+            color: #dc2626 !important;
+            background: #fef2f2 !important;
+        }
+
+        /* Elementos com estilo inline - FORÇAR cores claras */
+        body.theme-light [style*="background: #fff"],
+        body.theme-light [style*="background:#fff"],
+        body.theme-light [style*="background: white"],
+        body.theme-light [style*="background:white"] {
+            background: #ffffff !important;
+        }
+
+        /* Corrigir elementos com estilos inline escuros - FORÇAR BRANCO */
+        body.theme-light [style*="background: #1a1a1a"],
+        body.theme-light [style*="background:#1a1a1a"],
+        body.theme-light [style*="background: #252525"],
+        body.theme-light [style*="background:#252525"],
+        body.theme-light [style*="background: #121212"],
+        body.theme-light [style*="background:#121212"],
+        body.theme-light [style*="background: #000"],
+        body.theme-light [style*="background:#000"] {
+            background: #ffffff !important;
+        }
+
+        /* FORÇAR cor de fundo para qualquer elemento dentro do conteúdo no tema claro */
+        body.theme-light #conteudo > * {
+            background-color: #ffffff !important;
+        }
+
+        /* Containers específicos */
+        body.theme-light .rounded-xl,
+        body.theme-light .rounded-lg,
+        body.theme-light .rounded-md,
+        body.theme-light .rounded {
+            background-color: #ffffff !important;
+        }
+
+        /* Wrappers e containers */
+        body.theme-light .shadow-sm,
+        body.theme-light .shadow,
+        body.theme-light .shadow-lg {
+            background-color: #ffffff !important;
+        }
+
+        body.theme-light .modal-box {
+            background: linear-gradient(145deg, #ffffff, #f9fafb);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        body.theme-light .modal-header,
+        body.theme-light .modal-footer {
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        body.theme-light .modal-header h3,
+        body.theme-light .text-white {
+            color: #111827 !important;
+        }
+
+        body.theme-light .text-white\/40,
+        body.theme-light .text-white\/30 {
+            color: #6b7280 !important;
+        }
+
+        body.theme-light .table-modern thead th {
+            background: #f9fafb;
+            color: #6b7280;
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        body.theme-light .table-modern tbody td {
+            color: #374151;
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        body.theme-light .table-modern tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%);
+            min-height: 100vh;
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* GLASSMORPHISM & 3D EFFECTS                         */
+        /* ═══════════════════════════════════════════════════ */
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+        }
+
+        body.theme-light .glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .glass-strong {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .card-3d {
+            background: linear-gradient(145deg, #1a1a1a, #141414);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.3),
+                0 2px 4px -2px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-3d:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 
+                0 20px 25px -5px rgba(0, 0, 0, 0.4),
+                0 8px 10px -6px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            border-color: rgba(181, 21, 21, 0.3);
+        }
+
+        .btn-3d {
+            background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
+            color: white;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            box-shadow: 
+                0 4px 14px -3px var(--primary-glow),
+                0 2px 4px -2px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-3d:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 25px -5px var(--primary-glow),
+                0 4px 6px -4px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-3d:hover::before {
+            left: 100%;
+        }
+
+        .btn-3d:active {
+            transform: translateY(0);
+        }
+
+/* ═══════════════════════════════════════════════════ */
+        /* CARD 3D                                           */
+        /* ═══════════════════════════════════════════════════ */
+        
+        .card-3d {
+            background: linear-gradient(145deg, #1a1a1a, #141414);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.3),
+                0 2px 4px -2px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.theme-light .card-3d {
+            background: linear-gradient(145deg, #ffffff, #f9fafb);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.05),
+                0 2px 4px -2px rgba(0, 0, 0, 0.03),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .card-3d:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 
+                0 20px 25px -5px rgba(0, 0, 0, 0.4),
+                0 8px 10px -6px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            border-color: rgba(181, 21, 21, 0.3);
+        }
+
+        body.theme-light .card-3d:hover {
+            box-shadow: 
+                0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                0 8px 10px -6px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            border-color: rgba(181, 21, 21, 0.3);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* SIDEBAR STYLES                                     */
+        /* ═══════════════════════════════════════════════════ */
+        
+        .sidebar {
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--glass-border);
+            transition: background 0.3s ease;
+        }
+
         .sidebar-btn {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             width: 100%;
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 14px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13px;
             font-weight: 500;
-            color: #cbd5e1;
+            color: var(--text-secondary);
             background: transparent;
             border: none;
             cursor: pointer;
-            transition: background 0.15s, color 0.15s;
-            text-align: left;
-            flex-shrink: 0;
-        }
-        .sidebar-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
-        .sidebar-btn.active { background: #b51515; color: #fff; }
-        .sidebar-btn .icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
-        .sidebar-btn .arrow { margin-left: auto; font-size: 10px; transition: transform 0.2s; opacity: 0.5; }
-        .sidebar-btn.open .arrow { transform: rotate(90deg); opacity: 1; }
-
-        /* Submenu nível 1 */
-        .submenu {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
             overflow: hidden;
-            max-height: 0;
-            transition: max-height 0.3s ease;
-            flex-shrink: 0;
         }
-        .submenu.open { max-height: 9999px; }
 
-        /* Submenu nível 2 */
-        .submenu2 {
-            overflow: hidden;
-            max-height: 0;
-            transition: max-height 0.3s ease;
+        .sidebar-btn::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%) scaleY(0);
+            width: 3px;
+            height: 60%;
+            background: var(--primary);
+            border-radius: 0 4px 4px 0;
+            transition: transform 0.2s ease;
         }
-        .submenu2.open { max-height: 9999px; }
+
+        .sidebar-btn:hover {
+            background: var(--glass);
+            color: var(--text-primary);
+            transform: translateX(4px);
+        }
+
+        .sidebar-btn.active {
+            background: linear-gradient(90deg, rgba(181,21,21,0.15) 0%, transparent 100%);
+            color: #fff;
+        }
+
+        .sidebar-btn.active::before {
+            transform: translateY(-50%) scaleY(1);
+        }
+
+        .sidebar-btn .icon { 
+            font-size: 18px; 
+            width: 24px; 
+            text-align: center;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .sidebar-btn .arrow { 
+            margin-left: auto; 
+            font-size: 10px; 
+            transition: transform 0.3s ease; 
+            opacity: 0.4; 
+        }
+
+        .sidebar-btn.open .arrow { 
+            transform: rotate(90deg); 
+            opacity: 1; 
+        }
+
+        .kbd {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            padding: 2px 6px;
+            font-size: 10px;
+            color: var(--text-muted);
+            font-family: inherit;
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* SUBMENUS                                           */
+        /* ═══════════════════════════════════════════════════ */
+        
+        .submenu { 
+            display: none;
+            flex-direction: column;
+            padding-left: 12px;
+            margin-top: 4px;
+        }
+        .submenu.open { 
+            display: flex;
+            animation: slideDown 0.3s ease;
+        }
+
+        .submenu2 { 
+            display: none;
+            flex-direction: column;
+            padding-left: 12px;
+            margin-top: 4px;
+        }
+        .submenu2.open { 
+            display: flex;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         .submenu-btn {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             width: 100%;
-            padding: 8px 14px 8px 38px;
-            border-radius: 8px;
-            font-size: 13px;
+            padding: 10px 14px 10px 32px;
+            border-radius: 10px;
+            font-size: 12.5px;
             font-weight: 500;
-            color: #ffffff;
+            color: var(--text-muted);
             background: transparent;
             border: none;
             cursor: pointer;
-            transition: background 0.15s, color 0.15s;
-            text-align: left;
-            flex-shrink: 0;
+            transition: all 0.2s ease;
+            position: relative;
         }
-        .submenu-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
-        .submenu-btn.active { color: #fff; background: rgba(181,21,21,0.5); }
-        .submenu-btn .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-        .submenu-btn .arrow2 { margin-left: auto; font-size: 9px; transition: transform 0.2s; opacity: 0.5; }
-        .submenu-btn.open2 .arrow2 { transform: rotate(90deg); opacity: 1; }
 
-        /* Sub-submenu nível 3 */
+        .submenu-btn:hover {
+            background: var(--glass);
+            color: var(--text-secondary);
+            transform: translateX(4px);
+        }
+
+        .submenu-btn.active { 
+            color: #fff; 
+            background: rgba(181,21,21,0.15);
+        }
+
+        .submenu-btn .dot { 
+            width: 6px; 
+            height: 6px; 
+            border-radius: 50%; 
+            background: currentColor; 
+            flex-shrink: 0;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        .submenu-btn .arrow2 { 
+            margin-left: auto; 
+            font-size: 8px; 
+            opacity: 0.4;
+            transition: transform 0.3s ease;
+        }
+
+        .submenu-btn.open2 .arrow2 { 
+            transform: rotate(90deg); 
+            opacity: 1; 
+        }
+
         .submenu3-btn {
             display: flex;
             align-items: center;
             gap: 8px;
             width: 100%;
-            padding: 7px 14px 7px 58px;
+            padding: 8px 14px 8px 40px;
             border-radius: 8px;
             font-size: 12px;
             font-weight: 500;
-            color: #ffffff;
+            color: var(--text-muted);
             background: transparent;
             border: none;
             cursor: pointer;
-            transition: background 0.15s, color 0.15s;
-            text-align: left;
-            flex-shrink: 0;
+            transition: all 0.2s ease;
         }
-        .submenu3-btn:hover { background: rgba(255,255,255,0.04); color: #cbd5e1; }
-        .submenu3-btn.active { color: #fff; background: rgba(181,21,21,0.3); }
-        .submenu3-btn .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
 
+        .submenu3-btn:hover { 
+            background: var(--glass); 
+            color: var(--text-secondary);
+            transform: translateX(4px);
+        }
+
+        .submenu3-btn.active { 
+            color: #fff; 
+            background: rgba(181,21,21,0.12);
+        }
+
+        .submenu3-btn .dot { 
+            width: 5px; 
+            height: 5px; 
+            border-radius: 50%; 
+            background: currentColor; 
+        }
+
+        .cat-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 16px 16px 8px;
+            opacity: 0.7;
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* ANIMATIONS                                          */
+        /* ═══════════════════════════════════════════════════ */
+        
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .fade-in { animation: fadeIn 0.25s ease both; }
 
-        /* ── PLACA BRANCA ── */
+        .fade-in { 
+            animation: fadeIn 0.3s ease both; 
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px var(--primary-glow); }
+            50% { box-shadow: 0 0 40px var(--primary-glow), 0 0 60px rgba(181, 21, 21, 0.2); }
+        }
+
+        .animate-pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* INPUTS & FORMS                                     */
+        /* ═══════════════════════════════════════════════════ */
+        
+        .input-modern {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            font-size: 14px;
+            color: var(--text-primary);
+            transition: all 0.25s ease;
+            outline: none;
+        }
+
+        body.theme-light .input-modern {
+            background: #ffffff;
+            border-color: #e5e7eb;
+            color: #111827;
+        }
+
+        .input-modern::placeholder {
+            color: var(--text-muted);
+        }
+
+        body.theme-light .input-modern::placeholder {
+            color: #9ca3af;
+        }
+
+        .input-modern:focus {
+            background: rgba(255,255,255,0.05);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow), 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        body.theme-light .input-modern:focus {
+            background: #ffffff;
+            box-shadow: 0 0 0 4px var(--primary-glow), 0 4px 20px rgba(181,21,21,0.15);
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* TABLES                                             */
+        /* ═══════════════════════════════════════════════════ */
+        
+        .table-modern {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .table-modern thead th {
+            padding: 14px 18px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .table-modern tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .table-modern tbody tr:hover { 
+            background: var(--glass); 
+        }
+
+        .table-modern tbody td {
+            padding: 16px 18px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* MODALS                                             */
+        /* ═══════════════════════════════════════════════════ */
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: none;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-box {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(145deg, #1a1a1a, #141414);
+            border-radius: 20px;
+            z-index: 10000;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.5), 0 0 40px var(--primary-glow);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-body { padding: 24px; }
+        
+        .modal-footer {
+            padding: 16px 24px 20px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* CONTEXT MENU                                       */
+        /* ═══════════════════════════════════════════════════ */
+        
+        .context-menu {
+            position: fixed;
+            background: linear-gradient(145deg, #1f1f1f, #171717);
+            padding: 6px;
+            display: none;
+            cursor: pointer;
+            z-index: 9999;
+            border-radius: 14px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px var(--glass-border);
+            animation: fadeIn 0.15s ease;
+        }
+
+        .context-menu-item {
+            padding: 12px 18px;
+            font-size: 13px;
+            color: #f87171;
+            font-weight: 500;
+            border-radius: 10px;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .context-menu-item:hover { 
+            background: rgba(248, 113, 113, 0.1); 
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* PLACA STYLES                                       */
+        /* ═══════════════════════════════════════════════════ */
+        
         .folha {
             width: 209mm; height: 296mm; display: flex; flex-wrap: wrap;
             padding: 5mm 0 0 7px; background: #fff; align-content: flex-start;
@@ -126,9 +1241,8 @@
         }
         .placa, .placa h1, .placa input { font-family: 'Segoe UI', sans-serif !important; font-weight: bold !important; }
         .placa h1 { width: 100%; margin: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .placa input { width: 90%; text-align: center; font-size: 16px; border: 2px solid #b51515; }
+        .placa input { width: 90%; text-align: center; font-size: 16px; border: 2px solid var(--primary); }
 
-        /* ── PLACA AMARELA ── */
         .folha-amarela {
             width: 209mm; height: 296mm; display: flex; flex-wrap: wrap;
             padding: 5mm 0 0 7px; background: #ffe400; align-content: flex-start;
@@ -142,9 +1256,8 @@
         }
         .placa-amarela, .placa-amarela h1, .placa-amarela input { font-family: 'Segoe UI', sans-serif !important; font-weight: bold !important; }
         .placa-amarela h1 { width: 100%; margin: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .placa-amarela input { width: 90%; text-align: center; font-size: 16px; border: 2px solid #b51515; background: #ffe400; }
+        .placa-amarela input { width: 90%; text-align: center; font-size: 16px; border: 2px solid var(--primary); background: #ffe400; }
 
-        /* ── PLACA GRANDE ── */
         .folha-grande {
             width: 209mm; height: 296mm; display: flex; flex-direction: column;
             background: #fff; margin: 0 auto 20px;
@@ -157,78 +1270,74 @@
             box-sizing: border-box; overflow: hidden;
         }
 
-        /* ── CONTEXT MENU ── */
-        .context-menu {
-            position: fixed; background: #fff; border: 1px solid #ccc;
-            padding: 8px 15px; display: none; cursor: pointer; z-index: 2000;
-            border-radius: 4px; color: #dc3545; font-weight: bold;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-        }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
-        /* ── PRINT ── */
-        @media print {
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            @page { size: A4; margin: 0; }
-            body { background: #fff !important; overflow: visible !important; }
-
-            /* Esconde tudo */
-            aside, header, nav, #lista-print-area { display: none !important; }
-            body > main > *:not(#conteudo) { display: none !important; }
-            #conteudo > *:not(#container-placas):not(#container-placas-am):not(#container-placas-g) { display: none !important; }
-
-            /* Mostra só as placas */
-            body > main { display: block !important; }
-            #conteudo { display: block !important; padding: 0 !important; background: none !important; }
-            #container-placas    { display: block !important; }
-            #container-placas-am { display: block !important; }
-            #container-placas-g  { display: block !important; }
-
-            .folha        { box-shadow: none !important; margin: 0 !important; page-break-after: always !important; break-after: page !important; }
-            .folha-amarela{ box-shadow: none !important; margin: 0 !important; page-break-after: always !important; break-after: page !important; background: #ffe400 !important; }
-            .folha-grande { box-shadow: none !important; margin: 0 !important; page-break-after: always !important; break-after: page !important; }
+        /* Badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
         }
     </style>
 </head>
-<body class="bg-gray-100 h-screen flex overflow-hidden">
+<body class="h-screen flex overflow-hidden">
 
-    <!-- Sidebar -->
-    <aside style="
-        background: #940404;
-        width: 220px;
-        min-width: 220px;
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        flex-shrink: 0;
-    ">
-        <!-- Logo fixo no topo -->
-        <div style="padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink:0;">
-            <h1 style="color:#fff; font-weight:700; font-size:14px; line-height:1.4;">Supermercado<br>Avanzi</h1>
-            <p style="color:rgba(255,255,255,0.3); font-size:11px; margin-top:2px;">Sistema de Gestão</p>
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SIDEBAR                                           -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <aside class="sidebar w-64 min-w-64 h-screen flex flex-col relative z-20">
+
+        <!-- Logo com glow -->
+        <div class="p-5 border-b border-glass relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent pointer-events-none"></div>
+            <div class="relative flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-lg glow-red" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);">
+                    SA
+                </div>
+                <div>
+                    <h1 class="text-white font-bold text-sm leading-tight">Supermercado<br>Avanzi</h1>
+                    <p class="text-white/30 text-xs mt-0.5">Sistema de Gestão</p>
+                </div>
+            </div>
         </div>
 
-        <!-- Nav com scroll -->
-        <nav style="flex:1; overflow-y:auto; overflow-x:hidden; padding:12px 10px 8px; display:flex; flex-direction:column; gap:2px; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.1) transparent;">
+        <!-- Nav -->
+        <nav class="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-1">
 
             <button id="btn-inicio" class="sidebar-btn active">
                 <span class="icon">🏠</span> Início
+                <span class="arrow">▶</span>
             </button>
 
+            <!-- CONSULTA -->
+            <div class="cat-title">Consulta</div>
+            <button id="btn-busca-rapida" class="sidebar-btn">
+                <span class="icon">🔍</span> Busca Rápida
+                <kbd class="kbd ml-auto">Ctrl+Tab</kbd>
+            </button>
             <button id="btn-produtos" class="sidebar-btn">
                 <span class="icon">📦</span> Produtos
             </button>
+            <button id="btn-imagens" class="sidebar-btn">
+                <span class="icon">🖼️</span> Imagens
+            </button>
 
-            <!-- Placas -->
+            <!-- PLACAS -->
+            <div class="cat-title">Placas</div>
             <button id="btn-placas-menu" class="sidebar-btn">
-                <span class="icon">🏷️</span> Placas
+                <span class="icon">🏷️</span> Gerar Placas
                 <span class="arrow">▶</span>
             </button>
             <div id="submenu-placas" class="submenu">
-
-                <!-- Modelos (sub-submenu) -->
-                <button id="btn-modelos-menu" class="submenu-btn">
-                    <span class="dot"></span> Modelos
+                <button id="btn-modelos-menu" class="submenu-btn flex justify-between items-center w-full">
+                    <span class="flex items-center gap-2"><span class="dot"></span> Modelos</span>
                     <span class="arrow2">▶</span>
                 </button>
                 <div id="submenu-modelos" class="submenu2">
@@ -242,20 +1351,21 @@
                         <span class="dot"></span> Grande
                     </button>
                 </div>
-
                 <button id="btn-lista-precos" class="submenu-btn">
                     <span class="dot"></span> Lista de Preços
                 </button>
-
                 <button id="btn-relatorio-placas" class="submenu-btn">
                     <span class="dot"></span> Relatório
                 </button>
-
+                <button id="btn-gerenciador-placas" class="submenu-btn">
+                    <span class="dot"></span> Histórico
+                </button>
             </div>
 
-            <!-- Ofertas Diárias -->
+            <!-- OFERTAS -->
+            <div class="cat-title">Ofertas</div>
             <button id="btn-ofertas-menu" class="sidebar-btn">
-                <span class="icon">🏷️</span> Ofertas Diárias
+                <span class="icon">🔥</span> Ofertas Diárias
                 <span class="arrow">▶</span>
             </button>
             <div id="submenu-ofertas" class="submenu">
@@ -265,157 +1375,283 @@
                 <button id="btn-cardapio" class="submenu-btn">
                     <span class="dot"></span> Cardápio Restaurante
                 </button>
+                <button id="btn-importar-cardapio" class="submenu-btn">
+                    <span class="dot"></span> Importar Cardápio
+                </button>
             </div>
 
+            <!-- RELATORIOS -->
+            <div class="cat-title">Relatórios</div>
+            <button id="btn-dashboard" class="sidebar-btn">
+                <span class="icon">📊</span> Dashboard
+            </button>
+            <button id="btn-dashboard-vendas" class="sidebar-btn">
+                <span class="icon">📈</span> Vendas
+            </button>
+            <button id="btn-cotacao" class="sidebar-btn">
+                <span class="icon">📋</span> Cotação
+            </button>
+
+            <!-- UTILITARIOS -->
+            <div class="cat-title">Utilitários</div>
             <button id="btn-atalhos" class="sidebar-btn">
                 <span class="icon">⚡</span> Atalhos
             </button>
-
             <button id="btn-formatos" class="sidebar-btn">
                 <span class="icon">📐</span> Formatos
             </button>
-
             <button id="btn-capitalize" class="sidebar-btn">
                 <span class="icon">✨</span> Capitalize
             </button>
-
             <button id="btn-importar" class="sidebar-btn">
                 <span class="icon">📥</span> Importar
             </button>
-
             <button id="btn-textos" class="sidebar-btn">
                 <span class="icon">📝</span> Textos
             </button>
-
             <button id="btn-listas" class="sidebar-btn">
-                <span class="icon">📋</span> Listas
+                <span class="icon">📃</span> Listas
             </button>
-
-            <button id="btn-imagens" class="sidebar-btn">
-                <span class="icon">📷</span> Imagens
+            <button id="btn-monitor-imagens" class="sidebar-btn">
+                <span class="icon">🖼️</span> Monitor Imagens
             </button>
 
             <button id="btn-admin" class="sidebar-btn" style="display:none;">
                 <span class="icon">⚙️</span> Admin
             </button>
-
         </nav>
 
-        <!-- Usuário + Logout fixo no rodapé -->
-        <div style="padding:12px 10px; border-top:1px solid rgba(255,255,255,0.08); flex-shrink:0;">
-            <p id="nomeUsuario" style="color:rgba(255,255,255,0.4); font-size:11px; padding:0 4px; margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></p>
-            <button id="btn-logout" class="sidebar-btn" style="color:#f87171;">
-                <span class="icon">🚪</span> Sair
-            </button>
+        <!-- User footer -->
+        <div class="p-4 border-t border-glass">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);">
+                    <span id="user-avatar">—</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p id="nomeUsuario" class="text-white/50 text-xs truncate"></p>
+                </div>
+                <button id="btn-logout" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1"/></svg>
+                </button>
+            </div>
         </div>
     </aside>
 
-    <!-- Conteúdo principal -->
-    <main class="flex-1 overflow-y-auto">
-        <div class="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
-            <h2 id="page-title" class="text-gray-800 font-semibold text-base">Dashboard</h2>
-            <span class="text-xs text-gray-400" id="data-atual"></span>
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- MAIN CONTENT                                      -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <main id="main-content" class="flex-1 flex flex-col overflow-hidden relative z-10">
+
+        <!-- Background decoration -->
+        <div id="bg-decoration" class="absolute inset-0 pointer-events-none overflow-hidden">
+            <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-red-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-red-500/3 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
         </div>
-        <div id="conteudo" class="p-8 fade-in"></div>
+
+<!-- Header -->
+        <header id="main-header" class="glass border-b border-glass px-8 py-5 flex items-center justify-between relative z-10">
+            <div>
+                <h2 id="page-title" class="header-title text-xl font-bold">Dashboard</h2>
+                <p id="data-atual" class="header-subtitle text-xs mt-1"></p>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="btn-global-search" class="header-text flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm hover:bg-white/10 transition-all glass">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    <span>Buscar...</span>
+                    <kbd class="kbd">Ctrl+Tab</kbd>
+                </button>
+                <button id="btn-theme-toggle" class="header-text w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all" title="Alternar tema">
+                    <svg id="icon-sol" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-white"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                    <svg id="icon-lua" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="hidden text-gray-600"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg glow-red" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);">
+                    <span id="user-avatar-header">—</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content area -->
+        <div id="conteudo" class="flex-1 overflow-y-auto p-8 fade-in relative z-10"></div>
     </main>
 
-    <!-- Menu contexto -->
-    <div id="contextMenu" class="context-menu">🗑 Excluir Placa</div>
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- CONTEXT MENU                                     -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div id="contextMenu" class="context-menu">
+        <div class="context-menu-item">🗑️ Excluir Placa</div>
+    </div>
 
-    <!-- ── MODAIS PLACA BRANCA ── -->
-    <div id="modal-busca" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; border:2px solid #b51515; border-radius:10px; z-index:3000; padding:25px; box-shadow:0 0 50px rgba(0,0,0,0.4); width:600px;">
-        <button id="fechar-busca" style="float:right; border:none; background:none; font-size:20px; cursor:pointer;">×</button>
-        <h3 class="font-semibold text-gray-700 mb-3">Buscar Produto por Nome</h3>
-        <input type="text" id="input-busca-nome" placeholder="Digite o nome e pressione ENTER"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-500 mb-2">
-        <div style="max-height:300px; overflow-y:auto;">
-            <table id="tabela-busca" style="width:100%; border-collapse:collapse; font-size:13px;">
-                <thead><tr style="background:#f8f9fa;">
-                    <th class="px-3 py-2 text-left">Código</th>
-                    <th class="px-3 py-2 text-left">Descrição</th>
-                    <th class="px-3 py-2 text-right">Preço</th>
-                </tr></thead>
-                <tbody></tbody>
-            </table>
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- POPUP BUSCA GLOBAL                                -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div id="popupBuscaGlobal" class="modal-overlay">
+        <div class="modal-box" style="width:680px; max-width:90vw;">
+            <div class="modal-header">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark));">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    </div>
+                    <h3 class="font-semibold text-white text-lg">Busca Rápida</h3>
+                </div>
+                <button onclick="fecharPopupBuscaGlobal()" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 20px 24px;">
+                <input type="text" id="input-busca-global" placeholder="Digite código, EAN ou descrição do produto..." class="input-modern" autofocus>
+            </div>
+            <div id="resultado-busca-global" class="px-6 pb-4" style="max-height:400px; overflow-y:auto;">
+                <div class="text-center text-white/30 py-12 text-sm">Digite para buscar...</div>
+            </div>
+            <div class="modal-footer flex items-center justify-between text-xs text-white/40">
+                <div class="flex items-center gap-4">
+                    <span>Pressione <kbd class="kbd">Enter</kbd> para selecionar</span>
+                    <span>Pressione <kbd class="kbd">ESC</kbd> para fechar</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="modal-import" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; border:2px solid #b51515; border-radius:10px; z-index:3000; padding:25px; box-shadow:0 0 50px rgba(0,0,0,0.4); width:580px;">
-        <button id="fechar-import" style="float:right; border:none; background:none; font-size:20px; cursor:pointer;">×</button>
-        <h3 class="font-semibold text-gray-700 mb-1">Importação Rápida — Branca</h3>
-        <p style="font-size:11px; color:#666; margin-bottom:8px;">Cole as colunas do Excel (Descrição [TAB] Preço):</p>
-        <textarea id="import-texto" rows="7" placeholder="Ex: ARROZ TIO JOAO 5KG&#9;29,90"
-            style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; font-family:monospace; font-size:13px; resize:none;"></textarea>
-        <div id="log-erros" style="display:none; background:#fff5f5; border:1px solid #feb2b2; padding:10px; border-radius:6px; margin:8px 0; max-height:100px; overflow-y:auto; color:#c53030; font-size:12px;">
-            <strong>⚠️ Itens não encontrados:</strong>
-            <ul id="lista-erros" style="padding-left:15px; margin-top:4px;"></ul>
-        </div>
-        <button id="btn-processar-import" class="w-full mt-2 py-2.5 text-white font-semibold rounded-lg text-sm" style="background:#28a745;">Gerar Placas Automáticas</button>
-    </div>
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- MODAIS                                            -->
+    <!-- ═══════════════════════════════════════════════════ -->
 
-    <!-- ── MODAIS PLACA AMARELA ── -->
-    <div id="modal-busca-am" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; border:2px solid #b8a000; border-radius:10px; z-index:3000; padding:25px; box-shadow:0 0 50px rgba(0,0,0,0.4); width:600px;">
-        <button id="fechar-busca-am" style="float:right; border:none; background:none; font-size:20px; cursor:pointer;">×</button>
-        <h3 class="font-semibold text-gray-700 mb-3">Buscar Produto por Nome</h3>
-        <input type="text" id="input-busca-nome-am" placeholder="Digite o nome e pressione ENTER"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none mb-2" style="border-color:#b8a000;">
-        <div style="max-height:300px; overflow-y:auto;">
-            <table id="tabela-busca-am" style="width:100%; border-collapse:collapse; font-size:13px;">
-                <thead><tr style="background:#fffde0;">
-                    <th class="px-3 py-2 text-left">Código</th>
-                    <th class="px-3 py-2 text-left">Descrição</th>
-                    <th class="px-3 py-2 text-right">Preço</th>
-                </tr></thead>
-                <tbody></tbody>
-            </table>
+    <!-- Modal Busca (Branca) -->
+    <div id="modal-busca" class="modal-overlay">
+        <div class="modal-box" style="width:600px;">
+            <div class="modal-header">
+                <h3 class="font-semibold text-white text-lg">Buscar Produto</h3>
+                <button id="fechar-busca" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 20px 24px;">
+                <input type="text" id="input-busca-nome" placeholder="Digite o nome e pressione ENTER" class="input-modern mb-4">
+                <div style="max-height:300px; overflow-y:auto;">
+                    <table id="tabela-busca" class="table-modern">
+                        <thead><tr><th>Código</th><th>Descrição</th><th style="text-align:right;">Preço</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="modal-import-am" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; border:2px solid #b8a000; border-radius:10px; z-index:3000; padding:25px; box-shadow:0 0 50px rgba(0,0,0,0.4); width:580px;">
-        <button id="fechar-import-am" style="float:right; border:none; background:none; font-size:20px; cursor:pointer;">×</button>
-        <h3 class="font-semibold text-gray-700 mb-1">Importação Rápida — Amarela</h3>
-        <p style="font-size:11px; color:#666; margin-bottom:8px;">Cole as colunas do Excel (Descrição [TAB] Preço):</p>
-        <textarea id="import-texto-am" rows="7" placeholder="Ex: ARROZ TIO JOAO 5KG&#9;29,90"
-            style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; font-family:monospace; font-size:13px; resize:none;"></textarea>
-        <div id="log-erros-am" style="display:none; background:#fff5f5; border:1px solid #feb2b2; padding:10px; border-radius:6px; margin:8px 0; max-height:100px; overflow-y:auto; color:#c53030; font-size:12px;">
-            <strong>⚠️ Itens não encontrados:</strong>
-            <ul id="lista-erros-am" style="padding-left:15px; margin-top:4px;"></ul>
-        </div>
-        <button id="btn-processar-import-am" class="w-full mt-2 py-2.5 font-semibold rounded-lg text-sm" style="background:#ffe400; color:#333;">Gerar Placas Automáticas</button>
-    </div>
-
-    <!-- ── MODAIS PLACA GRANDE ── -->
-    <div id="modal-busca-g" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; border:2px solid #b51515; border-radius:10px; z-index:3000; padding:25px; box-shadow:0 0 50px rgba(0,0,0,0.4); width:600px;">
-        <button id="fechar-busca-g" style="float:right; border:none; background:none; font-size:20px; cursor:pointer;">×</button>
-        <h3 class="font-semibold text-gray-700 mb-3">Buscar Produto por Nome</h3>
-        <input type="text" id="input-busca-nome-g" placeholder="Digite o nome e pressione ENTER"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-500 mb-2">
-        <div style="max-height:300px; overflow-y:auto;">
-            <table id="tabela-busca-g" style="width:100%; border-collapse:collapse; font-size:13px;">
-                <thead><tr style="background:#f8f9fa;">
-                    <th class="px-3 py-2 text-left">Código</th>
-                    <th class="px-3 py-2 text-left">Descrição</th>
-                    <th class="px-3 py-2 text-right">Preço</th>
-                </tr></thead>
-                <tbody></tbody>
-            </table>
+    <!-- Modal Import (Branca) -->
+    <div id="modal-import" class="modal-overlay">
+        <div class="modal-box" style="width:560px;">
+            <div class="modal-header">
+                <h3 class="font-semibold text-white text-lg">Importação Rápida</h3>
+                <button id="fechar-import" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-white/40 text-xs mb-3">Cole as colunas do Excel (Descrição [TAB] Preço):</p>
+                <textarea id="import-texto" rows="7" placeholder="Ex: ARROZ TIO JOAO 5KG&#9;29,90" class="input-modern font-mono text-sm" style="resize:none;"></textarea>
+                <div id="log-erros" class="mt-4 p-4 rounded-xl text-sm" style="background:rgba(248,113,113,0.1); color:#f87171; display:none;">
+                    <strong>⚠️ Itens não encontrados:</strong>
+                    <ul id="lista-erros" class="mt-2 pl-4"></ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-processar-import" class="btn-3d w-full" style="background: linear-gradient(135deg, #16a34a, #15803d);">Gerar Placas</button>
+            </div>
         </div>
     </div>
 
-    <div id="modal-import-g" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; border:2px solid #b51515; border-radius:10px; z-index:3000; padding:25px; box-shadow:0 0 50px rgba(0,0,0,0.4); width:580px;">
-        <button id="fechar-import-g" style="float:right; border:none; background:none; font-size:20px; cursor:pointer;">×</button>
-        <h3 class="font-semibold text-gray-700 mb-1">Importação Rápida — Grande</h3>
-        <p style="font-size:11px; color:#666; margin-bottom:8px;">Cole as colunas do Excel (Descrição [TAB] Preço):</p>
-        <textarea id="import-texto-g" rows="7" placeholder="Ex: ARROZ TIO JOAO 5KG&#9;29,90"
-            style="width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; font-family:monospace; font-size:13px; resize:none;"></textarea>
-        <div id="log-erros-g" style="display:none; background:#fff5f5; border:1px solid #feb2b2; padding:10px; border-radius:6px; margin:8px 0; max-height:100px; overflow-y:auto; color:#c53030; font-size:12px;">
-            <strong>⚠️ Itens não encontrados:</strong>
-            <ul id="lista-erros-g" style="padding-left:15px; margin-top:4px;"></ul>
+    <!-- Modal Busca (Amarela) -->
+    <div id="modal-busca-am" class="modal-overlay">
+        <div class="modal-box" style="width:600px; border:2px solid #ca8a04;">
+            <div class="modal-header" style="border-color:#ca8a04;">
+                <h3 class="font-semibold text-white text-lg">Buscar Produto</h3>
+                <button id="fechar-busca-am" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 20px 24px;">
+                <input type="text" id="input-busca-nome-am" placeholder="Digite o nome e pressione ENTER" class="input-modern mb-4">
+                <div style="max-height:300px; overflow-y:auto;">
+                    <table id="tabela-busca-am" class="table-modern">
+                        <thead><tr><th>Código</th><th>Descrição</th><th style="text-align:right;">Preço</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-        <button id="btn-processar-import-g" class="w-full mt-2 py-2.5 text-white font-semibold rounded-lg text-sm" style="background:#28a745;">Gerar Placas Automáticas</button>
     </div>
 
-    <!-- Scripts -->
+    <!-- Modal Import (Amarela) -->
+    <div id="modal-import-am" class="modal-overlay">
+        <div class="modal-box" style="width:560px; border:2px solid #ca8a04;">
+            <div class="modal-header" style="border-color:#ca8a04;">
+                <h3 class="font-semibold text-white text-lg">Importação Rápida</h3>
+                <button id="fechar-import-am" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-white/40 text-xs mb-3">Cole as colunas do Excel (Descrição [TAB] Preço):</p>
+                <textarea id="import-texto-am" rows="7" placeholder="Ex: ARROZ TIO JOAO 5KG&#9;29,90" class="input-modern font-mono text-sm" style="resize:none;"></textarea>
+                <div id="log-erros-am" class="mt-4 p-4 rounded-xl text-sm" style="background:rgba(248,113,113,0.1); color:#f87171; display:none;">
+                    <strong>⚠️ Itens não encontrados:</strong>
+                    <ul id="lista-erros-am" class="mt-2 pl-4"></ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-processar-import-am" class="btn-3d w-full" style="background: linear-gradient(135deg, #ca8a04, #a16207);">Gerar Placas</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Busca (Grande) -->
+    <div id="modal-busca-g" class="modal-overlay">
+        <div class="modal-box" style="width:600px;">
+            <div class="modal-header">
+                <h3 class="font-semibold text-white text-lg">Buscar Produto</h3>
+                <button id="fechar-busca-g" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 20px 24px;">
+                <input type="text" id="input-busca-nome-g" placeholder="Digite o nome e pressione ENTER" class="input-modern mb-4">
+                <div style="max-height:300px; overflow-y:auto;">
+                    <table id="tabela-busca-g" class="table-modern">
+                        <thead><tr><th>Código</th><th>Descrição</th><th style="text-align:right;">Preço</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Import (Grande) -->
+    <div id="modal-import-g" class="modal-overlay">
+        <div class="modal-box" style="width:560px;">
+            <div class="modal-header">
+                <h3 class="font-semibold text-white text-lg">Importação Rápida</h3>
+                <button id="fechar-import-g" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-white/40 text-xs mb-3">Cole as colunas do Excel (Descrição [TAB] Preço):</p>
+                <textarea id="import-texto-g" rows="7" placeholder="Ex: ARROZ TIO JOAO 5KG&#9;29,90" class="input-modern font-mono text-sm" style="resize:none;"></textarea>
+                <div id="log-erros-g" class="mt-4 p-4 rounded-xl text-sm" style="background:rgba(248,113,113,0.1); color:#f87171; display:none;">
+                    <strong>⚠️ Itens não encontrados:</strong>
+                    <ul id="lista-erros-g" class="mt-2 pl-4"></ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-processar-import-g" class="btn-3d w-full" style="background: linear-gradient(135deg, #16a34a, #15803d);">Gerar Placas</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SCRIPTS                                           -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <script src="shared.js"></script>
     <script src="pages/inicio.js"></script>
     <script src="pages/produtos.js"></script>
     <script src="pages/placas.js"></script>
@@ -432,7 +1668,15 @@
     <script src="pages/capitalize.js"></script>
     <script src="pages/formatos.js"></script>
     <script src="pages/atalhos.js"></script>
+    <script src="pages/dashboard.js"></script>
     <script src="pages/admin.js"></script>
+    <script src="pages/busca-rapida.js"></script>
+    <script src="pages/gerenciador-placas.js"></script>
+    <script src="pages/importar-cardapio.js"></script>
+    <script src="pages/monitor-imagens.js"></script>
+    <script src="pages/cotacao.js"></script>
+    <script src="pages/dashboard-vendas.js"></script>
+    <script src="pwa.js"></script>
     <script src="home.js"></script>
 </body>
 </html>

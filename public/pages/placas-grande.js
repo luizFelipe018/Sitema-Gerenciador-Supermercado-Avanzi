@@ -1,13 +1,19 @@
-let placasBancoGrande = []
-let placasSalvasGrande = JSON.parse(localStorage.getItem('placasSalvasGrande')) || []
-let paginaPlacasGrande = 0
-const placasPorPaginaGrande = 4 // 1 coluna, 4 por página A4
-let placaClicadaGrande = null
+var plaquesBancoGrande = []
+var plaquesSalvasGrande = JSON.parse(localStorage.getItem(`placasSalvasGrande_${window.getUsuario()}`)) || []
+var paginaPlacasGrande = 0
+const plaquesPorPaginaGrande = 4 // 1 coluna, 4 por página A4
+var placaClicadaGrande = null
 
-// Quebra o nome em 3 linhas:
-// linha1 = primeira palavra
-// linha2 = segunda palavra (marca em destaque)
-// linha3 = resto
+function carregarEstilos() {
+    if (!document.getElementById('placas-main-style')) {
+        const link = document.createElement('link')
+        link.id = 'placas-main-style'
+        link.rel = 'stylesheet'
+        link.href = 'style.css'
+        document.head.appendChild(link)
+    }
+}
+
 function quebrarNome(descricao) {
     const palavras = descricao.trim().split(/\s+/)
     if (palavras.length === 1) return { linha1: '', linha2: palavras[0], linha3: '' }
@@ -20,6 +26,7 @@ function quebrarNome(descricao) {
 }
 
 async function carregarPlacasGrande() {
+    carregarEstilos()
     setActive('btn-placas-grande')
     setConteudo(`
         <div class="controls-placas bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-5">
@@ -55,12 +62,12 @@ async function carregarPlacasGrande() {
         <div id="container-placas-g"></div>
     `, 'Placas Grande')
 
-    if (placasBancoGrande.length === 0) {
+    if (plaquesBancoGrande.length === 0) {
         try {
             const res = await fetch('http://localhost:3000/produtos', { headers: authHeaders() })
             const data = await res.json()
             if (Array.isArray(data)) {
-                placasBancoGrande = data.map(p => ({
+                plaquesBancoGrande = data.map(p => ({
                     ...p,
                     preco_venda: parseFloat(p.preco_venda),
                     quantidade_kg_l: parseFloat(p.quantidade_kg_l || 0)
@@ -106,29 +113,24 @@ function montarPlacaGrandeHTML(p) {
             text-align: center;
             overflow: hidden;
         ">
-            <!-- Topo: tipo do produto -->
             <div style="width:100%; text-align:center;">
                 <div data-field="linha1" style="font-size:22px; font-weight:bold; text-transform:uppercase; letter-spacing:2px; white-space:nowrap; overflow:hidden;">${linha1}</div>
             </div>
 
-            <!-- Marca em destaque -->
             <div style="width:100%; text-align:center; flex:1; display:flex; align-items:center; justify-content:center;">
                 <div data-field="linha2" style="font-size:52px; font-weight:900; text-transform:uppercase; line-height:1; letter-spacing:2px; white-space:nowrap; overflow:hidden;">${linha2}</div>
             </div>
 
-            <!-- Complemento -->
             <div style="width:100%; text-align:center;">
                 <div data-field="linha3" style="font-size:16px; font-weight:bold; text-transform:uppercase; white-space:nowrap; overflow:hidden;">${linha3}</div>
             </div>
 
-            <!-- Preço -->
             <div style="width:100%; display:flex; align-items:flex-end; justify-content:center; margin: 4mm 0 2mm;">
-                <span style="font-size:20px; font-weight:bold; margin-bottom:12px; margin-right:3px;">R$</span>
+                <span style="font-size:20px; font-weight:bold; margin-bottom:12px; margin-right:3px; position:relative; top:25px;">R$</span>
                 <span data-field="preco" style="font-size:90px; font-weight:900; line-height:1;">${reais},${cents}</span>
                 <span style="font-size:16px; font-weight:bold; margin-bottom:14px; margin-left:4px;">${uni}</span>
             </div>
 
-            <!-- Rodapé -->
             <div style="width:100%; text-align:center; border-top:1px solid #000; padding-top:3px;">
                 <div data-field="rodape" style="font-size:11px; font-weight:bold;">${rodape}</div>
             </div>
@@ -141,15 +143,15 @@ function renderizarPlacasGrande() {
     if (!container) return
     container.innerHTML = ''
 
-    const totalPaginas = Math.ceil(placasSalvasGrande.length / placasPorPaginaGrande) || 1
+    const totalPaginas = Math.ceil(plaquesSalvasGrande.length / plaquesPorPaginaGrande) || 1
     if (paginaPlacasGrande >= totalPaginas) paginaPlacasGrande = totalPaginas - 1
 
     const contadorEl = document.getElementById('contador-pagina-g')
     if (contadorEl) contadorEl.innerText = `Página ${paginaPlacasGrande + 1} de ${totalPaginas}`
 
-    const lista = placasSalvasGrande.slice(
-        paginaPlacasGrande * placasPorPaginaGrande,
-        (paginaPlacasGrande + 1) * placasPorPaginaGrande
+    const lista = plaquesSalvasGrande.slice(
+        paginaPlacasGrande * plaquesPorPaginaGrande,
+        (paginaPlacasGrande + 1) * plaquesPorPaginaGrande
     )
     if (!lista.length) return
 
@@ -161,7 +163,6 @@ function renderizarPlacasGrande() {
         div.className = 'placa-grande'
         div.innerHTML = montarPlacaGrandeHTML(p)
 
-        // Duplo clique para editar campos
         div.querySelectorAll('[data-field]').forEach(el => {
             el.style.cursor = 'pointer'
             el.ondblclick = () => {
@@ -199,7 +200,6 @@ function renderizarPlacasGrande() {
             }
         })
 
-        // Clique direito para excluir
         div.oncontextmenu = (e) => {
             e.preventDefault()
             placaClicadaGrande = p
@@ -216,29 +216,39 @@ function renderizarPlacasGrande() {
 }
 
 function onExcluirPlacaGrande() {
-    placasSalvasGrande = placasSalvasGrande.filter(p => p !== placaClicadaGrande)
+    plaquesSalvasGrande = plaquesSalvasGrande.filter(p => p !== placaClicadaGrande)
     salvarERenderizarGrande()
 }
 
 function salvarERenderizarGrande() {
-    localStorage.setItem('placasSalvasGrande', JSON.stringify(placasSalvasGrande))
+    localStorage.setItem(`placasSalvasGrande_${getUsuario()}`, JSON.stringify(plaquesSalvasGrande))
     renderizarPlacasGrande()
 }
 
 function mudarPaginaPlacasGrande(v) {
-    const total = Math.ceil(placasSalvasGrande.length / placasPorPaginaGrande)
+    const total = Math.ceil(plaquesSalvasGrande.length / plaquesPorPaginaGrande)
     paginaPlacasGrande = Math.max(0, Math.min(paginaPlacasGrande + v, total - 1))
     renderizarPlacasGrande()
 }
 
 function imprimirTudoGrande() {
+    if (!plaquesSalvasGrande.length) {
+        alert('Nenhuma placa para imprimir.')
+        return
+    }
+    
     const container = document.getElementById('container-placas-g')
     const paginaOriginal = paginaPlacasGrande
     container.innerHTML = ''
-    for (let i = 0; i < placasSalvasGrande.length; i += placasPorPaginaGrande) {
+    
+    for (let i = 0; i < plaquesSalvasGrande.length; i += plaquesPorPaginaGrande) {
         const folha = document.createElement('div')
         folha.className = 'folha-grande'
-        placasSalvasGrande.slice(i, i + placasPorPaginaGrande).forEach(p => {
+        const placasNaFolha = plaquesSalvasGrande.slice(i, i + plaquesPorPaginaGrande)
+        
+        if (!placasNaFolha.length) continue
+        
+        plaquesNaFolha.forEach(p => {
             const div = document.createElement('div')
             div.className = 'placa-grande'
             div.innerHTML = montarPlacaGrandeHTML(p)
@@ -246,11 +256,14 @@ function imprimirTudoGrande() {
         })
         container.appendChild(folha)
     }
+    
     setTimeout(() => {
         window.onafterprint = () => { registrarImpressaoPlacas(); window.onafterprint = null }
         window.print()
-        paginaPlacasGrande = paginaOriginal
-        renderizarPlacasGrande()
+        setTimeout(() => {
+            paginaPlacasGrande = paginaOriginal
+            renderizarPlacasGrande()
+        }, 1000)
     }, 500)
 }
 
@@ -260,12 +273,12 @@ function adicionarPlacaGrande() {
     const quantidade = parseInt(document.getElementById('qtd-input-g').value) || 1
     if (!ean || isNaN(preco)) return
 
-    const prod = placasBancoGrande.find(p => p.ean === ean) || placasBancoGrande.find(p => p.codigo === ean)
+    const prod = plaquesBancoGrande.find(p => p.ean === ean) || plaquesBancoGrande.find(p => p.codigo === ean)
     if (prod) {
         const qtdKgL = parseFloat(prod.quantidade_kg_l)
         const precoUn = qtdKgL > 0 ? (preco / qtdKgL).toFixed(2).replace('.', ',') : prod.preco_venda
         for (let i = 0; i < quantidade; i++) {
-            placasSalvasGrande.push({ ...prod, preco, preco_info: precoUn, id_unico: Date.now() + Math.random() })
+            plaquesSalvasGrande.push({ ...prod, preco, preco_info: precoUn, id_unico: Date.now() + Math.random() })
         }
         salvarERenderizarGrande()
         const novasPlacasG = []
@@ -293,7 +306,7 @@ function onBuscaNomeKeydownGrande(e) {
     if (e.key !== 'Enter') return
     const termo = e.target.value.trim().toUpperCase()
     if (!termo) return
-    const resultados = placasBancoGrande.filter(p =>
+    const resultados = plaquesBancoGrande.filter(p =>
         p.descricao?.toUpperCase().includes(termo) ||
         p.codigo?.includes(termo) || p.ean?.includes(termo)
     ).slice(0, 50)
@@ -338,13 +351,13 @@ function processarImportacaoGrande() {
             const descProcurada = colunas[0].trim().toUpperCase()
             const precoNovo = parseFloat(colunas[1].replace('R$', '').replace(/\s/g, '').replace(',', '.').trim())
             if (!isNaN(precoNovo)) {
-                const prod = placasBancoGrande.find(p => p.descricao?.toUpperCase() === descProcurada) ||
-                             placasBancoGrande.find(p => p.descricao?.toUpperCase().includes(descProcurada))
+                const prod = plaquesBancoGrande.find(p => p.descricao?.toUpperCase() === descProcurada) ||
+                             plaquesBancoGrande.find(p => p.descricao?.toUpperCase().includes(descProcurada))
                 if (prod) {
                     const qtdKgL = parseFloat(prod.quantidade_kg_l)
                     const precoUn = qtdKgL > 0 ? (precoNovo / qtdKgL).toFixed(2).replace('.', ',') : prod.preco_venda
                     for (let i = 0; i < qtdGlobal; i++) {
-                        placasSalvasGrande.push({ ...prod, preco: precoNovo, preco_info: precoUn, id_unico: Date.now() + Math.random() })
+                        plaquesSalvasGrande.push({ ...prod, preco: precoNovo, preco_info: precoUn, id_unico: Date.now() + Math.random() })
                     }
                     contador++
                 } else { itensErros.push(descProcurada) }
@@ -384,7 +397,7 @@ function vincularEventosPlacasGrande() {
     document.getElementById('btn-pag-ant-g').onclick      = () => mudarPaginaPlacasGrande(-1)
     document.getElementById('btn-pag-prox-g').onclick     = () => mudarPaginaPlacasGrande(1)
     document.getElementById('btn-limpar-g').onclick       = () => {
-        if (confirm('Limpar todas as placas grandes?')) { placasSalvasGrande = []; salvarERenderizarGrande() }
+        if (confirm('Limpar todas as placas grandes?')) { plaquesSalvasGrande = []; salvarERenderizarGrande() }
     }
 
     eanInput.addEventListener('keyup', (e) => {

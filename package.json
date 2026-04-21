@@ -1,16 +1,16 @@
 {
   "name": "erp-avanzi",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "",
   "main": "main.js",
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
-    "electron": "electron ."
+    "electron": "electron .",
+    "build": "electron-builder"
   },
   "type": "commonjs",
   "dependencies": {
-    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.3.1",
     "exceljs": "^4.4.0",
@@ -21,7 +21,33 @@
   },
   "devDependencies": {
     "electron": "^40.6.1",
+    "electron-builder": "^26.8.1",
     "nodemon": "^3.1.14",
     "tailwindcss": "^4.2.2"
+  },
+  "build": {
+    "appId": "com.avanzi.erp",
+    "productName": "Super Avanzi ERP",
+    "win": {
+      "target": "nsis"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/.cache",
+      "!**/*.md",
+      "!**/*.map"
+    ],
+    "extraResources": [
+      {
+        "from": ".env",
+        "to": ".env"
+      }
+    ],
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   }
 }

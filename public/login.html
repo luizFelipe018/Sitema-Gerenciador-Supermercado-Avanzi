@@ -3,9 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" 
-    content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https://superavanzi.com.br; connect-src 'self' http://localhost:3000; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;">
+    content="default-src 'self'; script-src 'self' https://cdn.tailwindcss.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https://superavanzi.com.br blob: data: https://images.openfoodfacts.org https://static.openfoodfacts.org; connect-src 'self' http://localhost:3000; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;">
     <title>Supermercado Avanzi</title>
+    <meta name="theme-color" content="#b51515">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Avanzi ERP">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
@@ -18,72 +27,227 @@
         }
     </script>
     <style>
+        :root {
+            --primary: #b51515;
+            --primary-dark: #8a0f0f;
+            --primary-glow: rgba(181, 21, 21, 0.4);
+        }
+
         body {
-            background-image: url('https://superavanzi.com.br/wp-content/uploads/2022/04/Fachada-inicio-768x432.jpg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%);
+            min-height: 100vh;
+            transition: background 0.3s ease;
         }
-        input:focus {
-            outline: none;
-            border-color: #b51515;
-            box-shadow: 0 0 0 3px rgba(181,21,21,0.12);
+
+        body.theme-light {
+            background: linear-gradient(135deg, #f3f4f6 0%, #ffffff 50%, #f3f4f6 100%);
         }
+
+        body.theme-light .glass {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        body.theme-light .input-modern {
+            background: #ffffff;
+            border-color: #e5e7eb;
+            color: #111827;
+        }
+
+        body.theme-light .input-modern::placeholder {
+            color: #9ca3af;
+        }
+
+        body.theme-light .btn-3d {
+            box-shadow: 0 4px 14px -3px rgba(181, 21, 21, 0.25);
+        }
+
+        body.theme-light #erro {
+            color: #b91c1c;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(20px); }
             to   { opacity: 1; transform: translateY(0); }
         }
-        .fade-up { animation: fadeUp 0.45s cubic-bezier(.22,.68,0,1.2) both; }
-        .btn-login { transition: background 0.2s, transform 0.1s; }
-        .btn-login:hover { background: #8a0f0f !important; }
-        .btn-login:active { transform: scale(0.98); }
+        .fade-up { animation: fadeUp 0.5s cubic-bezier(.22,.68,0,1.2) both; }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px var(--primary-glow); }
+            50% { box-shadow: 0 0 40px var(--primary-glow), 0 0 60px rgba(181, 21, 21, 0.2); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .input-modern {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            font-size: 14px;
+            color: #fafafa;
+            transition: all 0.25s ease;
+            outline: none;
+        }
+
+        .input-modern::placeholder {
+            color: #71717a;
+        }
+
+        .input-modern:focus {
+            background: rgba(255,255,255,0.05);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow), 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-3d {
+            background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 12px;
+            padding: 14px 24px;
+            font-weight: 600;
+            color: white;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            box-shadow: 
+                0 4px 14px -3px var(--primary-glow),
+                0 2px 4px -2px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-3d:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 25px -5px var(--primary-glow),
+                0 4px 6px -4px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-3d:hover::before {
+            left: 100%;
+        }
+
+        .btn-3d:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center">
+<body class="min-h-screen flex items-center justify-center relative overflow-hidden">
 
-    <div class="fade-up w-full max-w-sm mx-4 rounded-2xl overflow-hidden shadow-2xl" style="background: rgba(255,255,255,0.94); backdrop-filter: blur(10px);">
+    <!-- Background effects -->
+    <div id="bg-decoration-login" class="absolute inset-0 pointer-events-none">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-red-500/8 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s;"></div>
+    </div>
 
-        <!-- Header vermelho -->
-        <div style="background:#b51515;" class="px-8 py-7 text-center">
-            <p class="text-white text-xs font-semibold tracking-widest uppercase mb-1 opacity-70">Sistema de Gestão</p>
-            <h1 class="text-white text-2xl font-bold tracking-tight">Supermercado Avanzi</h1>
-        </div>
+    <!-- Theme Toggle -->
+    <button id="btn-theme-toggle-login" class="absolute top-5 right-5 w-10 h-10 rounded-xl flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all z-50">
+        <svg id="icon-sol-login" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <svg id="icon-lua-login" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="hidden"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
 
-        <!-- Formulário -->
-        <div class="px-8 py-8 flex flex-col gap-4">
+    <div class="fade-up w-full max-w-sm mx-4 relative z-10">
+        <!-- Card com glassmorphism -->
+        <div class="glass rounded-2xl overflow-hidden" style="box-shadow: 0 25px 80px rgba(0,0,0,0.5), 0 0 40px var(--primary-glow);">
 
-            <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider" for="usuario">Usuário</label>
-                <input
-                    id="usuario"
-                    type="text"
-                    placeholder="Digite seu usuário"
-                    class="border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 bg-white transition-all"
-                />
+            <!-- Header com gradiente -->
+            <div class="px-8 py-8 text-center relative overflow-hidden" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);">
+                <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none"></div>
+                <div class="relative">
+                    <p class="text-white/60 text-xs font-semibold tracking-widest uppercase mb-2">Sistema de Gestão</p>
+                    <h1 class="text-white text-2xl font-bold tracking-tight">Supermercado Avanzi</h1>
+                </div>
             </div>
 
-            <div class="flex flex-col gap-1.5">
-                <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider" for="senha">Senha</label>
-                <input
-                    id="senha"
-                    type="password"
-                    placeholder="Digite sua senha"
-                    class="border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-800 bg-white transition-all"
-                />
+            <!-- Formulário -->
+            <div class="px-8 py-8 flex flex-col gap-5">
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs font-semibold text-white/50 uppercase tracking-wider" for="usuario">Usuário</label>
+                    <input
+                        id="usuario"
+                        type="text"
+                        placeholder="Digite seu usuário"
+                        class="input-modern"
+                    />
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs font-semibold text-white/50 uppercase tracking-wider" for="senha">Senha</label>
+                    <input
+                        id="senha"
+                        type="password"
+                        placeholder="Digite sua senha"
+                        class="input-modern"
+                    />
+                </div>
+
+                <p id="erro" class="text-sm font-medium min-h-[20px] text-red-400"></p>
+
+                <button id="btn-login" class="btn-3d w-full text-base mt-2">
+                    Entrar no Sistema
+                </button>
+
             </div>
 
-            <p id="erro" class="text-sm font-medium min-h-[18px]" style="color:#b51515;"></p>
-
-            <button id="btn-login" class="btn-login text-white font-semibold rounded-lg py-3 text-sm w-full" style="background:#b51515;">
-                Entrar
-            </button>
-
+            <div class="px-8 pb-6 text-center">
+                <p class="text-white/30 text-xs">ERP Avanzi v1.0</p>
+            </div>
         </div>
-
-        <p class="text-center text-gray-300 text-xs pb-5">ERP Avanzi v1.0</p>
     </div>
 
     <script src="login.js"></script>
+    <script src="pwa.js"></script>
+    <script>
+        // Tema toggle no login
+        function initTemaLogin() {
+            const savedTheme = localStorage.getItem('theme') || 'dark'
+            setThemeLogin(savedTheme)
+        }
+        function setThemeLogin(theme) {
+            if (theme === 'light') {
+                document.body.classList.add('theme-light')
+                document.getElementById('icon-sol-login').classList.add('hidden')
+                document.getElementById('icon-lua-login').classList.remove('hidden')
+                document.getElementById('bg-decoration-login').style.display = 'none'
+            } else {
+                document.body.classList.remove('theme-light')
+                document.getElementById('icon-sol-login').classList.remove('hidden')
+                document.getElementById('icon-lua-login').classList.add('hidden')
+                document.getElementById('bg-decoration-login').style.display = 'block'
+            }
+        }
+        document.getElementById('btn-theme-toggle-login').addEventListener('click', () => {
+            const isLight = document.body.classList.contains('theme-light')
+            setThemeLogin(isLight ? 'dark' : 'light')
+            localStorage.setItem('theme', isLight ? 'dark' : 'light')
+        })
+        initTemaLogin()
+    </script>
 </body>
 </html>

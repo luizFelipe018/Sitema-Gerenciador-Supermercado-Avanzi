@@ -1,4 +1,4 @@
-let listaPrecos = JSON.parse(localStorage.getItem('listaPrecos')) || []
+let listaPrecos = JSON.parse(localStorage.getItem(`listaPrecos_${window.getUsuario()}`)) || []
 let bancoProdutos = []
 let filtroAtivo = 'Todos'
 
@@ -241,7 +241,7 @@ function copiarCelula(el, texto) {
     setTimeout(() => { el.style.background = orig; el.title = 'Clique para copiar' }, 800)
 }
 function salvarLista() {
-    localStorage.setItem('listaPrecos', JSON.stringify(listaPrecos))
+    localStorage.setItem(`listaPrecos_${usuario}`, JSON.stringify(listaPrecos))
 }
 
 function atualizarFiltrosBotoes() {

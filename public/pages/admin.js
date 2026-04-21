@@ -1,7 +1,8 @@
 function carregarAdmin() {
-    if (usuarioLogado !== 'luiz') return
+    if (!isAdmin()) return
 
     setActive('btn-admin')
+    const cargoUsuario = window.getCargo()
     setConteudo(`
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
 
@@ -17,6 +18,11 @@ function carregarAdmin() {
                         class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-400" />
                     <input id="admin-senha" type="password" placeholder="Senha"
                         class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-400" />
+                    <select id="admin-cargo" class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-400">
+                        <option value="atendente">Atendente</option>
+                        <option value="gerente">Gerente</option>
+                        <option value="administrador">Administrador</option>
+                    </select>
                     <p id="admin-erro" class="text-xs text-red-500 min-h-[16px]"></p>
                     <p id="admin-ok" class="text-xs text-green-600 min-h-[16px]"></p>
                     <button id="admin-salvar" class="text-white text-sm font-semibold py-2 rounded-lg" style="background:#b51515;">
@@ -31,11 +37,24 @@ function carregarAdmin() {
                     <h3 class="font-semibold text-gray-700">Informações do Sistema</h3>
                 </div>
                 <div class="px-6 py-5 flex flex-col gap-2 text-sm text-gray-500">
-                    <p>👤 Usuário logado: <span class="font-semibold text-gray-700">${usuarioLogado}</span></p>
-                    <p>🔑 Perfil: <span class="font-semibold text-gray-700">Administrador</span></p>
+                    <p>👤 Usuário logado: <span class="font-semibold text-gray-700">${getUsuario()}</span></p>
+                    <p>🔑 Perfil: <span class="font-semibold text-gray-700">${cargoUsuario === 'administrador' ? 'Administrador' : cargoUsuario === 'gerente' ? 'Gerente' : 'Atendente'}</span></p>
                     <p>🗄️ Banco: <span class="font-semibold text-gray-700">supermercado</span></p>
                     <p>🌐 Servidor: <span class="font-semibold text-gray-700">localhost:3000</span></p>
                 </div>
+            </div>
+        </div>
+
+        <!-- Gerenciar Usuários -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-5">
+            <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="font-semibold text-gray-700">Gerenciar Usuários</h3>
+                <button id="btn-recargar-usuarios" class="px-4 py-1.5 text-white text-xs font-semibold rounded-lg" style="background:#16a34a;">
+                    🔄 Atualizar
+                </button>
+            </div>
+            <div class="px-6 py-5">
+                <div id="lista-usuarios"></div>
             </div>
         </div>
 
@@ -187,11 +206,16 @@ function carregarAdmin() {
 // ── EVENTOS ADMIN ─────────────────────────────────────
 function vincularEventosAdmin() {
 
+    // Carregar lista de usuários
+    carregarListaUsuarios()
+    document.getElementById('btn-recargar-usuarios')?.addEventListener('click', carregarListaUsuarios)
+
     // Cadastrar usuário
     document.getElementById('admin-salvar').onclick = async () => {
         const nome    = document.getElementById('admin-nome').value.trim()
         const usuario = document.getElementById('admin-usuario').value.trim()
         const senha   = document.getElementById('admin-senha').value
+        const cargo   = document.getElementById('admin-cargo').value
         const erroEl  = document.getElementById('admin-erro')
         const okEl    = document.getElementById('admin-ok')
         erroEl.textContent = ''; okEl.textContent = ''
@@ -199,7 +223,7 @@ function vincularEventosAdmin() {
         try {
             const res = await fetch('http://localhost:3000/usuarios', {
                 method: 'POST', headers: authHeaders(),
-                body: JSON.stringify({ nome, usuario, senha })
+                body: JSON.stringify({ nome, usuario, senha, cargo })
             })
             const data = await res.json()
             if (res.ok) {
@@ -207,6 +231,8 @@ function vincularEventosAdmin() {
                 document.getElementById('admin-nome').value = ''
                 document.getElementById('admin-usuario').value = ''
                 document.getElementById('admin-senha').value = ''
+                document.getElementById('admin-cargo').value = 'atendente'
+                carregarListaUsuarios()
             } else { erroEl.textContent = data.error ?? 'Erro ao cadastrar.' }
         } catch { erroEl.textContent = 'Erro ao conectar.' }
     }
@@ -938,4 +964,121 @@ async function salvarConfigPastaPratos() {
             msgEl.style.color = '#dc2626'; msgEl.textContent = data.error ?? 'Erro ao salvar.'
         }
     } catch { msgEl.style.color = '#dc2626'; msgEl.textContent = 'Erro ao conectar.' }
+}
+
+// ── GERENCIAR USUÁRIOS ───────────────────────────────
+async function carregarListaUsuarios() {
+    const lista = document.getElementById('lista-usuarios')
+    if (!lista) return
+
+    lista.innerHTML = `<p class="text-sm text-gray-400">Carregando...</p>`
+
+    try {
+        const res = await fetch('http://localhost:3000/usuarios', { headers: authHeaders() })
+        const usuarios = await res.json()
+
+        if (!Array.isArray(usuarios)) {
+            lista.innerHTML = `<p class="text-sm text-red-400">Erro ao carregar.</p>`
+            return
+        }
+
+        if (usuarios.length === 0) {
+            lista.innerHTML = `<p class="text-sm text-gray-400">Nenhum usuário cadastrado.</p>`
+            return
+        }
+
+        const usuarioLogado = getUsuario()
+
+        lista.innerHTML = `
+            <div class="border border-gray-100 rounded-lg overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead><tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                        <th class="px-4 py-2 text-left font-semibold">Nome</th>
+                        <th class="px-4 py-2 text-left font-semibold">Usuário</th>
+                        <th class="px-4 py-2 text-left font-semibold">Cargo</th>
+                        <th class="px-4 py-2 text-center font-semibold">Ações</th>
+                    </tr></thead>
+                    <tbody class="divide-y divide-gray-100">
+                        ${usuarios.map(u => {
+                            const badgeBg = u.cargo === 'administrador' ? '#fee2e2' : u.cargo === 'gerente' ? '#fef3c7' : '#f3f4f6'
+                            const badgeColor = u.cargo === 'administrador' ? '#b91c1c' : u.cargo === 'gerente' ? '#92400e' : '#374151'
+                            const isLogado = u.usuario === usuarioLogado
+                            return `
+                                <tr>
+                                    <td class="px-4 py-3 text-gray-800 font-medium">${u.nome}</td>
+                                    <td class="px-4 py-3 text-gray-500 font-mono text-xs">${u.usuario}</td>
+                                    <td class="px-4 py-3">
+                                        <select class="cargo-select text-xs font-semibold px-2 py-1 rounded-full border-0 cursor-pointer"
+                                            data-id="${u.id}" data-cargo-atual="${u.cargo}"
+                                            style="background:${badgeBg};color:${badgeColor};">
+                                            <option value="atendente" ${u.cargo === 'atendente' ? 'selected' : ''}>Atendente</option>
+                                            <option value="gerente" ${u.cargo === 'gerente' ? 'selected' : ''}>Gerente</option>
+                                            <option value="administrador" ${u.cargo === 'administrador' ? 'selected' : ''}>Administrador</option>
+                                        </select>
+                                    </td>
+                                    <td class="px-4 py-3 text-center">
+                                        ${!isLogado ? `<button class="btn-excluir-usuario text-xs font-semibold text-white px-3 py-1 rounded-lg bg-red-500 hover:bg-red-600" data-id="${u.id}" data-nome="${u.nome}">Excluir</button>` : '<span class="text-xs text-gray-400">(você)</span>'}
+                                    </td>
+                                </tr>
+                            `
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `
+
+        // Evento: mudar cargo
+        lista.querySelectorAll('.cargo-select').forEach(select => {
+            select.addEventListener('change', async (e) => {
+                const id = e.target.dataset.id
+                const novoCargo = e.target.value
+                if (!confirm(`Alterar cargo para "${novoCargo}"?`)) {
+                    e.target.value = e.target.dataset.cargoAtual
+                    return
+                }
+                try {
+                    const res = await fetch(`http://localhost:3000/usuarios/${id}/cargo`, {
+                        method: 'PUT',
+                        headers: authHeaders(),
+                        body: JSON.stringify({ cargo: novoCargo })
+                    })
+                    if (res.ok) {
+                        e.target.dataset.cargoAtual = novoCargo
+                        const bg = novoCargo === 'administrador' ? '#fee2e2' : novoCargo === 'gerente' ? '#fef3c7' : '#f3f4f6'
+                        const color = novoCargo === 'administrador' ? '#b91c1c' : novoCargo === 'gerente' ? '#92400e' : '#374151'
+                        e.target.style.background = bg
+                        e.target.style.color = color
+                        alert('Cargo atualizado!')
+                    } else {
+                        const data = await res.json()
+                        alert(data.error || 'Erro ao atualizar.')
+                        e.target.value = e.target.dataset.cargoAtual
+                    }
+                } catch { alert('Erro ao conectar.'); e.target.value = e.target.dataset.cargoAtual }
+            })
+        })
+
+        // Evento: excluir usuário
+        lista.querySelectorAll('.btn-excluir-usuario').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = e.target.dataset.id
+                const nome = e.target.dataset.nome
+                if (!confirm(`Excluir usuário "${nome}"? Esta ação não pode ser desfeita.`)) return
+                try {
+                    const res = await fetch(`http://localhost:3000/usuarios/${id}`, {
+                        method: 'DELETE', headers: authHeaders()
+                    })
+                    if (res.ok) {
+                        carregarListaUsuarios()
+                    } else {
+                        const data = await res.json()
+                        alert(data.error || 'Erro ao excluir.')
+                    }
+                } catch { alert('Erro ao conectar.') }
+            })
+        })
+
+    } catch {
+        lista.innerHTML = `<p class="text-sm text-red-400">Erro ao conectar.</p>`
+    }
 }

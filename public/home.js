@@ -2,18 +2,56 @@
 const token = localStorage.getItem('token')
 if (!token) window.location.href = 'login.html'
 
+// ── TEMA CLARO/ESCURO ──────────────────────────────
+function initTema() {
+    const savedTheme = localStorage.getItem('theme') || 'dark'
+    setTheme(savedTheme)
+}
+
+function setTheme(theme) {
+    if (theme === 'light') {
+        document.body.classList.add('theme-light')
+        document.getElementById('icon-sol').classList.add('hidden')
+        document.getElementById('icon-lua').classList.remove('hidden')
+        document.getElementById('bg-decoration').style.display = 'none'
+    } else {
+        document.body.classList.remove('theme-light')
+        document.getElementById('icon-sol').classList.remove('hidden')
+        document.getElementById('icon-lua').classList.add('hidden')
+        document.getElementById('bg-decoration').style.display = 'block'
+    }
+    localStorage.setItem('theme', theme)
+}
+
+function toggleTheme() {
+    const isLight = document.body.classList.contains('theme-light')
+    setTheme(isLight ? 'dark' : 'light')
+}
+
+document.getElementById('btn-theme-toggle')?.addEventListener('click', toggleTheme)
+
 function parseJwt(t) {
     try { return JSON.parse(atob(t.split('.')[1])) } catch { return null }
 }
 const payload = parseJwt(token)
 const usuarioLogado = payload?.usuario ?? ''
 
+// getUsuario já definido em shared.js (carregado antes dos page scripts)
+
 // ── UTILITÁRIOS GLOBAIS ────────────────────────────────
 function setActive(id) {
     document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'))
     document.querySelectorAll('.submenu-btn').forEach(b => b.classList.remove('active'))
+    document.querySelectorAll('.submenu3-btn').forEach(b => b.classList.remove('active'))
     const el = document.getElementById(id)
-    if (el) el.classList.add('active')
+    if (el) {
+        el.classList.add('active')
+        // Se for submenu-btn, abre o submenu pai
+        if (el.classList.contains('submenu-btn') || el.classList.contains('submenu3-btn')) {
+            const submenu = el.closest('.submenu')
+            if (submenu) submenu.classList.add('open')
+        }
+    }
 }
 
 function setConteudo(html, titulo) {
@@ -35,13 +73,43 @@ function fecharModais() {
     document.getElementById('log-erros').style.display = 'none'
 }
 
-// ── SETUP INICIAL ─────────────────────────────────────
-document.getElementById('data-atual').textContent = new Date().toLocaleDateString('pt-BR', {
-    weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
+function fecharModaisAmarela() {
+    document.getElementById('modal-busca-am').style.display = 'none'
+    document.getElementById('modal-import-am').style.display = 'none'
+    document.getElementById('log-erros-am').style.display = 'none'
+}
+
+function fecharModaisGrande() {
+    document.getElementById('modal-busca-g').style.display = 'none'
+    document.getElementById('modal-import-g').style.display = 'none'
+    document.getElementById('log-erros-g').style.display = 'none'
+}
+
+// ── FECHAR MODAIS ─────────────────────────────────────
+document.getElementById('fechar-busca').onclick = () => { document.getElementById('modal-busca').style.display = 'none' }
+document.getElementById('fechar-import').onclick = () => { document.getElementById('modal-import').style.display = 'none' }
+document.getElementById('fechar-busca-am').onclick = () => { document.getElementById('modal-busca-am').style.display = 'none' }
+document.getElementById('fechar-import-am').onclick = () => { document.getElementById('modal-import-am').style.display = 'none' }
+document.getElementById('fechar-busca-g').onclick = () => { document.getElementById('modal-busca-g').style.display = 'none' }
+document.getElementById('fechar-import-g').onclick = () => { document.getElementById('modal-import-g').style.display = 'none' }
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        fecharModais()
+        fecharModaisAmarela()
+        fecharModaisGrande()
+        document.getElementById('contextMenu').style.display = 'none'
+        if (popupBuscaAberto) fecharPopupBuscaGlobal()
+    }
 })
 const nomeUsuario = localStorage.getItem('usuarioNome')
-if (nomeUsuario) document.getElementById('nomeUsuario').textContent = `👤 ${nomeUsuario}`
-if (usuarioLogado === 'luiz') document.getElementById('btn-admin').style.display = 'flex'
+if (nomeUsuario) {
+    document.getElementById('nomeUsuario').textContent = nomeUsuario
+    const iniciais = nomeUsuario.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase()
+    document.getElementById('user-avatar').textContent = iniciais
+    document.getElementById('user-avatar-header').textContent = iniciais
+}
+if (isAdmin()) document.getElementById('btn-admin').style.display = 'flex'
 
 // ── FUNÇÕES GLOBAIS DE PLACAS ─────────────────────────
 window._ultimasPlacasGeradas = []
@@ -170,7 +238,15 @@ document.getElementById('btn-inicio').addEventListener('click', () => {
     btnPlacasMenu.classList.remove('open')
     submenuOfertas.classList.remove('open')
     btnOfertasMenu.classList.remove('open')
-    carregarInicio()
+    carregarDashboard()
+})
+
+document.getElementById('btn-dashboard').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuOfertas.classList.remove('open')
+    btnOfertasMenu.classList.remove('open')
+    carregarDashboard()
 })
 
 document.getElementById('btn-produtos').addEventListener('click', () => {
@@ -282,6 +358,54 @@ document.getElementById('btn-imagens').addEventListener('click', () => {
     carregarImagens()
 })
 
+document.getElementById('btn-busca-rapida').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuOfertas.classList.remove('open')
+    btnOfertasMenu.classList.remove('open')
+    carregarBuscaRapida()
+})
+
+document.getElementById('btn-gerenciador-placas').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuOfertas.classList.remove('open')
+    btnOfertasMenu.classList.remove('open')
+    carregarGerenciadorPlacas()
+})
+
+document.getElementById('btn-importar-cardapio').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuOfertas.classList.remove('open')
+    btnOfertasMenu.classList.remove('open')
+    carregarImportarCardapio()
+})
+
+document.getElementById('btn-monitor-imagens').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuOfertas.classList.remove('open')
+    btnOfertasMenu.classList.remove('open')
+    carregarMonitorImagens()
+})
+
+document.getElementById('btn-cotacao').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuOfertas.classList.remove('open')
+    btnOfertasMenu.classList.remove('open')
+    carregarCotacao()
+})
+
+document.getElementById('btn-dashboard-vendas').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuOfertas.classList.remove('open')
+    btnOfertasMenu.classList.remove('open')
+    carregarDashboardVendas()
+})
+
 document.getElementById('btn-admin').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
@@ -291,8 +415,13 @@ document.getElementById('btn-admin').addEventListener('click', () => {
 document.getElementById('btn-logout').addEventListener('click', () => {
     localStorage.removeItem('token')
     localStorage.removeItem('usuarioNome')
+    localStorage.removeItem('usuario')
+    localStorage.removeItem('usuarioCargo')
     window.location.href = 'login.html'
 })
+
+// ── PERMISSIONS ─────────────────────────────────────
+aplicarPermissoesMenu()
 
 // ── MENU CONTEXTO (excluir placa) ─────────────────────
 document.getElementById('contextMenu').onclick = () => {
@@ -311,13 +440,40 @@ document.addEventListener('click', (e) => {
     if (!e.target.closest('.placa') && !e.target.closest('.placa-amarela')) {
         document.getElementById('contextMenu').style.display = 'none'
     }
+    if (popupBuscaAberto && !e.target.closest('.modal-box')) {
+        fecharPopupBuscaGlobal()
+    }
+})
+
+document.getElementById('btn-global-search')?.addEventListener('click', () => {
+    abrirPopupBuscaGlobal()
+})
+
+// Fechar modais ao clicar no overlay
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            overlay.style.display = 'none'
+        }
+    })
 })
 
 // ── FECHAR MODAIS ─────────────────────────────────────
-document.getElementById('fechar-busca').onclick = fecharModais
-document.getElementById('fechar-import').onclick = fecharModais
-document.getElementById('fechar-busca-am').onclick = fecharModaisAmarela
-document.getElementById('fechar-import-am').onclick = fecharModaisAmarela
+document.getElementById('fechar-busca').onclick = () => { document.getElementById('modal-busca').style.display = 'none' }
+document.getElementById('fechar-import').onclick = () => { document.getElementById('modal-import').style.display = 'none' }
+document.getElementById('fechar-busca-am').onclick = () => { document.getElementById('modal-busca-am').style.display = 'none' }
+document.getElementById('fechar-import-am').onclick = () => { document.getElementById('modal-import-am').style.display = 'none' }
+document.getElementById('fechar-busca-g').onclick = () => { document.getElementById('modal-busca-g').style.display = 'none' }
+document.getElementById('fechar-import-g').onclick = () => { document.getElementById('modal-import-g').style.display = 'none' }
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        fecharModais()
+        fecharModaisAmarela()
+        fecharModaisGrande()
+        document.getElementById('contextMenu').style.display = 'none'
+    }
+})
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
@@ -329,4 +485,110 @@ document.addEventListener('keydown', (e) => {
 })
 
 // ── INÍCIO ────────────────────────────────────────────
+initTema()
+document.getElementById('data-atual').textContent = new Date().toLocaleDateString('pt-BR', {
+    weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
+})
 carregarInicio()
+
+// ── POPUP BUSCA RÁPIDA GLOBAL (Ctrl+Tab) ───────────
+let popupBuscaAberto = false
+let bancoBuscaGlobal = []
+
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 'Tab') {
+        e.preventDefault()
+        abrirPopupBuscaGlobal()
+    }
+    if (e.key === 'Escape' && popupBuscaAberto) {
+        fecharPopupBuscaGlobal()
+    }
+})
+
+function abrirPopupBuscaGlobal() {
+    popupBuscaAberto = true
+    document.getElementById('popupBuscaGlobal').style.display = 'flex'
+    document.getElementById('input-busca-global').value = ''
+    document.getElementById('resultado-busca-global').innerHTML = '<div class="text-center text-gray-400 py-10 text-sm">Digite para buscar...</div>'
+    document.getElementById('input-busca-global').focus()
+    carregarBancoBusca()
+}
+
+function fecharPopupBuscaGlobal() {
+    popupBuscaAberto = false
+    document.getElementById('popupBuscaGlobal').style.display = 'none'
+}
+
+async function carregarBancoBusca() {
+    if (bancoBuscaGlobal.length > 0) return
+    try {
+        const res = await fetch('http://localhost:3000/produtos', { headers: authHeaders() })
+        bancoBuscaGlobal = await res.json()
+    } catch { console.warn('Erro ao carregar banco') }
+}
+
+let timerBuscaGlobal = null
+document.getElementById('input-busca-global').addEventListener('input', (e) => {
+    clearTimeout(timerBuscaGlobal)
+    timerBuscaGlobal = setTimeout(() => executarBuscaGlobal(e.target.value.trim()), 200)
+})
+
+document.getElementById('input-busca-global').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        clearTimeout(timerBuscaGlobal)
+        executarBuscaGlobal(e.target.value.trim(), true)
+    }
+})
+
+function executarBuscaGlobal(termo, selecionarPrimeiro = false) {
+    const container = document.getElementById('resultado-busca-global')
+    if (!termo) {
+        container.innerHTML = '<div class="text-center text-white/30 py-12 text-sm">Digite para buscar...</div>'
+        return
+    }
+
+    const q = termo.toUpperCase()
+    const resultados = bancoBuscaGlobal.filter(p =>
+        p.descricao?.toUpperCase().includes(q) ||
+        p.codigo?.includes(q) ||
+        p.ean?.includes(q)
+    ).slice(0, 20)
+
+    if (!resultados.length) {
+        container.innerHTML = '<div class="text-center text-white/30 py-12 text-sm">Nenhum resultado encontrado</div>'
+        return
+    }
+
+    container.innerHTML = resultados.map((p, i) => `
+        <div class="item-busca-global cursor-pointer rounded-xl p-4 mb-2 flex items-center justify-between transition-all hover:scale-[1.01] hover:bg-white/5"
+            data-codigo="${p.codigo}" data-desc="${p.descricao}" data-ean="${p.ean || ''}" data-preco="${p.preco_venda || ''}"
+            style="${selecionarPrimeiro && i === 0 ? 'background:linear-gradient(135deg, var(--primary), var(--primary-dark)); border:none;' : 'background:rgba(255,255,255,0.03); border:1px solid var(--glass-border);'}">
+            <div class="flex-1 min-w-0">
+                <div class="font-semibold text-sm truncate ${selecionarPrimeiro && i === 0 ? 'text-white' : 'text-white'}">${p.descricao}</div>
+                <div class="text-xs mt-1 ${selecionarPrimeiro && i === 0 ? 'text-white/70' : 'text-white/40'}">${p.codigo} • ${p.ean || 'sem EAN'}</div>
+            </div>
+            <div class="font-bold text-lg ml-4 ${selecionarPrimeiro && i === 0 ? 'text-white' : 'text-red-400'}">
+                R$ ${parseFloat(p.preco_venda || 0).toFixed(2).replace('.', ',')}
+            </div>
+        </div>
+    `).join('')
+
+    container.querySelectorAll('.item-busca-global').forEach(item => {
+        item.onclick = () => {
+            const codigo = item.getAttribute('data-codigo')
+            const desc = item.getAttribute('data-desc')
+            const preco = item.getAttribute('data-preco')
+            fecharPopupBuscaGlobal()
+            // Vai para página de placas e preenche
+            abrirSubmenuPlacas()
+            document.getElementById('submenu-modelos').classList.add('open')
+            document.getElementById('btn-modelos-menu').classList.add('open2')
+            carregarPlacas()
+            setTimeout(() => {
+                document.getElementById('ean-input').value = codigo
+                document.getElementById('preco-input').value = preco
+                document.getElementById('preco-input').focus()
+            }, 150)
+        }
+    })
+}

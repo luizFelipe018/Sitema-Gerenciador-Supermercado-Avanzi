@@ -163,7 +163,7 @@ function montarArte(pizzas, dataFormatada) {
             line-height: 1.25;
             white-space: nowrap;
         `
-        linha.innerHTML = `${p.nome} <span style="color:#f9c775;">| R$ ${p.preco} UN</span>`
+        linha.innerHTML = `${p.nome} <span style="color:#f9c775 !important;">| R$ ${p.preco} UN</span>`
         areaTexto.appendChild(linha)
     })
     arte.appendChild(areaTexto)
