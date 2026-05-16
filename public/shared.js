@@ -46,7 +46,6 @@ window.PERMISSOES = {
     formatos: ['gerente', 'administrador'],
     atalhos: ['gerente', 'administrador'],
     textos: ['gerente', 'administrador'],
-    monitorImagens: ['gerente', 'administrador'],
     capitalize: ['gerente', 'administrador'],
     
     // Dashboard - gerente e admin

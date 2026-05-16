@@ -1,8 +1,9 @@
 var plaquesBancoGrande = []
-var plaquesSalvasGrande = JSON.parse(localStorage.getItem(`placasSalvasGrande_${window.getUsuario()}`)) || []
+var plaquesSalvasGrande = []
 var paginaPlacasGrande = 0
-const plaquesPorPaginaGrande = 4 // 1 coluna, 4 por página A4
+const plaquesPorPaginaGrande = 4
 var placaClicadaGrande = null
+var _salvandoGrande = false
 
 function carregarEstilos() {
     if (!document.getElementById('placas-main-style')) {
@@ -75,6 +76,19 @@ async function carregarPlacasGrande() {
             }
         } catch { console.error('Erro ao carregar banco') }
     }
+
+    try {
+        const res = await fetch('http://localhost:3000/registros-placas?tipo=grande', { headers: authHeaders() })
+        const data = await res.json()
+        if (Array.isArray(data)) {
+            plaquesSalvasGrande = data.map(p => ({
+                ...p,
+                preco: parseFloat(p.preco),
+                quantidade_kg_l: parseFloat(p.quantidade_kg_l || 0),
+                id_unico: Date.now() + Math.random()
+            }))
+        }
+    } catch { console.error('Erro ao carregar placas grandes salvas') }
 
     renderizarPlacasGrande()
     vincularEventosPlacasGrande()
@@ -173,7 +187,7 @@ function renderizarPlacasGrande() {
                 el.replaceWith(input)
                 input.focus(); input.select()
 
-                const fechar = () => {
+                const fechar = async () => {
                     const v = input.value.trim()
                     if (!v) { renderizarPlacasGrande(); return }
                     if (field === 'preco') {
@@ -193,7 +207,7 @@ function renderizarPlacasGrande() {
                         const novoResto = v.toUpperCase().split(/\s+/)
                         p.descricao = [...palavras.slice(0, 2), ...novoResto].join(' ')
                     }
-                    salvarERenderizarGrande()
+                    await salvarERenderizarGrande()
                 }
                 input.onkeydown = (ev) => { if (ev.key === 'Enter') fechar(); if (ev.key === 'Escape') renderizarPlacasGrande() }
                 input.onblur = fechar
@@ -215,13 +229,24 @@ function renderizarPlacasGrande() {
     container.appendChild(folha)
 }
 
-function onExcluirPlacaGrande() {
-    plaquesSalvasGrande = plaquesSalvasGrande.filter(p => p !== placaClicadaGrande)
-    salvarERenderizarGrande()
+async function onExcluirPlacaGrande() {
+    const idx = plaquesSalvasGrande.indexOf(placaClicadaGrande)
+    if (idx === -1) return
+    plaquesSalvasGrande.splice(idx, 1)
+    await salvarERenderizarGrande()
 }
 
-function salvarERenderizarGrande() {
-    localStorage.setItem(`placasSalvasGrande_${getUsuario()}`, JSON.stringify(plaquesSalvasGrande))
+async function salvarERenderizarGrande() {
+    if (_salvandoGrande) return
+    _salvandoGrande = true
+    try {
+        await fetch('http://localhost:3000/registros-placas', {
+            method: 'POST',
+            headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tipo: 'grande', placas: plaquesSalvasGrande })
+        })
+    } catch (e) { console.error('Erro ao salvar placas grandes:', e) }
+    _salvandoGrande = false
     renderizarPlacasGrande()
 }
 
@@ -267,7 +292,7 @@ function imprimirTudoGrande() {
     }, 500)
 }
 
-function adicionarPlacaGrande() {
+async function adicionarPlacaGrande() {
     const ean = document.getElementById('ean-input-g').value.trim()
     const preco = parseFloat(document.getElementById('preco-input-g').value)
     const quantidade = parseInt(document.getElementById('qtd-input-g').value) || 1
@@ -280,7 +305,7 @@ function adicionarPlacaGrande() {
         for (let i = 0; i < quantidade; i++) {
             plaquesSalvasGrande.push({ ...prod, preco, preco_info: precoUn, id_unico: Date.now() + Math.random() })
         }
-        salvarERenderizarGrande()
+        await salvarERenderizarGrande()
         const novasPlacasG = []
         for (let i = 0; i < quantidade; i++) {
             novasPlacasG.push({ descricao: prod.descricao, codigo: prod.codigo, ean: prod.ean, preco, tipo_placa: 'grande' })
@@ -336,7 +361,7 @@ function onBuscaNomeKeydownGrande(e) {
     })
 }
 
-function processarImportacaoGrande() {
+async function processarImportacaoGrande() {
     const texto = document.getElementById('import-texto-g').value.trim()
     if (!texto) return
     const qtdGlobal = parseInt(document.getElementById('qtd-input-g')?.value) || 1
@@ -370,7 +395,7 @@ function processarImportacaoGrande() {
         itensErros.forEach(item => { const li = document.createElement('li'); li.textContent = item; listaErros.appendChild(li) })
         alert(`${contador} placas geradas. ${itensErros.length} item(ns) não encontrado(s).`)
     } else { fecharModaisGrande() }
-    salvarERenderizarGrande()
+    await salvarERenderizarGrande()
     document.getElementById('import-texto-g').value = ''
 }
 

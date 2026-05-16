@@ -1,19 +1,11 @@
 
 
 let placasBanco = []
-let placasSalvas = JSON.parse(localStorage.getItem(`placasSalvas_${window.getUsuario()}`)) || []
+let placasSalvas = []
 let paginaPlacas = 0
 const placasPorPagina = 10
 let placaClicada = null
-
-function getStorageKey(tipo) {
-    const usuario = localStorage.getItem('usuario') || 'default'
-    return `placasSalvas_${tipo}_${usuario}`
-}
-
-function salvarPlacas(tipo, dados) {
-    localStorage.setItem(getStorageKey(tipo), JSON.stringify(dados))
-}
+let _salvandoPlacas = false
 
 
 function carregarEstilos() {
@@ -65,7 +57,6 @@ async function carregarPlacas() {
         <div id="container-placas"></div>
     `, 'Placas de Preço')
 
-    // Carrega banco se ainda não carregou
     if (placasBanco.length === 0) {
         try {
             const res = await fetch('http://localhost:3000/produtos', { headers: authHeaders() })
@@ -79,6 +70,19 @@ async function carregarPlacas() {
             }
         } catch { console.error('Erro ao carregar banco de placas') }
     }
+
+    try {
+        const res = await fetch('http://localhost:3000/registros-placas?tipo=branca', { headers: authHeaders() })
+        const data = await res.json()
+        if (Array.isArray(data)) {
+            placasSalvas = data.map(p => ({
+                ...p,
+                preco: parseFloat(p.preco),
+                quantidade_kg_l: parseFloat(p.quantidade_kg_l || 0),
+                id_unico: Date.now() + Math.random()
+            }))
+        }
+    } catch { console.error('Erro ao carregar placas salvas') }
 
     renderizarPlacas()
     vincularEventosPlacas()
@@ -126,7 +130,7 @@ function vincularEventosPlacas() {
     document.getElementById('input-busca-nome').addEventListener('keydown', onBuscaNomeKeydown)
 }
 
-function adicionarPlaca() {
+async function adicionarPlaca() {
     const ean = document.getElementById('ean-input').value.trim()
     const preco = parseFloat(document.getElementById('preco-input').value)
     const quantidade = parseInt(document.getElementById('qtd-input').value) || 1
@@ -139,8 +143,7 @@ function adicionarPlaca() {
         for (let i = 0; i < quantidade; i++) {
             placasSalvas.push({ ...prod, preco, preco_info: precoUn, id_unico: Date.now() + Math.random() })
         }
-        salvarERenderizar()
-        // Registra no log
+        await salvarERenderizar()
         const novasPlacas = []
         for (let i = 0; i < quantidade; i++) {
             novasPlacas.push({ descricao: prod.descricao, codigo: prod.codigo, ean: prod.ean, preco, tipo_placa: 'branca' })
@@ -196,7 +199,7 @@ function renderizarPlacas() {
                 h.replaceWith(input)
                 input.focus()
 
-                const fechar = () => {
+                const fechar = async () => {
                     const v = input.value.trim()
                     if (v !== '') {
                         if (field === 'preco') {
@@ -206,9 +209,9 @@ function renderizarPlacas() {
                         } else if (field === 'ean') { p.ean = v }
                         else if (field === 'info') { p.preco_info = v }
                         else if (field === 'descricao') { p.descricao = v.toUpperCase() }
-                        salvarERenderizar()
+                        await salvarERenderizar()
                     } else {
-                        if (field === 'ean') { p.ean = ''; salvarERenderizar() } else { renderizarPlacas() }
+                        if (field === 'ean') { p.ean = ''; await salvarERenderizar() } else { renderizarPlacas() }
                     }
                 }
                 input.onkeydown = (ev) => { if (ev.key === 'Enter') fechar(); if (ev.key === 'Escape') renderizarPlacas() }
@@ -230,13 +233,24 @@ function renderizarPlacas() {
     container.appendChild(folha)
 }
 
-function onExcluirPlaca() {
-    placasSalvas = placasSalvas.filter(p => p !== placaClicada)
-    salvarERenderizar()
+async function onExcluirPlaca() {
+    const idx = placasSalvas.indexOf(placaClicada)
+    if (idx === -1) return
+    placasSalvas.splice(idx, 1)
+    await salvarERenderizar()
 }
 
-function salvarERenderizar() {
-    localStorage.setItem(`placasSalvas_${usuario}`, JSON.stringify(placasSalvas))
+async function salvarERenderizar() {
+    if (_salvandoPlacas) return
+    _salvandoPlacas = true
+    try {
+        await fetch('http://localhost:3000/registros-placas', {
+            method: 'POST',
+            headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tipo: 'branca', placas: placasSalvas })
+        })
+    } catch (e) { console.error('Erro ao salvar placas:', e) }
+    _salvandoPlacas = false
     renderizarPlacas()
 }
 
@@ -324,7 +338,7 @@ function onBuscaNomeKeydown(e) {
     })
 }
 
-function processarImportacao() {
+async function processarImportacao() {
     const texto = document.getElementById('import-texto').value.trim()
     if (!texto) return
     const qtdGlobal = parseInt(document.getElementById('qtd-input')?.value) || 1
@@ -360,6 +374,6 @@ function processarImportacao() {
     } else {
         fecharModais()
     }
-    salvarERenderizar()
+    await salvarERenderizar()
     document.getElementById('import-texto').value = ''
 }

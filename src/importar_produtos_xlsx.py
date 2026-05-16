@@ -9,7 +9,10 @@ def to_decimal(val):
     if val is None or val == '' or val == '-':
         return 0
     try:
-        return float(str(val).replace('.', '').replace(',', '.'))
+        s = str(val).strip()
+        if ',' in s:
+            s = s.replace('.', '').replace(',', '.')
+        return float(s)
     except:
         return 0
 

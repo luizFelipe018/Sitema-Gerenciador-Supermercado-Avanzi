@@ -382,13 +382,7 @@ document.getElementById('btn-importar-cardapio').addEventListener('click', () =>
     carregarImportarCardapio()
 })
 
-document.getElementById('btn-monitor-imagens').addEventListener('click', () => {
-    submenuPlacas.classList.remove('open')
-    btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
-    carregarMonitorImagens()
-})
+
 
 document.getElementById('btn-cotacao').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
@@ -425,7 +419,7 @@ aplicarPermissoesMenu()
 
 // ── MENU CONTEXTO (excluir placa) ─────────────────────
 document.getElementById('contextMenu').onclick = () => {
-    const abaAtiva = document.querySelector('.submenu-btn.active')?.id
+    const abaAtiva = document.querySelector('.submenu-btn.active, .submenu3-btn.active')?.id
     if (abaAtiva === 'btn-placas-amarela') {
         onExcluirPlacaAmarela()
     } else if (abaAtiva === 'btn-placas-grande') {

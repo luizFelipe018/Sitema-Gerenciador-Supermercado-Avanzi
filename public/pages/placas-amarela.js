@@ -1,9 +1,10 @@
 var plaquesBancoAmarela = []
-var plaquesSalvasAmarela = JSON.parse(localStorage.getItem(`placasSalvasAmarela_${window.getUsuario()}`)) || []
+var plaquesSalvasAmarela = []
 var paginaPlacasAmarela = 0
-const plaquesPorPaginaAmarela = 8  // 4 linhas x 2 colunas = 8
+const plaquesPorPaginaAmarela = 8
 var placaClicadaAmarela = null
-var imprimindo = false;
+var imprimindo = false
+var _salvandoAmarela = false
 
 function carregarEstilos() {
     if (!document.getElementById('placas-main-style')) {
@@ -66,6 +67,19 @@ async function carregarPlacasAmarela() {
         } catch { console.error('Erro ao carregar banco de placas amarelas') }
     }
 
+    try {
+        const res = await fetch('http://localhost:3000/registros-placas?tipo=amarela', { headers: authHeaders() })
+        const data = await res.json()
+        if (Array.isArray(data)) {
+            plaquesSalvasAmarela = data.map(p => ({
+                ...p,
+                preco: parseFloat(p.preco),
+                quantidade_kg_l: parseFloat(p.quantidade_kg_l || 0),
+                id_unico: Date.now() + Math.random()
+            }))
+        }
+    } catch { console.error('Erro ao carregar placas amarelas salvas') }
+
     renderizarPlacasAmarela()
     vincularEventosPlacasAmarela()
 }
@@ -106,7 +120,7 @@ function vincularEventosPlacasAmarela() {
     document.getElementById('input-busca-nome-am').addEventListener('keydown', onBuscaNomeKeydownAmarela)
 }
 
-function adicionarPlacaAmarela() {
+async function adicionarPlacaAmarela() {
     const ean = document.getElementById('ean-input-am').value.trim()
     const preco = parseFloat(document.getElementById('preco-input-am').value)
     const quantidade = parseInt(document.getElementById('qtd-input-am').value) || 1
@@ -119,7 +133,7 @@ function adicionarPlacaAmarela() {
         for (let i = 0; i < quantidade; i++) {
             plaquesSalvasAmarela.push({ ...prod, preco, preco_info: precoUn, id_unico: Date.now() + Math.random() })
         }
-        salvarERenderizarAmarela()
+        await salvarERenderizarAmarela()
         const novasPlacasAm = []
         for (let i = 0; i < quantidade; i++) {
             novasPlacasAm.push({ descricao: prod.descricao, codigo: prod.codigo, ean: prod.ean, preco, tipo_placa: 'amarela' })
@@ -176,7 +190,7 @@ function renderizarPlacasAmarela() {
                 h.replaceWith(input)
                 input.focus()
 
-                const fechar = () => {
+                const fechar = async () => {
                     const v = input.value.trim()
                     if (v !== '') {
                         if (field === 'preco') {
@@ -186,9 +200,9 @@ function renderizarPlacasAmarela() {
                         } else if (field === 'ean') { p.ean = v }
                         else if (field === 'info') { p.preco_info = v }
                         else if (field === 'descricao') { p.descricao = v.toUpperCase() }
-                        salvarERenderizarAmarela()
+                        await salvarERenderizarAmarela()
                     } else {
-                        if (field === 'ean') { p.ean = ''; salvarERenderizarAmarela() } else { renderizarPlacasAmarela() }
+                        if (field === 'ean') { p.ean = ''; await salvarERenderizarAmarela() } else { renderizarPlacasAmarela() }
                     }
                 }
                 input.onkeydown = (ev) => { if (ev.key === 'Enter') fechar(); if (ev.key === 'Escape') renderizarPlacasAmarela() }
@@ -210,13 +224,24 @@ function renderizarPlacasAmarela() {
     container.appendChild(folha)
 }
 
-function onExcluirPlacaAmarela() {
-    plaquesSalvasAmarela = plaquesSalvasAmarela.filter(p => p !== placaClicadaAmarela)
-    salvarERenderizarAmarela()
+async function onExcluirPlacaAmarela() {
+    const idx = plaquesSalvasAmarela.indexOf(placaClicadaAmarela)
+    if (idx === -1) return
+    plaquesSalvasAmarela.splice(idx, 1)
+    await salvarERenderizarAmarela()
 }
 
-function salvarERenderizarAmarela() {
-    localStorage.setItem(`placasSalvasAmarela_${getUsuario()}`, JSON.stringify(plaquesSalvasAmarela))
+async function salvarERenderizarAmarela() {
+    if (_salvandoAmarela) return
+    _salvandoAmarela = true
+    try {
+        await fetch('http://localhost:3000/registros-placas', {
+            method: 'POST',
+            headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tipo: 'amarela', placas: plaquesSalvasAmarela })
+        })
+    } catch (e) { console.error('Erro ao salvar placas amarelas:', e) }
+    _salvandoAmarela = false
     renderizarPlacasAmarela()
 }
 
@@ -317,7 +342,7 @@ function onBuscaNomeKeydownAmarela(e) {
     })
 }
 
-function processarImportacaoAmarela() {
+async function processarImportacaoAmarela() {
     const texto = document.getElementById('import-texto-am').value.trim()
     if (!texto) return
     const qtdGlobal = parseInt(document.getElementById('qtd-input-am')?.value) || 1
@@ -353,7 +378,7 @@ function processarImportacaoAmarela() {
     } else {
         fecharModaisAmarela()
     }
-    salvarERenderizarAmarela()
+    await salvarERenderizarAmarela()
     document.getElementById('import-texto-am').value = ''
 }
 
