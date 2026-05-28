@@ -37,7 +37,9 @@ router.post('/importar/produtos', authMiddleware, async (req, res) => {
         const tmpFile = path.join(os.tmpdir(), 'produtos_import_' + Date.now() + '.xlsx')
         fs.writeFileSync(tmpFile, fileData)
 
-        const script = path.join(__dirname, '..', 'importar_produtos_xlsx.py')
+        const script = __dirname.includes('app.asar')
+            ? path.join(process.resourcesPath, 'importar_produtos_xlsx.py')
+            : path.join(__dirname, '..', 'importar_produtos_xlsx.py')
 
         let pythonOk = 'python'
         for (const cmd of ['python', 'python3', 'py']) {

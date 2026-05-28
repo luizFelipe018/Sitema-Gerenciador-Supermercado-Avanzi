@@ -440,6 +440,17 @@ async function onBuscaNomeKeydown(e) {
     }
 }
 
+function extrairKgLt(desc) {
+    const m = desc.match(/(\d+[.,]?\d*)\s*(KG|G|L|ML)/)
+    if (!m) return 0
+    const val = parseFloat(m[1].replace(',', '.'))
+    if (isNaN(val) || val <= 0) return 0
+    const unid = m[2]
+    if (unid === 'KG' || unid === 'L') return val
+    if (unid === 'G' || unid === 'ML') return val / 1000
+    return 0
+}
+
 async function processarImportacao() {
     const texto = document.getElementById('import-texto').value.trim()
     if (!texto) return
@@ -447,7 +458,8 @@ async function processarImportacao() {
     const logErros = document.getElementById('log-erros')
     const listaErros = document.getElementById('lista-erros')
     listaErros.innerHTML = ''
-    let itensErros = [], contador = 0
+    logErros.style.display = 'none'
+    let contador = 0
 
     for (const linha of texto.split(/\r?\n/)) {
         const colunas = linha.split(/\t| {2,}/)
@@ -480,18 +492,20 @@ async function processarImportacao() {
                         placasSalvas.push({ ...prod, preco: precoNovo, preco_info: precoUn, id_unico: Date.now() + Math.random() })
                     }
                     contador++
-                } else { itensErros.push(descProcurada) }
+                } else {
+                    const qtdKgL = extrairKgLt(descProcurada)
+                    const precoUn = qtdKgL > 0 ? (precoNovo / qtdKgL).toFixed(2).replace('.', ',') : precoNovo.toFixed(2).replace('.', ',')
+                    for (let i = 0; i < qtdGlobal; i++) {
+                        placasSalvas.push({ descricao: colunas[0].trim(), codigo: '', ean: '', preco: precoNovo, preco_info: precoUn, quantidade_kg_l: qtdKgL, id_unico: Date.now() + Math.random() })
+                    }
+                    contador++
+                }
             }
         }
     }
 
-    if (itensErros.length > 0) {
-        logErros.style.display = 'block'
-        itensErros.forEach(item => { const li = document.createElement('li'); li.textContent = item; listaErros.appendChild(li) })
-        alert(`${contador} placas geradas. ${itensErros.length} item(ns) não encontrado(s).`)
-    } else {
-        fecharModais()
-    }
+    fecharModais()
+    alert(`${contador} placa(s) gerada(s).`)
     await salvarERenderizar()
     document.getElementById('import-texto').value = ''
 }

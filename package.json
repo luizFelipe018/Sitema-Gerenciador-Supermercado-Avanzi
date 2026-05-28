@@ -41,6 +41,10 @@
       {
         "from": ".env",
         "to": ".env"
+      },
+      {
+        "from": "src/importar_produtos_xlsx.py",
+        "to": "importar_produtos_xlsx.py"
       }
     ],
     "nsis": {
