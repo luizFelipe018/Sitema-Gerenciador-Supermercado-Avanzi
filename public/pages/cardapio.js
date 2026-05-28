@@ -1,67 +1,92 @@
-const CP_KEY      = 'cardapioDados'
+﻿const CP_KEY      = 'cardapioDados'
 const GRILL_FIXO  = ''
-let cpSemanaAtual = [] // array de 7 cardápios importados
+let cpSemanaAtual = []
 let cpFotoUrl     = null
 let cpDiaAtivo    = 0
 
 function carregarCardapio() {
     setActive('btn-cardapio')
     setConteudo(`
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div style="display:grid; grid-template-columns:1fr 2fr; gap:20px;">
 
             <!-- Coluna esquerda: controles -->
-            <div class="flex flex-col gap-4">
+            <div style="display:flex; flex-direction:column; gap:16px;">
 
                 <!-- Importar docx -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                    <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
-                        📄 Importar Cardápio (.docx)
-                    </label>
-                    <p class="text-xs text-gray-400 mb-3">Selecione o arquivo Word com a tabela semanal do cardápio.</p>
-                    <label for="cp-docx-upload" class="flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-red-300 hover:bg-red-50 transition-all text-sm text-gray-500 hover:text-red-600 font-semibold mb-2">
-                        📁 Selecionar arquivo .docx
+                <div class="dash-glass dash-animate" style="padding:20px;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                        <svg width="16" height="16" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        <span style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Importar Cardápio (.docx)</span>
+                    </div>
+                    <p style="font-size:12px; color:rgba(255,255,255,0.3); margin-bottom:12px;">Selecione o arquivo Word com a tabela semanal do cardápio.</p>
+                    <label for="cp-docx-upload" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:14px; border:2px dashed rgba(255,255,255,0.08); border-radius:10px; cursor:pointer; transition:all 0.3s; font-size:13px; color:rgba(255,255,255,0.4); font-weight:600; box-sizing:border-box;"
+                        onmouseenter="this.style.borderColor='rgba(181,21,21,0.3)';this.style.background='rgba(181,21,21,0.05)';this.style.color='rgba(255,255,255,0.7)'"
+                        onmouseleave="this.style.borderColor='rgba(255,255,255,0.08)';this.style.background='transparent';this.style.color='rgba(255,255,255,0.4)'">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        Selecionar arquivo .docx
                     </label>
                     <input id="cp-docx-upload" type="file" accept=".docx" style="display:none;">
-                    <p id="cp-docx-status" class="text-xs text-gray-400 text-center min-h-[16px]"></p>
+                    <p id="cp-docx-status" style="font-size:11px; color:rgba(255,255,255,0.3); text-align:center; min-height:16px; margin-top:8px;"></p>
                 </div>
 
                 <!-- Seletor de dia -->
-                <div id="cp-seletor-dias" class="bg-white rounded-xl shadow-sm border border-gray-100 p-5" style="display:none;">
-                    <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-3">Selecionar Dia</label>
-                    <div id="cp-dias-btns" class="flex flex-col gap-2"></div>
+                <div id="cp-seletor-dias" class="dash-glass dash-animate" style="padding:20px; display:none;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                        <svg width="14" height="14" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        <span style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Selecionar Dia</span>
+                    </div>
+                    <div id="cp-dias-btns" style="display:flex; flex-direction:column; gap:6px;"></div>
                 </div>
 
                 <!-- Foto de fundo -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                    <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">📷 Foto de Fundo</label>
-                    <p class="text-xs text-gray-400 mb-3">Selecione a foto do prato principal do dia.</p>
-                    <label for="cp-foto-upload" class="flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-red-300 hover:bg-red-50 transition-all text-sm text-gray-500 hover:text-red-600 font-semibold mb-2">
-                        📁 Selecionar imagem
+                <div class="dash-glass dash-animate" style="padding:20px;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                        <svg width="16" height="16" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <span style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Foto de Fundo</span>
+                    </div>
+                    <p style="font-size:12px; color:rgba(255,255,255,0.3); margin-bottom:12px;">Selecione a foto do prato principal do dia.</p>
+                    <label for="cp-foto-upload" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:14px; border:2px dashed rgba(255,255,255,0.08); border-radius:10px; cursor:pointer; transition:all 0.3s; font-size:13px; color:rgba(255,255,255,0.4); font-weight:600; box-sizing:border-box;"
+                        onmouseenter="this.style.borderColor='rgba(181,21,21,0.3)';this.style.background='rgba(181,21,21,0.05)';this.style.color='rgba(255,255,255,0.7)'"
+                        onmouseleave="this.style.borderColor='rgba(255,255,255,0.08)';this.style.background='transparent';this.style.color='rgba(255,255,255,0.4)'">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        Selecionar imagem
                     </label>
                     <input id="cp-foto-upload" type="file" accept="image/*" style="display:none;">
-                    <div id="cp-foto-preview" class="rounded-lg overflow-hidden" style="height:80px; background:#f3f4f6; display:flex; align-items:center; justify-content:center;">
-                        <p class="text-xs text-gray-400">Nenhuma foto</p>
+                    <div id="cp-foto-preview" style="margin-top:10px; border-radius:10px; overflow:hidden; height:80px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center;">
+                        <p style="font-size:11px; color:rgba(255,255,255,0.3);">Nenhuma foto</p>
                     </div>
                 </div>
 
                 <!-- Botões -->
-                <div class="flex gap-3">
-                    <button id="cp-btn-gerar" class="flex-1 py-3 text-white font-semibold rounded-lg text-sm" style="background:#b51515;">
-                        🎨 Gerar Arte
+                <div style="display:flex; gap:10px;">
+                    <button id="cp-btn-gerar" style="flex:1; padding:12px; border:none; border-radius:10px; font-size:13px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); display:flex; align-items:center; justify-content:center; gap:6px;"
+                        onmouseenter="this.style.transform='translateY(-2px) scale(1.02)';this.style.boxShadow='0 8px 24px rgba(181,21,21,0.4)'"
+                        onmouseleave="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(181,21,21,0.3)'"
+                        onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='translateY(-2px) scale(1.02)'">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        Gerar Arte
                     </button>
-                    <button id="cp-btn-salvar" class="flex-1 py-3 text-white font-semibold rounded-lg text-sm opacity-40 cursor-not-allowed" style="background:#1a1a2e;" disabled>
-                        💾 Salvar PNG
+                    <button id="cp-btn-salvar" style="flex:1; padding:12px; border:none; border-radius:10px; font-size:13px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#16a34a,#15803d); box-shadow:0 4px 16px rgba(22,163,74,0.3); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); display:flex; align-items:center; justify-content:center; gap:6px; opacity:0.4;"
+                        disabled
+                        onmouseenter="if(!this.disabled){this.style.transform='translateY(-2px) scale(1.02)';this.style.boxShadow='0 8px 24px rgba(22,163,74,0.4)'}"
+                        onmouseleave="if(!this.disabled){this.style.transform='';this.style.boxShadow='0 4px 16px rgba(22,163,74,0.3)'}"
+                        onmousedown="if(!this.disabled){this.style.transform='scale(0.97)'}" onmouseup="if(!this.disabled){this.style.transform='translateY(-2px) scale(1.02)'}">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Salvar PNG
                     </button>
                 </div>
-                <p id="cp-msg" class="text-xs text-center min-h-[16px]"></p>
+                <p id="cp-msg" style="font-size:11px; text-align:center; min-height:16px; color:rgba(255,255,255,0.3);"></p>
 
             </div>
 
             <!-- Preview -->
-            <div class="lg:col-span-2 flex flex-col gap-3">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Preview</p>
-                <div id="cp-preview-wrapper" class="relative rounded-xl overflow-hidden shadow-lg bg-gray-100 flex items-center justify-center" style="min-height:400px;">
-                    <p class="text-gray-400 text-sm">Importe o .docx e selecione o dia</p>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <svg width="14" height="14" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                    <span style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Preview</span>
+                </div>
+                <div id="cp-preview-wrapper" class="dash-glass" style="flex:1; min-height:400px; display:flex; align-items:center; justify-content:center; border-radius:16px; overflow:hidden;">
+                    <p style="color:rgba(255,255,255,0.25); font-size:13px;">Importe o .docx e selecione o dia</p>
                 </div>
             </div>
 
@@ -71,18 +96,17 @@ function carregarCardapio() {
     cpFotoUrl = null
     cpDiaAtivo = 0
 
-    // Upload docx
     document.getElementById('cp-docx-upload').onchange = async (e) => {
         const file = e.target.files[0]
         if (!file) return
         const status = document.getElementById('cp-docx-status')
-        status.style.color = '#6b7280'; status.textContent = 'Lendo arquivo...'
+        status.style.color = 'rgba(255,255,255,0.4)'; status.textContent = 'Lendo arquivo...'
 
         const formData = new FormData()
         formData.append('file', file)
 
         try {
-            const res  = await fetch('http://localhost:3000/cardapio/importar-docx', {
+            const res  = await fetch(API+'/cardapio/importar-docx', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
                 body: formData
@@ -90,28 +114,26 @@ function carregarCardapio() {
             const data = await res.json()
 
             if (!res.ok || data.erro) {
-                status.style.color = '#dc2626'; status.textContent = data.erro || data.error || 'Erro ao ler arquivo.'
+                status.style.color = '#ef4444'; status.textContent = data.erro || data.error || 'Erro ao ler arquivo.'
                 return
             }
 
             cpSemanaAtual = data
-            status.style.color = '#16a34a'; status.textContent = `✅ ${data.length} dia(s) importado(s)!`
+            status.style.color = '#22c55e'; status.textContent = `✅ ${data.length} dia(s) importado(s)!`
             cpRenderizarDias()
 
         } catch (e) {
-            status.style.color = '#dc2626'; status.textContent = 'Erro ao conectar.'
-            console.error(e)
+            status.style.color = '#ef4444'; status.textContent = 'Erro ao conectar.'
         }
     }
 
-    // Upload foto
     document.getElementById('cp-foto-upload').onchange = (e) => {
         const file = e.target.files[0]
         if (!file) return
         if (cpFotoUrl) URL.revokeObjectURL(cpFotoUrl)
         cpFotoUrl = URL.createObjectURL(file)
         const preview = document.getElementById('cp-foto-preview')
-        preview.innerHTML = `<img src="${cpFotoUrl}" style="width:100%; height:80px; object-fit:cover;">`
+        preview.innerHTML = `<img src="${cpFotoUrl}" style="width:100%; height:80px; object-fit:cover; border-radius:10px;">`
     }
 
     document.getElementById('cp-btn-gerar').onclick  = cpGerarArte
@@ -123,13 +145,16 @@ function cpRenderizarDias() {
     const btns    = document.getElementById('cp-dias-btns')
     seletor.style.display = 'block'
 
-    btns.innerHTML = cpSemanaAtual.map((d, i) => `
-        <button class="cp-dia-btn w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold border transition-all ${i === cpDiaAtivo ? 'text-white border-red-700' : 'text-gray-600 border-gray-200 hover:bg-gray-50'}"
-            style="${i === cpDiaAtivo ? 'background:#b51515;' : ''}"
-            data-idx="${i}">
-            ${d.dia} ${d.data ? '(' + d.data + ')' : ''}
-        </button>
-    `).join('')
+    btns.innerHTML = cpSemanaAtual.map((d, i) => {
+        const ativo = i === cpDiaAtivo
+        return `<button class="cp-dia-btn" data-idx="${i}"
+            style="width:100%; text-align:left; padding:10px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid ${ativo ? 'var(--primary)' : 'rgba(255,255,255,0.06)'}; background:${ativo ? 'linear-gradient(135deg,var(--primary),var(--primary-dark))' : 'rgba(255,255,255,0.03)'}; color:${ativo ? '#fff' : 'rgba(255,255,255,0.5)'}; transition:all 0.3s; display:flex; align-items:center; gap:8px;"
+            onmouseenter="if(!this.disabled&&!${ativo}){this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.8)'}"
+            onmouseleave="if(!this.disabled&&!${ativo}){this.style.background='rgba(255,255,255,0.03)';this.style.color='rgba(255,255,255,0.5)'}">
+            ${ativo ? `<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>` : `<span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,0.2);display:inline-block;"></span>`}
+            ${d.dia}${d.data ? ' (' + d.data + ')' : ''}
+        </button>`
+    }).join('')
 
     btns.querySelectorAll('.cp-dia-btn').forEach(btn => {
         btn.onclick = () => {
@@ -148,14 +173,12 @@ function cpMontarArte(dados, fotoUrl) {
         overflow:hidden; font-family:'Segoe UI',Arial,sans-serif;
     `
 
-    // 1. Fundo (Cardápio OK1.png)
     const fundo = document.createElement('img')
-    fundo.src = 'http://localhost:3000/cardapio-fundo'
+    fundo.src = '/cardapio-fundo'
     fundo.crossOrigin = 'anonymous'
     fundo.style.cssText = 'width:1080px;height:1350px;object-fit:cover;position:absolute;top:0;left:0;z-index:0;'
     arte.appendChild(fundo)
 
-    // 2. Foto do prato (img-card) — topo, largura total, 640px de altura
     if (fotoUrl) {
         const foto = document.createElement('img')
         foto.src = fotoUrl; foto.crossOrigin = 'anonymous'
@@ -163,19 +186,16 @@ function cpMontarArte(dados, fotoUrl) {
         arte.appendChild(foto)
     }
 
-    // 3. Overlay lateral escuro (ret) — coluna direita
     const ret = document.createElement('div')
     ret.style.cssText = 'width:490px;height:1350px;background:rgba(0, 0, 0, 0.54);position:absolute;top:0;left:570px;z-index:2;'
     arte.appendChild(ret)
 
-    // 4. Imagem de texto (Cardápio texto.png / overlay)
     const imgTexto = document.createElement('img')
-    imgTexto.src = 'http://localhost:3000/cardapio-overlay'
+    imgTexto.src = '/cardapio-overlay'
     imgTexto.crossOrigin = 'anonymous'
     imgTexto.style.cssText = 'width:1080px;height:1350px;object-fit:fill;position:absolute;top:0;left:0;z-index:3;'
     arte.appendChild(imgTexto)
 
-    // 5. Textos do cardápio — em cima de tudo (z-index:4)
     const txt = (texto, top, left, fontSize, color, bold, width) => {
         if (!texto || (Array.isArray(texto) && !texto.length)) return
         const el = document.createElement('div')
@@ -190,24 +210,17 @@ function cpMontarArte(dados, fotoUrl) {
         arte.appendChild(el)
     }
 
-    // Posições baseadas na medição dos títulos no overlay (468px wide, começa em left:612)
-    // Títulos encontrados em: Cardápio=39-113, Carnes=217-266, Guarnicoes=452-501, Massa=829-877, Grill=1014-1064
-    const X = 615   // início dos textos (980 - 468 + 50px margem)
-    const W = 440   // largura máxima dos textos
+    const X = 615
+    const W = 440
 
-    // Dia + Data — abaixo do título "Cardápio" (termina em y=113)
     txt(`${dia}${data ? ' ('+data+')' : ''}`, 120, X, 35, '#fff', true, W)
 
-    // Carnes — abaixo do título "Carnes" (termina em y=266)
     txt(carnes, 320, X, 30, '#e8952a', true, W)
 
-    // Guarnições — abaixo do título "Guarnições" (termina em y=501)
     txt(guarnicoes, 540, X, 30, '#e8952a', true, W)
 
-    // Massa — abaixo do título "Massa" (termina em y=877)
     txt(massas, 905, X, 30, '#e8952a', true, W)
 
-    // Grill — abaixo do título "Grill" (termina em y=1064)
     txt(grill || GRILL_FIXO, 1070, X, 13, '#e8952a', true, W)
 
     return arte
@@ -218,7 +231,7 @@ function cpGerarArte() {
     const msg = document.getElementById('cp-msg')
 
     if (!cpSemanaAtual.length) {
-        msg.style.color = '#dc2626'; msg.textContent = 'Importe o arquivo .docx primeiro.'
+        msg.style.color = '#ef4444'; msg.textContent = 'Importe o arquivo .docx primeiro.'
         return
     }
 
@@ -244,18 +257,18 @@ function cpGerarArte() {
 
     const btnSalvar = document.getElementById('cp-btn-salvar')
     btnSalvar.disabled = false
-    btnSalvar.classList.remove('opacity-40', 'cursor-not-allowed')
+    btnSalvar.style.opacity = '1'
 
-    msg.style.color = '#16a34a'
+    msg.style.color = '#22c55e'
     msg.textContent = `✅ Arte do ${dados.dia} gerada! Clique em Salvar PNG.`
 }
 
 async function cpSalvarPNG() {
     const msg  = document.getElementById('cp-msg')
     const dados = cpSemanaAtual[cpDiaAtivo]
-    if (!dados) { msg.style.color = '#dc2626'; msg.textContent = 'Gere a arte primeiro.'; return }
+    if (!dados) { msg.style.color = '#ef4444'; msg.textContent = 'Gere a arte primeiro.'; return }
 
-    msg.style.color = '#6b7280'; msg.textContent = 'Gerando imagem 1080×1350...'
+    msg.style.color = 'rgba(255,255,255,0.4)'; msg.textContent = 'Gerando imagem 1080×1350...'
 
     if (!window.html2canvas) {
         await new Promise((resolve, reject) => {
@@ -292,10 +305,10 @@ async function cpSalvarPNG() {
         link.href = canvas.toDataURL('image/png')
         link.click()
 
-        msg.style.color = '#16a34a'; msg.textContent = '✅ Salvo em 1080×1350!'
+        msg.style.color = '#22c55e'; msg.textContent = '✅ Salvo em 1080×1350!'
     } catch (e) {
         console.error(e)
-        msg.style.color = '#dc2626'; msg.textContent = 'Erro ao gerar imagem.'
+        msg.style.color = '#ef4444'; msg.textContent = 'Erro ao gerar imagem.'
     } finally {
         document.body.removeChild(arteReal)
     }

@@ -1,0 +1,134 @@
+[
+  {
+    "id": 1,
+    "nome": "Post Quadrado",
+    "categoria": "Instagram",
+    "largura": 1080,
+    "altura": 1080,
+    "unidade": "px",
+    "orientacao": "Quadrado",
+    "descricao": "Post padrão feed Instagram",
+    "criado_em": "2026-03-26T04:04:32.000Z"
+  },
+  {
+    "id": 2,
+    "nome": "Post Retrato",
+    "categoria": "Instagram",
+    "largura": 1080,
+    "altura": 1350,
+    "unidade": "px",
+    "orientacao": "Retrato",
+    "descricao": "Post retrato feed Instagram",
+    "criado_em": "2026-03-26T04:04:32.000Z"
+  },
+  {
+    "id": 3,
+    "nome": "Stories / Reels",
+    "categoria": "Instagram",
+    "largura": 1080,
+    "altura": 1920,
+    "unidade": "px",
+    "orientacao": "Retrato",
+    "descricao": "Stories e Reels Instagram/WhatsApp",
+    "criado_em": "2026-03-26T04:04:32.000Z"
+  },
+  {
+    "id": 4,
+    "nome": "Capa Facebook",
+    "categoria": "Facebook",
+    "largura": 820,
+    "altura": 312,
+    "unidade": "px",
+    "orientacao": "Paisagem",
+    "descricao": "Capa do perfil Facebook",
+    "criado_em": "2026-03-26T04:04:32.000Z"
+  },
+  {
+    "id": 5,
+    "nome": "Post Facebook",
+    "categoria": "Facebook",
+    "largura": 1200,
+    "altura": 630,
+    "unidade": "px",
+    "orientacao": "Paisagem",
+    "descricao": "Post recomendado Facebook",
+    "criado_em": "2026-03-26T04:04:32.000Z"
+  },
+  {
+    "id": 6,
+    "nome": "Capa YouTube",
+    "categoria": "YouTube",
+    "largura": 2560,
+    "altura": 1440,
+    "unidade": "px",
+    "orientacao": "Paisagem",
+    "descricao": "Banner canal YouTube",
+    "criado_em": "2026-03-26T04:04:32.000Z"
+  },
+  {
+    "id": 7,
+    "nome": "Thumbnail YouTube",
+    "categoria": "YouTube",
+    "largura": 1280,
+    "altura": 720,
+    "unidade": "px",
+    "orientacao": "Paisagem",
+    "descricao": "Miniatura de vídeo YouTube",
+    "criado_em": "2026-03-26T04:04:32.000Z"
+  },
+  {
+    "id": 8,
+    "nome": "Banner Site Topo",
+    "categoria": "Web",
+    "largura": 1920,
+    "altura": 600,
+    "unidade": "px",
+    "orientacao": "Paisagem",
+    "descricao": "Banner topo de site full width",
+    "criado_em": "2026-03-26T04:04:32.000Z"
+  },
+  {
+    "id": 9,
+    "nome": "Banner Lateral",
+    "categoria": "Web",
+    "largura": 300,
+    "altura": 600,
+    "unidade": "px",
+    "orientacao": "Retrato",
+    "descricao": "Banner lateral (half page)",
+    "criado_em": "2026-03-26T04:04:32.000Z"
+  },
+  {
+    "id": 10,
+    "nome": "Email Header",
+    "categoria": "Email",
+    "largura": 600,
+    "altura": 200,
+    "unidade": "px",
+    "orientacao": "Paisagem",
+    "descricao": "Cabeçalho de email marketing",
+    "criado_em": "2026-03-26T04:04:32.000Z"
+  },
+  {
+    "id": 11,
+    "nome": "WhatsApp Status",
+    "categoria": "WhatsApp",
+    "largura": 1080,
+    "altura": 1920,
+    "unidade": "px",
+    "orientacao": "Retrato",
+    "descricao": "Status WhatsApp",
+    "criado_em": "2026-03-26T04:04:32.000Z"
+  },
+  {
+    "id": 12,
+    "nome": "LinkedIn Banner",
+    "categoria": "LinkedIn",
+    "largura": 1584,
+    "altura": 396,
+    "unidade": "px",
+    "orientacao": "Paisagem",
+    "descricao": "Capa perfil LinkedIn",
+    "criado_em": "2026-03-26T04:04:32.000Z"
+  }
+]

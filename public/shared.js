@@ -1,3 +1,20 @@
+const API = localStorage.getItem('serverUrl') || (window.location.protocol === 'file:' ? 'http://localhost:3000' : window.location.origin)
+
+// ── Global fetch interceptor — catches 401 and redirects to login ──
+const _originalFetch = window.fetch
+window.fetch = async function(...args) {
+    const res = await _originalFetch.apply(this, args)
+    if (res.status === 401) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('usuario')
+        localStorage.removeItem('usuarioCargo')
+        if (window.location.pathname !== '/login.html' && !window.location.pathname.endsWith('login.html')) {
+            window.location.href = 'login.html'
+        }
+    }
+    return res
+}
+
 // Função global para obter o usuário atual
 window.getUsuario = function() {
     return localStorage.getItem('usuario') || 'default'
@@ -27,8 +44,7 @@ window.PERMISSOES = {
     placas: ['atendente', 'gerente', 'administrador'],
     placasAmarela: ['atendente', 'gerente', 'administrador'],
     placasGrande: ['atendente', 'gerente', 'administrador'],
-    listaPrecos: ['atendente', 'gerente', 'administrador'],
-    produtos: ['atendente', 'gerente', 'administrador'],
+produtos: ['atendente', 'gerente', 'administrador'],
     imagens: ['atendente', 'gerente', 'administrador'],
     buscaRapida: ['atendente', 'gerente', 'administrador'],
     
@@ -47,6 +63,9 @@ window.PERMISSOES = {
     atalhos: ['gerente', 'administrador'],
     textos: ['gerente', 'administrador'],
     capitalize: ['gerente', 'administrador'],
+    
+    // Calc KG/LT - todos
+    calcKglt: ['atendente', 'gerente', 'administrador'],
     
     // Dashboard - gerente e admin
     dashboard: ['gerente', 'administrador'],
@@ -80,7 +99,7 @@ function authHeaders() {
 
 // API request helper
 async function api(endpoint, options = {}) {
-    const res = await fetch(`http://localhost:3000${endpoint}`, {
+    const res = await fetch(`${endpoint}`, {
         ...options,
         headers: { ...authHeaders(), ...(options.headers || {}) }
     })
@@ -91,12 +110,12 @@ async function api(endpoint, options = {}) {
 // Buscar foto do produto no Open Food Facts (retorna URL do proxy)
 window.buscarFotoProduto = async function(termo) {
     try {
-        const data = await api(`/off-buscar?q=${encodeURIComponent(termo)}`)
+        const data = await api(API+`/off-buscar?q=${encodeURIComponent(termo)}`)
         if (data.image_url) {
-            return `http://localhost:3000/off-image?url=${encodeURIComponent(data.image_url)}`
+            return `/off-image?url=${encodeURIComponent(data.image_url)}`
         }
         if (data.image_small_url) {
-            return `http://localhost:3000/off-image?url=${encodeURIComponent(data.image_small_url)}`
+            return `/off-image?url=${encodeURIComponent(data.image_small_url)}`
         }
         return null
     } catch (e) {
@@ -108,12 +127,12 @@ window.buscarFotoProduto = async function(termo) {
 // Buscar foto por código de barras (EAN)
 window.buscarFotoPorEAN = async function(ean) {
     try {
-        const data = await api(`/off-buscar?ean=${ean}`)
+        const data = await api(API+`/off-buscar?ean=${ean}`)
         if (data.image_url) {
-            return `http://localhost:3000/off-image?url=${encodeURIComponent(data.image_url)}`
+            return `/off-image?url=${encodeURIComponent(data.image_url)}`
         }
         if (data.image_small_url) {
-            return `http://localhost:3000/off-image?url=${encodeURIComponent(data.image_small_url)}`
+            return `/off-image?url=${encodeURIComponent(data.image_small_url)}`
         }
         return null
     } catch (e) {

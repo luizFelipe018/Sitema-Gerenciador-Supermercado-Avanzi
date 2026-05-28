@@ -1,4 +1,4 @@
-// Função global — chamada ao imprimir qualquer placa
+﻿// Função global — chamada ao imprimir qualquer placa
 function registrarImpressaoPlacas() {
     const ids = window._ultimasPlacasGeradas || []
     if (!ids.length) return
@@ -7,32 +7,32 @@ function registrarImpressaoPlacas() {
     setTimeout(() => {
         // Monta o modal via createElement (sem innerHTML com handlers — evita CSP)
         const overlay = document.createElement('div')
-        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:9999;display:flex;align-items:center;justify-content:center;'
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:9999;display:flex;align-items:center;justify-content:center;'
 
         const box = document.createElement('div')
-        box.style.cssText = 'background:#fff;border-radius:16px;padding:28px 32px;width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;'
+        box.style.cssText = 'background:rgba(20,20,35,0.95);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:28px 32px;width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.5);text-align:center;backdrop-filter:blur(20px);'
 
         const icone = document.createElement('div')
         icone.style.cssText = 'font-size:40px;margin-bottom:12px;'
         icone.textContent = '🖨️'
 
         const titulo = document.createElement('h3')
-        titulo.style.cssText = 'font-size:16px;font-weight:700;color:#111827;margin-bottom:8px;'
+        titulo.style.cssText = 'font-size:16px;font-weight:700;color:rgba(255,255,255,0.9);margin-bottom:8px;'
         titulo.textContent = 'A impressão foi concluída?'
 
         const descricao = document.createElement('p')
-        descricao.style.cssText = 'font-size:13px;color:#6b7280;margin-bottom:24px;'
+        descricao.style.cssText = 'font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:24px;'
         descricao.textContent = 'Confirme para registrar as placas como impressas no relatório.'
 
         const botoes = document.createElement('div')
         botoes.style.cssText = 'display:flex;gap:10px;'
 
         const btnSim = document.createElement('button')
-        btnSim.style.cssText = 'flex:1;padding:10px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;'
+        btnSim.style.cssText = 'flex:1;padding:10px;border:none;border-radius:10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;background:linear-gradient(135deg,#16a34a,#0f7b37);box-shadow:0 4px 16px rgba(22,163,74,0.3);transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);'
         btnSim.textContent = '✅ Sim, foi impressa'
 
         const btnNao = document.createElement('button')
-        btnNao.style.cssText = 'flex:1;padding:10px;background:#f3f4f6;color:#374151;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;'
+        btnNao.style.cssText = 'flex:1;padding:10px;border:1px solid rgba(255,255,255,0.08);border-radius:10px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.6);cursor:pointer;background:rgba(255,255,255,0.04);transition:all 0.3s;'
         btnNao.textContent = '❌ Não'
 
         btnNao.onclick = () => document.body.removeChild(overlay)
@@ -40,7 +40,7 @@ function registrarImpressaoPlacas() {
         btnSim.onclick = async () => {
             document.body.removeChild(overlay)
             try {
-                await fetch('http://localhost:3000/log-placas/imprimir', {
+                await fetch(API+'/log-placas/imprimir', {
                     method: 'POST',
                     headers: authHeaders(),
                     body: JSON.stringify({ ids })
@@ -66,36 +66,40 @@ function registrarImpressaoPlacas() {
 async function carregarRelatorioPlacas() {
     setActive('btn-relatorio-placas')
     setConteudo(`
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-5">
+        <div class="dash-glass dash-animate" style="padding:20px; margin-bottom:20px;">
             <div class="flex gap-3 flex-wrap items-end">
 
                 <div class="flex flex-col gap-1 flex-1" style="min-width:200px;">
-                    <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Produto</label>
+                    <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Produto</label>
                     <input id="rel-desc" type="text" placeholder="Nome, código ou EAN..."
-                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-400">
+                        style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; transition:all 0.3s;"
+                        onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
+                        onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
                 </div>
 
                 <div class="flex flex-col gap-1" style="width:130px;">
-                    <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Preço (R$)</label>
+                    <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Preço (R$)</label>
                     <input id="rel-preco" type="number" step="0.01" placeholder="Ex: 5,99"
-                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-400">
+                        style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; transition:all 0.3s;"
+                        onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
+                        onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
                 </div>
 
                 <div class="flex flex-col gap-1">
-                    <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Tipo</label>
-                    <select id="rel-tipo" class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-400 bg-white">
-                        <option value="">Todos</option>
-                        <option value="branca">Branca</option>
-                        <option value="amarela">Amarela</option>
-                        <option value="grande">Grande</option>
+                    <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Tipo</label>
+                    <select id="rel-tipo" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; transition:all 0.3s; cursor:pointer;">
+                        <option value="" style="background:#1a1a2e;color:#fafafa;">Todos</option>
+                        <option value="branca" style="background:#1a1a2e;color:#fafafa;">Branca</option>
+                        <option value="amarela" style="background:#1a1a2e;color:#fafafa;">Amarela</option>
+                        <option value="grande" style="background:#1a1a2e;color:#fafafa;">Grande</option>
                     </select>
                 </div>
 
-                <button id="rel-btn-buscar" class="px-5 py-2 text-white text-sm font-semibold rounded-lg" style="background:#b51515;">
-                    🔍 Buscar
+                <button id="rel-btn-buscar" style="padding:10px 20px; border:none; border-radius:10px; font-size:13px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); display:flex; align-items:center; gap:6px;">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Buscar
                 </button>
-                <button id="rel-btn-imprimir" class="px-5 py-2 text-white text-sm font-semibold rounded-lg opacity-40 cursor-not-allowed" style="background:#1a1a2e;" disabled>
-                    🖨️ Imprimir
+                <button id="rel-btn-imprimir" style="padding:10px 18px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; font-size:13px; font-weight:600; color:rgba(255,255,255,0.6); cursor:not-allowed; background:rgba(255,255,255,0.04); transition:all 0.3s; display:flex; align-items:center; gap:6px; opacity:0.4;" disabled>
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir
                 </button>
             </div>
         </div>
@@ -117,17 +121,17 @@ async function buscarRelatorio() {
     const tipo      = document.getElementById('rel-tipo').value
     const resultEl  = document.getElementById('rel-resultado')
 
-    resultEl.innerHTML = `<p class="text-sm text-gray-400 py-4 text-center">Carregando...</p>`
+    resultEl.innerHTML = `<p style="text-align:center; color:rgba(255,255,255,0.4); font-size:13px; padding:16px 0;">Carregando...</p>`
 
     try {
         const params = new URLSearchParams()
         if (descricao) params.append('descricao', descricao)
 
-        const res  = await fetch(`http://localhost:3000/log-placas?${params}`, { headers: authHeaders() })
+        const res  = await fetch(API+`/log-placas?${params}`, { headers: authHeaders() })
         const data = await res.json()
 
         if (!Array.isArray(data) || !data.length) {
-            resultEl.innerHTML = `<p class="text-sm text-gray-400 py-6 text-center">Nenhum registro encontrado.</p>`
+            resultEl.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 0; gap:12px;"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="color:rgba(255,255,255,0.12);"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span style="color:rgba(255,255,255,0.3); font-size:13px; font-weight:500;">Nenhum registro encontrado</span></div>`
             return
         }
 
@@ -139,7 +143,7 @@ async function buscarRelatorio() {
         }
 
         if (!registros.length) {
-            resultEl.innerHTML = `<p class="text-sm text-gray-400 py-6 text-center">Nenhum registro para o filtro selecionado.</p>`
+            resultEl.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 0; gap:12px;"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="color:rgba(255,255,255,0.12);"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span style="color:rgba(255,255,255,0.3); font-size:13px; font-weight:500;">Nenhum registro para o filtro selecionado</span></div>`
             return
         }
 
@@ -171,38 +175,38 @@ async function buscarRelatorio() {
         })
 
         const tipoBadge = (t) => {
-            const cores = { branca: ['#f3f4f6','#374151'], amarela: ['#fef9c3','#854d0e'], grande: ['#dbeafe','#1d4ed8'] }
-            const [bg, color] = cores[t] || ['#f3f4f6','#374151']
-            return `<span class="px-2 py-0.5 rounded-full text-xs font-semibold" style="background:${bg};color:${color};">${t}</span>`
+            const cores = { branca: ['rgba(255,255,255,0.08)','rgba(255,255,255,0.6)'], amarela: ['rgba(255,200,50,0.15)','#f5d742'], grande: ['rgba(91,154,255,0.15)','#5b9aff'] }
+            const [bg, color] = cores[t] || ['rgba(255,255,255,0.08)','rgba(255,255,255,0.6)']
+            return `<span style="padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600; background:${bg}; color:${color};">${t}</span>`
         }
 
         resultEl.innerHTML = `
-            <div class="flex gap-3 mb-4 flex-wrap">
-                <span class="px-3 py-1.5 rounded-full text-xs font-semibold" style="background:#f3f4f6;color:#374151;">
+            <div style="display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap;">
+                <span style="padding:6px 14px; border-radius:20px; font-size:11px; font-weight:700; background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.06);">
                     ${totalPlacas} placa(s) no período
                 </span>
-                <span class="px-3 py-1.5 rounded-full text-xs font-semibold" style="background:#dbeafe;color:#1d4ed8;">
+                <span style="padding:6px 14px; border-radius:20px; font-size:11px; font-weight:700; background:rgba(91,154,255,0.1); color:#5b9aff; border:1px solid rgba(91,154,255,0.15);">
                     ${totalProdutos} produto(s) distinto(s)
                 </span>
-                <span class="px-3 py-1.5 rounded-full text-xs font-semibold" style="background:#fef3c7;color:#92400e;">
+                <span style="padding:6px 14px; border-radius:20px; font-size:11px; font-weight:700; background:rgba(255,200,50,0.1); color:#f5d742; border:1px solid rgba(255,200,50,0.15);">
                     ${linhas.filter(l => variacoes[l.descricao.toUpperCase()] > 1).length} variação(ões) de preço
                 </span>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <table class="w-full text-sm">
+            <div class="dash-table-wrap">
+                <table class="dash-table">
                     <thead>
-                        <tr style="border-bottom:2px solid #f3f4f6;">
-                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Produto</th>
-                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Código</th>
-                            <th class="px-5 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Tipo</th>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                            <th style="padding:14px 20px; text-align:left; font-size:10px; font-weight:700; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:0.06em;">Produto</th>
+                            <th style="padding:14px 20px; text-align:left; font-size:10px; font-weight:700; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:0.06em;">Código</th>
+                            <th style="padding:14px 20px; text-align:left; font-size:10px; font-weight:700; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:0.06em;">Tipo</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${linhas.map((g, i) => {
                             const gKey        = g.descricao.toUpperCase() + '||' + g.tipo_placa
                             const temVariacao = variacoes[gKey] > 1
-                            const bg          = temVariacao ? '#fffbeb' : (i % 2 === 0 ? '#fff' : '#f9fafb')
+                            const bg          = temVariacao ? 'rgba(255,200,50,0.06)' : (i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)')
                             const uid         = 'datas_' + i
 
 
@@ -223,28 +227,30 @@ async function buscarRelatorio() {
                                         '<div style="font-size:13px;font-weight:700;color:#b51515;margin-bottom:6px;">' + label + '</div>' +
                                         itens.sort((a,b) => b.data - a.data).map(item => {
                                             const dataStr  = item.data.toLocaleDateString('pt-BR') + ' às ' + item.data.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})
-                                            const badgeBg  = item.impressa ? '#dcfce7' : '#dbeafe'
-                                            const badgeClr = item.impressa ? '#16a34a' : '#1d4ed8'
+                                            const badgeBg  = item.impressa ? 'rgba(22,163,74,0.15)' : 'rgba(59,130,246,0.15)'
+                                            const badgeClr = item.impressa ? '#22c55e' : '#60a5fa'
                                             const badgeTxt = item.impressa ? '🖨️ Impressa' : '💾 Gerada'
-                                            return '<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f9fafb;">' +
-                                                '<span style="font-size:12px;color:#6b7280;">📅 ' + dataStr + '</span>' +
+                                            return '<div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);">' +
+                                                '<span style="font-size:12px;color:rgba(255,255,255,0.5);">📅 ' + dataStr + '</span>' +
                                                 '<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:' + badgeBg + ';color:' + badgeClr + ';">' + badgeTxt + '</span>' +
                                                 '</div>'
                                         }).join('') +
                                     '</div>'
-                                }).join('<hr style="border:none;border-top:1px solid #f3f4f6;margin:10px 0;">')
+                                }).join('<hr style="border:none;border-top:1px solid rgba(255,255,255,0.06);margin:10px 0;">')
 
 
                             return `
-                                <tr style="background:${bg}; border-bottom:1px solid #f3f4f6;">
-                                    <td class="px-5 py-3">
-                                        <span class="font-semibold text-gray-800">${g.descricao}</span>
-                                        ${temVariacao ? `<span class="ml-2 text-xs font-bold px-1.5 py-0.5 rounded" style="background:#fef3c7;color:#92400e;">⚠ variação de preço</span>` : ''}
+                                <tr style="background:${bg}; border-bottom:1px solid rgba(255,255,255,0.04);">
+                                    <td style="padding:12px 20px;">
+                                        <span style="font-weight:600; color:rgba(255,255,255,0.85); font-size:13px;">${g.descricao}</span>
+                                        ${temVariacao ? `<span style="margin-left:8px; font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; background:rgba(255,200,50,0.15); color:#f5d742;">⚠ variação de preço</span>` : ''}
                                     </td>
-                                    <td class="px-5 py-3 font-mono text-gray-400 text-xs">${g.codigo || '—'}</td>
-                                    <td class="px-5 py-3">${tipoBadge(g.tipo_placa)}</td>
-                                    <td class="px-5 py-3">
-                                        <button class="btn-ver-datas text-xs font-semibold px-2 py-0.5 rounded border border-gray-200 text-gray-400 hover:border-red-300 hover:text-red-500 transition-all"
+                                    <td style="padding:12px 20px; font-family:monospace; color:rgba(255,255,255,0.3); font-size:11px;">${g.codigo || '—'}</td>
+                                    <td style="padding:12px 20px;">${tipoBadge(g.tipo_placa)}</td>
+                                    <td style="padding:12px 20px;">
+                                        <button class="btn-ver-datas" style="font-size:11px; font-weight:600; padding:4px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08); color:rgba(255,255,255,0.5); background:transparent; cursor:pointer; transition:all 0.3s;"
+                                            onmouseover="this.style.borderColor='rgba(181,21,21,0.4)';this.style.color='rgba(181,21,21,0.8)'"
+                                            onmouseout="this.style.borderColor='rgba(255,255,255,0.08)';this.style.color='rgba(255,255,255,0.5)'"
                                             data-uid="${uid}"
                                             data-nome="${g.descricao}"
                                             data-tipo="${g.tipo_placa}">
@@ -273,12 +279,13 @@ async function buscarRelatorio() {
 
         const btnImprimir = document.getElementById('rel-btn-imprimir')
         btnImprimir.disabled = false
-        btnImprimir.classList.remove('opacity-40', 'cursor-not-allowed')
+        btnImprimir.style.opacity = '1'
+        btnImprimir.style.cursor = 'pointer'
         btnImprimir.onclick = () => imprimirRelatorio(linhas, variacoes, totalPlacas)
 
     } catch (e) {
         console.error(e)
-        resultEl.innerHTML = `<p class="text-sm text-red-400 py-6 text-center">Erro ao conectar com o servidor.</p>`
+        resultEl.innerHTML = `<p style="text-align:center; color:#ef4444; font-size:13px; padding:24px 0;">Erro ao conectar com o servidor.</p>`
     }
 }
 
@@ -337,38 +344,46 @@ function abrirPopupDatas(nome, tipo, conteudoHtml) {
     const anterior = document.getElementById('popup-datas')
     if (anterior) anterior.remove()
 
-    const cores = { branca: ['#f3f4f6','#374151'], amarela: ['#fef9c3','#854d0e'], grande: ['#dbeafe','#1d4ed8'] }
-    const [bg, color] = cores[tipo] || ['#f3f4f6','#374151']
+    const cores = { branca: ['rgba(255,255,255,0.08)','rgba(255,255,255,0.6)'], amarela: ['rgba(255,200,50,0.15)','#f5d742'], grande: ['rgba(91,154,255,0.15)','#5b9aff'] }
+    const [bg, color] = cores[tipo] || ['rgba(255,255,255,0.08)','rgba(255,255,255,0.6)']
 
     const overlay = document.createElement('div')
     overlay.id = 'popup-datas'
     overlay.style.cssText = `
         position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0,0,0,0.45);
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
         z-index: 2000;
         display: flex; align-items: center; justify-content: center;
     `
 
     overlay.innerHTML = `
         <div style="
-            background: #fff;
+            background: rgba(20,20,35,0.95);
+            border: 1px solid rgba(255,255,255,0.06);
             border-radius: 16px;
             width: 80%;
             max-height: 80vh;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5);
             overflow: hidden;
+            backdrop-filter: blur(20px);
         ">
             <!-- Cabeçalho -->
-            <div style="padding: 20px 24px 16px; border-bottom: 1px solid #f3f4f6; flex-shrink:0;">
+            <div style="padding: 20px 24px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); flex-shrink:0;">
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-                    <h3 style="font-size:16px; font-weight:700; color:#111827; margin:0;">${nome}</h3>
+                    <h3 style="font-size:16px; font-weight:700; color:rgba(255,255,255,0.9); margin:0;">${nome}</h3>
                     <button id="popup-fechar" style="
-                        background: #f3f4f6; border: none; border-radius: 8px;
-                        width: 32px; height: 32px; font-size: 18px; cursor: pointer;
-                        color: #6b7280; display:flex; align-items:center; justify-content:center;
-                    ">×</button>
+                        background: rgba(255,255,255,0.06); border: none; border-radius: 8px;
+                        width: 32px; height: 32px; cursor: pointer;
+                        color: rgba(255,255,255,0.4); display:flex; align-items:center; justify-content:center;
+                        transition:all 0.3s;
+                    " onmouseover="this.style.background='rgba(181,21,21,0.2)';this.style.color='#b51515'"
+                       onmouseout="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.4)'">
+                       <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
                 </div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
                     <span style="background:${bg}; color:${color}; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px;">${tipo}</span>
@@ -377,7 +392,7 @@ function abrirPopupDatas(nome, tipo, conteudoHtml) {
 
             <!-- Conteúdo com scroll -->
             <div style="overflow-y: auto; padding: 20px 24px; flex: 1;">
-                <p style="font-size:11px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:12px;">
+                <p style="font-size:11px; font-weight:600; color:rgba(255,255,255,0.3); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:12px;">
                     Todas as datas e horários de criação
                 </p>
                 <div style="display:flex; flex-direction:column; gap:6px;">
@@ -386,10 +401,12 @@ function abrirPopupDatas(nome, tipo, conteudoHtml) {
             </div>
 
             <!-- Rodapé -->
-            <div style="padding:14px 24px; border-top:1px solid #f3f4f6; flex-shrink:0; text-align:right;">
+            <div style="padding:14px 24px; border-top:1px solid rgba(255,255,255,0.06); flex-shrink:0; text-align:right;">
                 <button id="popup-fechar-btn" style="
-                    background:#b51515; color:#fff; border:none; border-radius:8px;
-                    padding: 8px 20px; font-size:13px; font-weight:600; cursor:pointer;
+                    padding:10px 20px; border:none; border-radius:10px; font-size:13px; font-weight:700; color:#fff; cursor:pointer;
+                    background:linear-gradient(135deg,#b51515,#8a0f0f);
+                    box-shadow:0 4px 16px rgba(181,21,21,0.3);
+                    transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
                 ">Fechar</button>
             </div>
         </div>

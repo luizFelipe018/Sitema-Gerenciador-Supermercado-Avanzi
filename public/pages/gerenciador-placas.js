@@ -1,35 +1,45 @@
-async function carregarGerenciadorPlacas() {
+﻿async function carregarGerenciadorPlacas() {
     setActive('btn-gerenciador-placas')
     setConteudo(`
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-5">
+        <div class="dash-glass dash-animate" style="padding:20px; margin-bottom:20px;">
             <div class="flex gap-3 flex-wrap items-end mb-4">
                 <div class="flex flex-col gap-1">
-                    <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">De</label>
-                    <input type="date" id="gp-de" class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-400">
+                    <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">De</label>
+                    <input type="date" id="gp-de" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; transition:all 0.3s;"
+                        onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
+                        onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Até</label>
-                    <input type="date" id="gp-ate" class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-400">
+                    <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Até</label>
+                    <input type="date" id="gp-ate" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; transition:all 0.3s;"
+                        onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
+                        onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Descrição</label>
+                    <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Descrição</label>
                     <input type="text" id="gp-desc" placeholder="Buscar descrição..."
-                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-400">
+                        style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; transition:all 0.3s;"
+                        onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
+                        onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
                 </div>
-                <button id="gp-btn-buscar" class="px-5 py-2 text-white text-sm font-semibold rounded-lg" style="background:#b51515;">🔍 Filtrar</button>
-                <button id="gp-btn-limpar" class="px-5 py-2 bg-gray-100 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors">Limpar</button>
+                <button id="gp-btn-buscar" style="padding:10px 20px; border:none; border-radius:10px; font-size:13px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); display:flex; align-items:center; gap:6px;">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Filtrar
+                </button>
+                <button id="gp-btn-limpar" style="padding:10px 18px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; font-size:13px; font-weight:600; color:rgba(255,255,255,0.6); cursor:pointer; background:rgba(255,255,255,0.04); transition:all 0.3s; display:flex; align-items:center; gap:6px;">Limpar</button>
             </div>
-            <div class="flex gap-3 items-center border-t border-gray-100 pt-4">
+            <div class="flex gap-3 items-center border-t pt-4" style="border-top-color:rgba(255,255,255,0.06);">
                 <div class="flex gap-2">
-                    <span class="px-3 py-1 rounded-full text-xs font-semibold" style="background:#dcfce7; color:#16a34a;" id="gp-contador-total">—</span>
-                    <span class="px-3 py-1 rounded-full text-xs font-semibold" style="background:#fef3c7; color:#92400e;" id="gp-contador-pendentes">—</span>
-                    <span class="px-3 py-1 rounded-full text-xs font-semibold" style="background:#d1fae5; color:#16a34a;" id="gp-contador-impressas">—</span>
+                    <span style="padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.06);" id="gp-contador-total">—</span>
+                    <span style="padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; background:rgba(255,200,50,0.1); color:#f5d742; border:1px solid rgba(255,200,50,0.15);" id="gp-contador-pendentes">—</span>
+                    <span style="padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; background:rgba(22,163,74,0.1); color:#22c55e; border:1px solid rgba(22,163,74,0.15);" id="gp-contador-impressas">—</span>
                 </div>
-                <button id="gp-btn-exportar" class="px-4 py-2 bg-green-50 text-green-600 text-sm font-semibold rounded-lg hover:bg-green-100 transition-colors ml-auto">📥 Exportar XLSX</button>
+                <button id="gp-btn-exportar" style="padding:10px 18px; border:none; border-radius:10px; font-size:13px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#16a34a,#0f7b37); box-shadow:0 4px 16px rgba(22,163,74,0.3); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); display:flex; align-items:center; gap:6px; margin-left:auto;">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Exportar XLSX
+                </button>
             </div>
         </div>
-        <div id="gp-tabela-wrapper" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <p class="text-center text-gray-400 text-sm py-10">Carregando registros...</p>
+        <div id="gp-tabela-wrapper" class="dash-table-wrap">
+            <p style="text-align:center; color:rgba(255,255,255,0.4); font-size:13px; padding:40px 0;">Carregando registros...</p>
         </div>
     `, 'Gerenciador de Placas')
 
@@ -50,10 +60,10 @@ async function carregarGerenciadorPlacas() {
         if (desc) params.set('descricao', desc)
 
         const wrapper = document.getElementById('gp-tabela-wrapper')
-        wrapper.innerHTML = `<p class="text-center text-gray-400 text-sm py-10">Carregando...</p>`
+        wrapper.innerHTML = `<p style="text-align:center; color:rgba(255,255,255,0.4); font-size:13px; padding:40px 0;">Carregando...</p>`
 
         try {
-            const res = await fetch('http://localhost:3000/log-placas?' + params.toString(), { headers: authHeaders() })
+            const res = await fetch(API+'/log-placas?' + params.toString(), { headers: authHeaders() })
             dadosAtuais = await res.json()
 
             const total = dadosAtuais.length
@@ -65,31 +75,29 @@ async function carregarGerenciadorPlacas() {
             document.getElementById('gp-contador-impressas').textContent = `Impressas: ${impressas}`
 
             if (!dadosAtuais.length) {
-                wrapper.innerHTML = `<p class="text-center text-gray-400 text-sm py-10">Nenhum registro encontrado</p>`
+                wrapper.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 0; gap:12px;"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="color:rgba(255,255,255,0.12);"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span style="color:rgba(255,255,255,0.3); font-size:13px; font-weight:500;">Nenhum registro encontrado</span></div>`
                 return
             }
 
             wrapper.innerHTML = `
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead><tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                            <th class="px-4 py-3 text-left">Data/Hora</th>
-                            <th class="px-4 py-3 text-left">Descrição</th>
-                            <th class="px-4 py-3 text-left">Código</th>
-                            <th class="px-4 py-3 text-left">EAN</th>
-                            <th class="px-4 py-3 text-right">Preço</th>
-                            <th class="px-4 py-3 text-center">Tipo</th>
-                            <th class="px-4 py-3 text-center">Status</th>
-                        </tr></thead>
-                        <tbody class="divide-y divide-gray-100" id="gp-tbody"></tbody>
-                    </table>
-                </div>
-                <div id="gp-paginacao" class="flex items-center justify-between px-6 py-3 border-t border-gray-100 text-sm text-gray-500"></div>
+                <table class="dash-table">
+                    <thead><tr style="background:rgba(255,255,255,0.02); color:rgba(255,255,255,0.3); font-size:10px; text-transform:uppercase; letter-spacing:0.06em; font-weight:700;">
+                        <th style="padding:14px 16px; text-align:left;">Data/Hora</th>
+                        <th style="padding:14px 16px; text-align:left;">Descrição</th>
+                        <th style="padding:14px 16px; text-align:left;">Código</th>
+                        <th style="padding:14px 16px; text-align:left;">EAN</th>
+                        <th style="padding:14px 16px; text-align:right;">Preço</th>
+                        <th style="padding:14px 16px; text-align:center;">Tipo</th>
+                        <th style="padding:14px 16px; text-align:center;">Status</th>
+                    </tr></thead>
+                    <tbody id="gp-tbody"></tbody>
+                </table>
+                <div id="gp-paginacao" style="display:flex; align-items:center; justify-content:space-between; padding:12px 20px; border-top:1px solid rgba(255,255,255,0.06); font-size:12px; color:rgba(255,255,255,0.4);"></div>
             `
 
             renderizarTabelaGP(dadosAtuais, 1)
         } catch {
-            wrapper.innerHTML = `<p class="text-center text-red-400 text-sm py-10">Erro ao conectar com o servidor</p>`
+            wrapper.innerHTML = `<p style="text-align:center; color:#ef4444; font-size:13px; padding:40px 0;">Erro ao conectar com o servidor</p>`
         }
     }
 
@@ -102,17 +110,19 @@ async function carregarGerenciadorPlacas() {
         const paginaDados = dados.slice(inicio, inicio + porPagina)
 
         tbody.innerHTML = paginaDados.map(p => `
-            <tr class="hover:bg-gray-50 transition-colors ${p.impressa ? 'opacity-60' : ''}">
-                <td class="px-4 py-2.5 text-gray-500 text-xs">${new Date(p.criado_em).toLocaleString('pt-BR')}</td>
-                <td class="px-4 py-2.5 text-gray-800 font-medium">${p.descricao || '—'}</td>
-                <td class="px-4 py-2.5 text-gray-400 text-xs font-mono">${p.codigo || '—'}</td>
-                <td class="px-4 py-2.5 text-gray-400 text-xs font-mono">${p.ean || '—'}</td>
-                <td class="px-4 py-2.5 text-right font-semibold text-gray-800">${p.preco != null ? 'R$ ' + parseFloat(p.preco).toFixed(2).replace('.', ',') : '—'}</td>
-                <td class="px-4 py-2.5 text-center">
-                    <span class="px-2 py-0.5 rounded text-xs font-semibold ${p.tipo_placa === 'branca' ? 'bg-gray-100 text-gray-600' : p.tipo_placa === 'amarela' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'}">${p.tipo_placa}</span>
+            <tr style="background:transparent; border-bottom:1px solid rgba(255,255,255,0.04); transition:all 0.2s; ${p.impressa ? 'opacity:0.45;' : ''}"
+                onmouseover="this.style.background='rgba(255,255,255,0.03)'"
+                onmouseout="this.style.background='transparent'">
+                <td style="padding:10px 16px; color:rgba(255,255,255,0.5); font-size:11px;">${new Date(p.criado_em).toLocaleString('pt-BR')}</td>
+                <td style="padding:10px 16px; color:rgba(255,255,255,0.85); font-weight:500; font-size:13px;">${p.descricao || '—'}</td>
+                <td style="padding:10px 16px; color:rgba(255,255,255,0.3); font-size:11px; font-family:monospace;">${p.codigo || '—'}</td>
+                <td style="padding:10px 16px; color:rgba(255,255,255,0.3); font-size:11px; font-family:monospace;">${p.ean || '—'}</td>
+                <td style="padding:10px 16px; text-align:right; font-weight:600; color:rgba(255,255,255,0.85); font-size:13px;">${p.preco != null ? 'R$ ' + parseFloat(p.preco).toFixed(2).replace('.', ',') : '—'}</td>
+                <td style="padding:10px 16px; text-align:center;">
+                    <span style="padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600; background:${p.tipo_placa === 'branca' ? 'rgba(255,255,255,0.08)' : p.tipo_placa === 'amarela' ? 'rgba(255,200,50,0.15)' : 'rgba(91,154,255,0.15)'}; color:${p.tipo_placa === 'branca' ? 'rgba(255,255,255,0.6)' : p.tipo_placa === 'amarela' ? '#f5d742' : '#5b9aff'};">${p.tipo_placa}</span>
                 </td>
-                <td class="px-4 py-2.5 text-center">
-                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${p.impressa ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}">${p.impressa ? '✅ Impressa' : '⏳ Pendente'}</span>
+                <td style="padding:10px 16px; text-align:center;">
+                    <span style="padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600; background:${p.impressa ? 'rgba(22,163,74,0.15)' : 'rgba(255,200,50,0.15)'}; color:${p.impressa ? '#22c55e' : '#f5d742'};">${p.impressa ? '✅ Impressa' : '⏳ Pendente'}</span>
                 </td>
             </tr>
         `).join('')
@@ -121,8 +131,8 @@ async function carregarGerenciadorPlacas() {
             paginacao.innerHTML = `
                 <span>${dados.length} registro(s) — página ${pagina} de ${totalPaginas}</span>
                 <div class="flex gap-2">
-                    <button class="gp-pag-btn px-3 py-1 rounded border border-gray-200 text-xs hover:bg-gray-50" data-pag="${pagina - 1}" ${pagina === 1 ? 'disabled style="opacity:0.4"' : ''}>◀ Anterior</button>
-                    <button class="gp-pag-btn px-3 py-1 rounded border border-gray-200 text-xs hover:bg-gray-50" data-pag="${pagina + 1}" ${pagina === totalPaginas ? 'disabled style="opacity:0.4"' : ''}>Próxima ▶</button>
+                    <button class="gp-pag-btn" style="padding:6px 12px; border:1px solid rgba(255,255,255,0.08); border-radius:8px; font-size:11px; color:rgba(255,255,255,0.6); background:rgba(255,255,255,0.04); cursor:pointer; transition:all 0.3s; display:flex; align-items:center; gap:4px;${pagina === 1 ? 'opacity:0.4;cursor:not-allowed;' : ''}" data-pag="${pagina - 1}" ${pagina === 1 ? 'disabled' : ''}>◀ Anterior</button>
+                    <button class="gp-pag-btn" style="padding:6px 12px; border:1px solid rgba(255,255,255,0.08); border-radius:8px; font-size:11px; color:rgba(255,255,255,0.6); background:rgba(255,255,255,0.04); cursor:pointer; transition:all 0.3s; display:flex; align-items:center; gap:4px;${pagina === totalPaginas ? 'opacity:0.4;cursor:not-allowed;' : ''}" data-pag="${pagina + 1}" ${pagina === totalPaginas ? 'disabled' : ''}>Próxima ▶</button>
                 </div>`
             paginacao.querySelectorAll('.gp-pag-btn:not([disabled])').forEach(btn => {
                 btn.onclick = () => {

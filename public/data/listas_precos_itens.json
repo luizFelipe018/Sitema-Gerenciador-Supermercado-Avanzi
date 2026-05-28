@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "lista_id": 1,
+    "codigo": "1009257",
+    "ean": "7896425300046",
+    "descricao": "CAFE PAULISTA EXTRA FORTE 500G TIPOS",
+    "preco": "23.99",
+    "ordem": 1
+  },
+  {
+    "id": 3,
+    "lista_id": 1,
+    "codigo": "1028886",
+    "ean": "7896864400178",
+    "descricao": "FEIJAO CARIOCA PICININ TP1 1KG PREMIUM",
+    "preco": "5.99",
+    "ordem": 2
+  },
+  {
+    "id": 4,
+    "lista_id": 2,
+    "codigo": "1009257",
+    "ean": "7896425300046",
+    "descricao": "CAFE PAULISTA EXTRA FORTE 500G TIPOS",
+    "preco": "23.99",
+    "ordem": 1
+  },
+  {
+    "id": 6,
+    "lista_id": 2,
+    "codigo": "1007326",
+    "ean": "7896517600139",
+    "descricao": "FEIJAO CARIOCA DOURADINHO TP1 1KG",
+    "preco": "0.00",
+    "ordem": 2
+  },
+  {
+    "id": 7,
+    "lista_id": 3,
+    "codigo": "1009257",
+    "ean": "7896425300046",
+    "descricao": "CAFE PAULISTA EXTRA FORTE 500G TIPOS",
+    "preco": "23.99",
+    "ordem": 1
+  }
+]

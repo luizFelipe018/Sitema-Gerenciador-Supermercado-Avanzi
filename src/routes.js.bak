@@ -1093,6 +1093,142 @@ router.post('/imagens/verificacao/:codigo', authMiddleware, async (req, res) => 
     } catch (err) { res.status(500).json({ error: err.message }) }
 })
 
+// ── Estoque de Placas ───────────────────────────────
+router.post('/estoque-placas', authMiddleware, async (req, res) => {
+    try {
+        const db = require('./config/database')
+        await db.query(`CREATE TABLE IF NOT EXISTS estoque_placas (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nome VARCHAR(255) NOT NULL,
+            preco DECIMAL(10,2) NOT NULL,
+            INDEX idx_nome (nome),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`)
+        const { nome, preco } = req.body
+        if (!nome || preco == null) return res.status(400).json({ error: 'nome e preco são obrigatórios' })
+        const [r] = await db.query('INSERT INTO estoque_placas (nome, preco) VALUES (?,?)', [nome.trim().toUpperCase(), preco])
+        res.status(201).json({ id: r.insertId })
+    } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
+router.get('/estoque-placas', authMiddleware, async (req, res) => {
+    try {
+        const db = require('./config/database')
+        await db.query(`CREATE TABLE IF NOT EXISTS estoque_placas (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nome VARCHAR(255) NOT NULL,
+            preco DECIMAL(10,2) NOT NULL,
+            INDEX idx_nome (nome),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`)
+        const { q } = req.query
+        if (!q) return res.json([])
+        const termo = `%${q.trim().toUpperCase()}%`
+        const [rows] = await db.query('SELECT DISTINCT nome FROM estoque_placas WHERE nome LIKE ? ORDER BY nome LIMIT 50', [termo])
+        res.json(rows)
+    } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
+router.get('/estoque-placas/historico', authMiddleware, async (req, res) => {
+    try {
+        const db = require('./config/database')
+        const { nome } = req.query
+        if (!nome) return res.status(400).json({ error: 'nome é obrigatório' })
+        const [rows] = await db.query('SELECT * FROM estoque_placas WHERE nome = ? ORDER BY created_at DESC', [nome.trim().toUpperCase()])
+        res.json(rows)
+    } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
+router.delete('/estoque-placas/:id', authMiddleware, async (req, res) => {
+    try {
+        const db = require('./config/database')
+        await db.query('DELETE FROM estoque_placas WHERE id = ?', [req.params.id])
+        res.json({ ok: true })
+    } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
+// ── Cardápio Semanal ─────────────────────────────────
+router.get('/cardapio-semanal', authMiddleware, async (req, res) => {
+    try {
+        const db = require('./config/database')
+
+        // Auto-create table
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS cardapio_semanal (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                data_inicio DATE NOT NULL,
+                dia_semana TINYINT NOT NULL,
+                tipo_arroz TEXT,
+                tipo_feijao TEXT,
+                carnes TEXT,
+                guarnicoes TEXT,
+                massas TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY uk_week_day (data_inicio, dia_semana)
+            )
+        `)
+
+        const { data_inicio } = req.query
+        if (!data_inicio) return res.status(400).json({ error: 'data_inicio é obrigatório (YYYY-MM-DD)' })
+
+        const [rows] = await db.query(
+            'SELECT * FROM cardapio_semanal WHERE data_inicio = ? ORDER BY dia_semana',
+            [data_inicio]
+        )
+        res.json(rows)
+    } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
+router.post('/cardapio-semanal', authMiddleware, async (req, res) => {
+    try {
+        const db = require('./config/database')
+
+        // Auto-create table
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS cardapio_semanal (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                data_inicio DATE NOT NULL,
+                dia_semana TINYINT NOT NULL,
+                tipo_arroz TEXT,
+                tipo_feijao TEXT,
+                carnes TEXT,
+                guarnicoes TEXT,
+                massas TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                UNIQUE KEY uk_week_day (data_inicio, dia_semana)
+            )
+        `)
+
+        const { data_inicio, dias } = req.body
+        if (!data_inicio || !dias) return res.status(400).json({ error: 'data_inicio e dias são obrigatórios' })
+
+        for (const dia of dias) {
+            await db.query(`
+                INSERT INTO cardapio_semanal (data_inicio, dia_semana, tipo_arroz, tipo_feijao, carnes, guarnicoes, massas)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE
+                    tipo_arroz = VALUES(tipo_arroz),
+                    tipo_feijao = VALUES(tipo_feijao),
+                    carnes = VALUES(carnes),
+                    guarnicoes = VALUES(guarnicoes),
+                    massas = VALUES(massas)
+            `, [
+                data_inicio,
+                dia.dia_semana,
+                dia.tipo_arroz || null,
+                dia.tipo_feijao || null,
+                dia.carnes || null,
+                dia.guarnicoes || null,
+                dia.massas || null
+            ])
+        }
+
+        res.json({ ok: true })
+    } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
 // ── Dashboard ────────────────────────────────────────
 router.get('/dashboard', authMiddleware, async (req, res) => {
     try {
@@ -1242,6 +1378,19 @@ router.post('/login', authController.login)
 router.post('/usuarios', userController.create)
 
 router.get('/produtos',            authMiddleware, productController.findAll)
+router.get('/produtos/busca', authMiddleware, async (req, res) => {
+    try {
+        const db = require('./config/database')
+        const { q } = req.query
+        if (!q || q.length < 2) return res.json([])
+        const termo = `%${q.trim()}%`
+        const [rows] = await db.query(
+            'SELECT codigo, descricao, preco_venda FROM produtos WHERE descricao LIKE ? ORDER BY descricao LIMIT 30',
+            [termo]
+        )
+        res.json(rows)
+    } catch (err) { res.status(500).json({ error: err.message }) }
+})
 router.get('/produtos/:codigo',    authMiddleware, productController.findByCodigo)
 router.post('/produtos',           authMiddleware, productController.create)
 router.put('/produtos/:codigo',    authMiddleware, productController.update)

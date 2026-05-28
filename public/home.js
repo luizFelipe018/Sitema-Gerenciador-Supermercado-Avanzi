@@ -30,6 +30,49 @@ function toggleTheme() {
 
 document.getElementById('btn-theme-toggle')?.addEventListener('click', toggleTheme)
 
+// ── SIDEBAR TOGGLE (mobile) ──────────────────────────
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar')
+    const overlay = document.getElementById('sidebar-overlay')
+    const isOpen = sidebar.classList.contains('open-mobile')
+    if (isOpen) {
+        sidebar.classList.remove('open-mobile')
+        overlay.classList.remove('active')
+    } else {
+        sidebar.classList.add('open-mobile')
+        overlay.classList.add('active')
+    }
+}
+
+function closeSidebar() {
+    document.querySelector('.sidebar').classList.remove('open-mobile')
+    document.getElementById('sidebar-overlay').classList.remove('active')
+}
+
+document.getElementById('btn-sidebar-toggle')?.addEventListener('click', toggleSidebar)
+document.getElementById('btn-sidebar-close')?.addEventListener('click', toggleSidebar)
+document.getElementById('sidebar-overlay')?.addEventListener('click', closeSidebar)
+
+// Close sidebar on navigation (mobile)
+function closeSidebarOnNav() {
+    if (window.innerWidth <= 1024) closeSidebar()
+}
+
+// Wrap click handlers to close sidebar after navigation
+const navButtons = document.querySelectorAll('.sidebar-btn, .submenu-btn, .submenu3-btn')
+navButtons.forEach(btn => {
+    btn.addEventListener('click', closeSidebarOnNav)
+})
+
+// Handle resize: close sidebar when going back to desktop
+let resizeTimer
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer)
+    resizeTimer = setTimeout(() => {
+        if (window.innerWidth > 1024) closeSidebar()
+    }, 200)
+})
+
 function parseJwt(t) {
     try { return JSON.parse(atob(t.split('.')[1])) } catch { return null }
 }
@@ -61,6 +104,22 @@ function setConteudo(html, titulo) {
     void el.offsetWidth
     el.classList.add('fade-in')
     el.innerHTML = html
+}
+
+function printFolha(htmlContent, extraCss) {
+    const w = window.open('', '_blank', 'width=800,height=600')
+    if (!w) { alert('Permita pop-ups para imprimir.'); return }
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+        <style>
+            @page { size: A4; margin: 0; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            body { margin: 0; padding: 0; background: #fff; font-family: 'Segoe UI', sans-serif; }
+            ${extraCss || ''}
+        </style>
+    </head><body>${htmlContent}</body></html>`)
+    w.document.close()
+    w.focus()
+    setTimeout(() => { w.print(); w.close() }, 500)
 }
 
 function authHeaders() {
@@ -102,13 +161,7 @@ document.addEventListener('keydown', (e) => {
         if (popupBuscaAberto) fecharPopupBuscaGlobal()
     }
 })
-const nomeUsuario = localStorage.getItem('usuarioNome')
-if (nomeUsuario) {
-    document.getElementById('nomeUsuario').textContent = nomeUsuario
-    const iniciais = nomeUsuario.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase()
-    document.getElementById('user-avatar').textContent = iniciais
-    document.getElementById('user-avatar-header').textContent = iniciais
-}
+
 if (isAdmin()) document.getElementById('btn-admin').style.display = 'flex'
 
 // ── FUNÇÕES GLOBAIS DE PLACAS ─────────────────────────
@@ -117,7 +170,7 @@ window._ultimasPlacasGeradas = []
 async function registrarLogPlacas(placas) {
     if (!placas || !placas.length) return
     try {
-        const res  = await fetch('http://localhost:3000/log-placas', {
+        const res  = await fetch(API+'/log-placas', {
             method: 'POST',
             headers: authHeaders(),
             body: JSON.stringify(placas)
@@ -169,7 +222,7 @@ function registrarImpressaoPlacas() {
         btnSim.onclick = async () => {
             document.body.removeChild(overlay)
             try {
-                await fetch('http://localhost:3000/log-placas/imprimir', {
+                await fetch(API+'/log-placas/imprimir', {
                     method: 'POST',
                     headers: authHeaders(),
                     body: JSON.stringify({ ids })
@@ -283,11 +336,6 @@ document.getElementById('btn-relatorio-placas').addEventListener('click', () => 
     carregarRelatorioPlacas()
 })
 
-document.getElementById('btn-lista-precos').addEventListener('click', () => {
-    abrirSubmenuPlacas()
-    carregarListaPrecos()
-})
-
 document.getElementById('btn-cardapio').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
@@ -342,6 +390,14 @@ document.getElementById('btn-textos').addEventListener('click', () => {
     carregarTextos()
 })
 
+document.getElementById('btn-criar-texto').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuOfertas.classList.remove('open')
+    btnOfertasMenu.classList.remove('open')
+    carregarCriarTexto()
+})
+
 document.getElementById('btn-listas').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
@@ -374,6 +430,14 @@ document.getElementById('btn-gerenciador-placas').addEventListener('click', () =
     carregarGerenciadorPlacas()
 })
 
+document.getElementById('btn-estoque-placas').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuOfertas.classList.remove('open')
+    btnOfertasMenu.classList.remove('open')
+    carregarEstoquePlacas()
+})
+
 document.getElementById('btn-importar-cardapio').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
@@ -383,6 +447,22 @@ document.getElementById('btn-importar-cardapio').addEventListener('click', () =>
 })
 
 
+
+document.getElementById('btn-qrcode').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuOfertas.classList.remove('open')
+    btnOfertasMenu.classList.remove('open')
+    carregarQrcode()
+})
+
+document.getElementById('btn-feriados').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuOfertas.classList.remove('open')
+    btnOfertasMenu.classList.remove('open')
+    carregarFeriados()
+})
 
 document.getElementById('btn-cotacao').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
@@ -398,6 +478,14 @@ document.getElementById('btn-dashboard-vendas').addEventListener('click', () => 
     submenuOfertas.classList.remove('open')
     btnOfertasMenu.classList.remove('open')
     carregarDashboardVendas()
+})
+
+document.getElementById('btn-calc-kglt').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuOfertas.classList.remove('open')
+    btnOfertasMenu.classList.remove('open')
+    carregarCalcKglt()
 })
 
 document.getElementById('btn-admin').addEventListener('click', () => {
@@ -514,11 +602,7 @@ function fecharPopupBuscaGlobal() {
 }
 
 async function carregarBancoBusca() {
-    if (bancoBuscaGlobal.length > 0) return
-    try {
-        const res = await fetch('http://localhost:3000/produtos', { headers: authHeaders() })
-        bancoBuscaGlobal = await res.json()
-    } catch { console.warn('Erro ao carregar banco') }
+    // No longer needed — uses server-side search via /produtos/busca
 }
 
 let timerBuscaGlobal = null
@@ -534,36 +618,35 @@ document.getElementById('input-busca-global').addEventListener('keydown', (e) =>
     }
 })
 
-function executarBuscaGlobal(termo, selecionarPrimeiro = false) {
+async function executarBuscaGlobal(termo, selecionarPrimeiro = false) {
     const container = document.getElementById('resultado-busca-global')
-    if (!termo) {
-        container.innerHTML = '<div class="text-center text-white/30 py-12 text-sm">Digite para buscar...</div>'
+    if (!termo || termo.length < 2) {
+        container.innerHTML = '<div class="text-center text-white/30 py-12 text-sm">Digite pelo menos 2 caracteres...</div>'
         return
     }
 
-    const q = termo.toUpperCase()
-    const resultados = bancoBuscaGlobal.filter(p =>
-        p.descricao?.toUpperCase().includes(q) ||
-        p.codigo?.includes(q) ||
-        p.ean?.includes(q)
-    ).slice(0, 20)
+    container.innerHTML = '<div class="text-center text-white/30 py-12 text-sm">Buscando...</div>'
 
-    if (!resultados.length) {
-        container.innerHTML = '<div class="text-center text-white/30 py-12 text-sm">Nenhum resultado encontrado</div>'
-        return
-    }
+    try {
+        const res = await fetch(API+`/produtos/busca?q=${encodeURIComponent(termo)}`, { headers: authHeaders() })
+        const resultados = await res.json()
 
-    container.innerHTML = resultados.map((p, i) => `
-        <div class="item-busca-global cursor-pointer rounded-xl p-4 mb-2 flex items-center justify-between transition-all hover:scale-[1.01] hover:bg-white/5"
-            data-codigo="${p.codigo}" data-desc="${p.descricao}" data-ean="${p.ean || ''}" data-preco="${p.preco_venda || ''}"
-            style="${selecionarPrimeiro && i === 0 ? 'background:linear-gradient(135deg, var(--primary), var(--primary-dark)); border:none;' : 'background:rgba(255,255,255,0.03); border:1px solid var(--glass-border);'}">
-            <div class="flex-1 min-w-0">
-                <div class="font-semibold text-sm truncate ${selecionarPrimeiro && i === 0 ? 'text-white' : 'text-white'}">${p.descricao}</div>
-                <div class="text-xs mt-1 ${selecionarPrimeiro && i === 0 ? 'text-white/70' : 'text-white/40'}">${p.codigo} • ${p.ean || 'sem EAN'}</div>
-            </div>
-            <div class="font-bold text-lg ml-4 ${selecionarPrimeiro && i === 0 ? 'text-white' : 'text-red-400'}">
-                R$ ${parseFloat(p.preco_venda || 0).toFixed(2).replace('.', ',')}
-            </div>
+        if (!resultados.length) {
+            container.innerHTML = '<div class="text-center text-white/30 py-12 text-sm">Nenhum resultado encontrado</div>'
+            return
+        }
+
+        container.innerHTML = resultados.map((p, i) => `
+            <div class="item-busca-global cursor-pointer rounded-xl p-4 mb-2 flex items-center justify-between transition-all hover:scale-[1.01] hover:bg-white/5"
+                data-codigo="${p.codigo}" data-desc="${p.descricao}" data-ean="${p.ean || ''}" data-preco="${p.preco_venda || ''}"
+                style="${selecionarPrimeiro && i === 0 ? 'background:linear-gradient(135deg, var(--primary), var(--primary-dark)); border:none;' : 'background:rgba(255,255,255,0.03); border:1px solid var(--glass-border);'}">
+                <div class="flex-1 min-w-0">
+                    <div class="font-semibold text-sm truncate ${selecionarPrimeiro && i === 0 ? 'text-white' : 'text-white'}">${p.descricao}</div>
+                    <div class="text-xs mt-1 ${selecionarPrimeiro && i === 0 ? 'text-white/70' : 'text-white/40'}">${p.codigo} • ${p.ean || 'sem EAN'}</div>
+                </div>
+                <div class="font-bold text-lg ml-4 ${selecionarPrimeiro && i === 0 ? 'text-white' : 'text-red-400'}">
+                    R$ ${parseFloat(p.preco_venda || 0).toFixed(2).replace('.', ',')}
+                </div>
         </div>
     `).join('')
 
@@ -585,4 +668,7 @@ function executarBuscaGlobal(termo, selecionarPrimeiro = false) {
             }, 150)
         }
     })
+    } catch {
+        container.innerHTML = '<div class="text-center text-white/30 py-12 text-sm">Erro na busca</div>'
+    }
 }

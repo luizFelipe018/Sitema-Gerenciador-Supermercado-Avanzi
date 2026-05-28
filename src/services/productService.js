@@ -1,7 +1,9 @@
 const productRepository = require('../repositories/productRepository')
 
-exports.findAll = async () => {
-    return productRepository.findAll()
+exports.findAll = async ({ busca, limit, offset } = {}) => {
+    const rows = await productRepository.findAll({ busca, limit, offset })
+    const total = await productRepository.count(busca)
+    return { data: rows, total, page: offset ? Math.floor(offset / (limit || 50)) + 1 : 1, limit: limit || 50 }
 }
 
 exports.findByCodigo = async (codigo) => {

@@ -2,8 +2,12 @@ const productService = require('../services/productService')
 
 exports.findAll = async (req, res) => {
     try {
-        const products = await productService.findAll()
-        res.json(products)
+        const { busca, page, limit } = req.query
+        const p = parseInt(page) || 1
+        const l = Math.min(parseInt(limit) || 50, 500)
+        const offset = (p - 1) * l
+        const result = await productService.findAll({ busca, limit: l, offset })
+        res.json(result)
     } catch (error) {
         res.status(500).json({ error: error.message })
     }

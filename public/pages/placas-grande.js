@@ -1,9 +1,15 @@
 var plaquesBancoGrande = []
 var plaquesSalvasGrande = []
 var paginaPlacasGrande = 0
-const plaquesPorPaginaGrande = 4
+const plaquesPorPaginaGrande = 1
 var placaClicadaGrande = null
 var _salvandoGrande = false
+
+const CSS_FOLHA_G = `
+.folha-grande { display:flex; flex-direction:column; width:100%; height:297mm; margin:0; background:#fff !important; box-sizing:border-box; }
+.placa-grande { width:100%; flex:1; border:1px solid #000; background:#fff !important; box-sizing:border-box; }
+@media print { @page { size: A4; margin: 0; } .placa-grande > div { padding: 550px 135px 100px 135px !important; } }
+`
 
 function carregarEstilos() {
     if (!document.getElementById('placas-main-style')) {
@@ -13,6 +19,11 @@ function carregarEstilos() {
         link.href = 'style.css'
         document.head.appendChild(link)
     }
+}
+
+function atualizarStatusBanco(texto, cor) {
+    const el = document.getElementById('pg-status-banco')
+    if (el) { el.textContent = texto; if (cor) el.style.color = cor }
 }
 
 function quebrarNome(descricao) {
@@ -30,55 +41,119 @@ async function carregarPlacasGrande() {
     carregarEstilos()
     setActive('btn-placas-grande')
     setConteudo(`
-        <div class="controls-placas bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-5">
-            <div class="flex gap-3 flex-wrap items-end mb-4">
-                <div class="flex flex-col gap-1">
-                    <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">EAN / Código</label>
-                    <input type="text" id="ean-input-g" autocomplete="off" autofocus
-                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm w-40 focus:outline-none focus:border-red-400">
+        <div style="max-width:1200px; margin:0 auto;">
+
+            <div class="dash-glass dash-animate" style="padding:20px; margin-bottom:20px;">
+                <div id="pg-status-banco" style="font-size:11px; color:rgba(255,255,255,0.3); margin-bottom:10px; padding:6px 10px; border-radius:6px; background:rgba(255,255,255,0.03);">Carregando produtos do banco...</div>
+                <div style="display:flex; gap:12px; align-items:end; flex-wrap:wrap; margin-bottom:16px;">
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Código / EAN</label>
+                        <input type="text" id="ean-input-g" autocomplete="off" autofocus
+                            style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; width:160px; transition:all 0.3s;"
+                            onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
+                            onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Preço (R$)</label>
+                        <input type="number" id="preco-input-g" step="0.01"
+                            style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; width:120px; transition:all 0.3s;"
+                            onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
+                            onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Qtd</label>
+                        <input type="number" id="qtd-input-g" value="1" min="1"
+                            style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; width:70px; transition:all 0.3s; text-align:center;"
+                            onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
+                            onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
+                    </div>
+                    <button id="btn-add-placa-g" style="padding:10px 20px; border:none; border-radius:10px; font-size:13px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); display:flex; align-items:center; gap:6px;"
+                        onmouseenter="this.style.transform='translateY(-2px) scale(1.03)';this.style.boxShadow='0 8px 24px rgba(181,21,21,0.4)'"
+                        onmouseleave="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(181,21,21,0.3)'"
+                        onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='translateY(-2px) scale(1.03)'">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Adicionar
+                    </button>
+                    <button id="btn-abrir-busca-g" style="padding:10px 18px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; font-size:13px; font-weight:600; color:rgba(255,255,255,0.6); cursor:pointer; background:rgba(255,255,255,0.04); transition:all 0.3s; display:flex; align-items:center; gap:6px;"
+                        onmouseenter="this.style.background='rgba(255,255,255,0.08)';this.style.color='#fafafa'"
+                        onmouseleave="this.style.background='rgba(255,255,255,0.04)';this.style.color='rgba(255,255,255,0.6)'">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        Buscar
+                    </button>
+                    <button id="btn-abrir-import-g" style="padding:10px 18px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; font-size:13px; font-weight:600; color:rgba(255,255,255,0.6); cursor:pointer; background:rgba(255,255,255,0.04); transition:all 0.3s; display:flex; align-items:center; gap:6px;"
+                        onmouseenter="this.style.background='rgba(255,255,255,0.08)';this.style.color='#fafafa'"
+                        onmouseleave="this.style.background='rgba(255,255,255,0.04)';this.style.color='rgba(255,255,255,0.6)'">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Importar
+                    </button>
                 </div>
-                <div class="flex flex-col gap-1">
-                    <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Preço (R$)</label>
-                    <input type="number" id="preco-input-g" step="0.01"
-                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm w-28 focus:outline-none focus:border-red-400">
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06);">
+                    <button id="btn-print-atual-g" style="padding:8px 16px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; font-size:12px; font-weight:600; color:rgba(255,255,255,0.6); cursor:pointer; background:rgba(255,255,255,0.04); transition:all 0.3s; display:flex; align-items:center; gap:6px;"
+                        onmouseenter="this.style.background='rgba(34,197,94,0.12)';this.style.borderColor='rgba(34,197,94,0.3)';this.style.color='#22c55e'"
+                        onmouseleave="this.style.background='rgba(255,255,255,0.04)';this.style.borderColor='rgba(255,255,255,0.08)';this.style.color='rgba(255,255,255,0.6)'">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        Pág. Atual
+                    </button>
+                    <button id="btn-print-tudo-g" style="padding:8px 16px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; font-size:12px; font-weight:600; color:rgba(255,255,255,0.6); cursor:pointer; background:rgba(255,255,255,0.04); transition:all 0.3s; display:flex; align-items:center; gap:6px;"
+                        onmouseenter="this.style.background='rgba(34,197,94,0.12)';this.style.borderColor='rgba(34,197,94,0.3)';this.style.color='#22c55e'"
+                        onmouseleave="this.style.background='rgba(255,255,255,0.04)';this.style.borderColor='rgba(255,255,255,0.08)';this.style.color='rgba(255,255,255,0.6)'">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        Imprimir Tudo
+                    </button>
+
+                    <div style="display:flex; align-items:center; gap:6px; margin-left:8px;">
+                        <button id="btn-pag-ant-g" style="padding:8px 12px; border:1px solid rgba(255,255,255,0.08); border-radius:8px; font-size:12px; color:rgba(255,255,255,0.4); cursor:pointer; background:transparent; transition:all 0.3s; display:flex; align-items:center; gap:4px;"
+                            onmouseenter="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.7)'"
+                            onmouseleave="this.style.background='transparent';this.style.color='rgba(255,255,255,0.4)'">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+                            Ant.
+                        </button>
+                        <span id="contador-pagina-g" style="font-size:12px; font-weight:600; color:rgba(255,255,255,0.35); min-width:100px; text-align:center;">Página 1 de 1</span>
+                        <button id="btn-pag-prox-g" style="padding:8px 12px; border:1px solid rgba(255,255,255,0.08); border-radius:8px; font-size:12px; color:rgba(255,255,255,0.4); cursor:pointer; background:transparent; transition:all 0.3s; display:flex; align-items:center; gap:4px;"
+                            onmouseenter="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.7)'"
+                            onmouseleave="this.style.background='transparent';this.style.color='rgba(255,255,255,0.4)'">
+                            Próx.
+                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                    </div>
+
+                    <button id="btn-limpar-g" style="padding:8px 16px; border:none; border-radius:10px; font-size:12px; font-weight:700; color:#ef4444; cursor:pointer; background:rgba(239,68,68,0.1); margin-left:auto; transition:all 0.3s; display:flex; align-items:center; gap:6px;"
+                        onmouseenter="this.style.background='rgba(239,68,68,0.2)';this.style.transform='scale(1.03)'"
+                        onmouseleave="this.style.background='rgba(239,68,68,0.1)';this.style.transform=''">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                        Limpar
+                    </button>
                 </div>
-                <div class="flex flex-col gap-1">
-                    <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Qtd</label>
-                    <input type="number" id="qtd-input-g" value="1" min="1"
-                        class="border border-gray-200 rounded-lg px-3 py-2 text-sm w-16 focus:outline-none focus:border-red-400">
-                </div>
-                <button id="btn-add-placa-g" class="px-4 py-2 text-white text-sm font-semibold rounded-lg" style="background:#28a745;">➕ Adicionar</button>
-                <button id="btn-abrir-import-g" class="px-4 py-2 text-white text-sm font-semibold rounded-lg" style="background:#6f42c1;">📥 Importar Tabela</button>
-                <button id="btn-abrir-busca-g" class="px-4 py-2 text-white text-sm font-semibold rounded-lg" style="background:#007bff;">🔍 Buscar Nome</button>
             </div>
-            <div class="flex gap-3 items-center pt-4 border-t border-gray-100 flex-wrap">
-                <button id="btn-print-atual-g" class="px-4 py-2 text-white text-sm font-semibold rounded-lg" style="background:#4a4a4a;">🖨️ Pág. Atual</button>
-                <button id="btn-print-tudo-g" class="px-4 py-2 text-white text-sm font-semibold rounded-lg" style="background:#2d3436;">🖨️ Imprimir Tudo</button>
-                <button id="btn-pag-ant-g" class="px-3 py-2 text-sm rounded-lg border border-gray-200 hover:bg-gray-50">◀ Ant.</button>
-                <span id="contador-pagina-g" class="text-sm font-semibold text-gray-500 min-w-[110px] text-center">Página 1 de 1</span>
-                <button id="btn-pag-prox-g" class="px-3 py-2 text-sm rounded-lg border border-gray-200 hover:bg-gray-50">Próx ▶</button>
-                <button id="btn-limpar-g" class="px-4 py-2 text-white text-sm font-semibold rounded-lg ml-auto" style="background:#dc3545;">🗑 Limpar Tudo</button>
-            </div>
+
+            <div id="container-placas-g" style="padding:10px 0;"></div>
+
         </div>
-        <div id="container-placas-g"></div>
     `, 'Placas Grande')
 
     if (plaquesBancoGrande.length === 0) {
         try {
-            const res = await fetch('http://localhost:3000/produtos', { headers: authHeaders() })
-            const data = await res.json()
-            if (Array.isArray(data)) {
-                plaquesBancoGrande = data.map(p => ({
+            const res = await fetch(API+'/produtos?page=1&limit=500', { headers: authHeaders() })
+            const json = await res.json()
+            if (json.data && Array.isArray(json.data)) {
+                plaquesBancoGrande = json.data.map(p => ({
                     ...p,
                     preco_venda: parseFloat(p.preco_venda),
                     quantidade_kg_l: parseFloat(p.quantidade_kg_l || 0)
                 }))
+                atualizarStatusBanco(`✓ ${plaquesBancoGrande.length} produto(s) carregado(s)`)
+            } else {
+                atualizarStatusBanco('✗ Nenhum produto encontrado no banco', '#ef4444')
             }
-        } catch { console.error('Erro ao carregar banco') }
+        } catch {
+            atualizarStatusBanco('✗ Erro ao carregar produtos', '#ef4444')
+        }
+    } else {
+        atualizarStatusBanco(`✓ ${plaquesBancoGrande.length} produto(s) em memória`)
     }
 
     try {
-        const res = await fetch('http://localhost:3000/registros-placas?tipo=grande', { headers: authHeaders() })
+        const res = await fetch(API+'/registros-placas?tipo=grande', { headers: authHeaders() })
         const data = await res.json()
         if (Array.isArray(data)) {
             plaquesSalvasGrande = data.map(p => ({
@@ -132,7 +207,7 @@ function montarPlacaGrandeHTML(p) {
             </div>
 
             <div style="width:100%; text-align:center; flex:1; display:flex; align-items:center; justify-content:center;">
-                <div data-field="linha2" style="font-size:52px; font-weight:900; text-transform:uppercase; line-height:1; letter-spacing:2px; white-space:nowrap; overflow:hidden;">${linha2}</div>
+                <div data-field="linha2" style="font-size:520px; font-weight:900; text-transform:uppercase; line-height:1; letter-spacing:2px; white-space:nowrap; overflow:hidden;">${linha2}</div>
             </div>
 
             <div style="width:100%; text-align:center;">
@@ -167,10 +242,19 @@ function renderizarPlacasGrande() {
         paginaPlacasGrande * plaquesPorPaginaGrande,
         (paginaPlacasGrande + 1) * plaquesPorPaginaGrande
     )
-    if (!lista.length) return
+    if (!lista.length) {
+        container.innerHTML = `
+            <div style="text-align:center; padding:60px 20px; border-radius:16px; border:1px dashed rgba(255,255,255,0.08);">
+                <svg width="40" height="40" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:12px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                <p style="color:rgba(255,255,255,0.2); font-size:13px;">Nenhuma placa grande adicionada</p>
+                <p style="color:rgba(255,255,255,0.1); font-size:11px; margin-top:4px;">Digite um código e preço acima para começar</p>
+            </div>`
+        return
+    }
 
     const folha = document.createElement('div')
     folha.className = 'folha-grande'
+    folha.style.animation = 'dashFadeUp 0.3s ease'
 
     lista.forEach(p => {
         const div = document.createElement('div')
@@ -183,7 +267,7 @@ function renderizarPlacasGrande() {
                 const field = el.getAttribute('data-field')
                 const input = document.createElement('input')
                 input.value = el.innerText.trim()
-                input.style.cssText = `width:90%; font-size:${el.style.fontSize}; font-weight:bold; text-align:center; border:2px solid #b51515; font-family:'Segoe UI',sans-serif;`
+                input.style.cssText = 'width:90%; font-size:' + el.style.fontSize + '; font-weight:bold; text-align:center; border:2px solid #b51515; border-radius:6px; background:#fff; color:#000; outline:none; padding:2px 6px; font-family:\'Segoe UI\',sans-serif;'
                 el.replaceWith(input)
                 input.focus(); input.select()
 
@@ -240,7 +324,7 @@ async function salvarERenderizarGrande() {
     if (_salvandoGrande) return
     _salvandoGrande = true
     try {
-        await fetch('http://localhost:3000/registros-placas', {
+        await fetch(API+'/registros-placas', {
             method: 'POST',
             headers: { ...authHeaders(), 'Content-Type': 'application/json' },
             body: JSON.stringify({ tipo: 'grande', placas: plaquesSalvasGrande })
@@ -273,7 +357,7 @@ function imprimirTudoGrande() {
         
         if (!placasNaFolha.length) continue
         
-        plaquesNaFolha.forEach(p => {
+        placasNaFolha.forEach(p => {
             const div = document.createElement('div')
             div.className = 'placa-grande'
             div.innerHTML = montarPlacaGrandeHTML(p)
@@ -283,22 +367,47 @@ function imprimirTudoGrande() {
     }
     
     setTimeout(() => {
-        window.onafterprint = () => { registrarImpressaoPlacas(); window.onafterprint = null }
-        window.print()
+        printFolha(container.innerHTML, CSS_FOLHA_G)
         setTimeout(() => {
             paginaPlacasGrande = paginaOriginal
             renderizarPlacasGrande()
+            registrarImpressaoPlacas()
         }, 1000)
     }, 500)
 }
 
 async function adicionarPlacaGrande() {
-    const ean = document.getElementById('ean-input-g').value.trim()
-    const preco = parseFloat(document.getElementById('preco-input-g').value)
+    const codigo = document.getElementById('ean-input-g').value.trim()
+    const precoRaw = document.getElementById('preco-input-g').value
+    const preco = parseFloat(precoRaw.replace(',', '.'))
     const quantidade = parseInt(document.getElementById('qtd-input-g').value) || 1
-    if (!ean || isNaN(preco)) return
+    if (!codigo || isNaN(preco)) return
 
-    const prod = plaquesBancoGrande.find(p => p.ean === ean) || plaquesBancoGrande.find(p => p.codigo === ean)
+    let prod = plaquesBancoGrande.find(p => String(p.ean) === codigo) || plaquesBancoGrande.find(p => String(p.codigo) === codigo)
+
+    if (!prod) {
+        try {
+            const url = API+'/produtos/'+encodeURIComponent(codigo)
+            const res = await fetch(url, { headers: authHeaders() })
+            if (res.ok) {
+                const p = await res.json()
+                plaquesBancoGrande.push(p)
+                prod = p
+            }
+        } catch {}
+    }
+    if (!prod) {
+        try {
+            const url = API+'/produtos/busca/ean/'+encodeURIComponent(codigo)
+            const res = await fetch(url, { headers: authHeaders() })
+            if (res.ok) {
+                const p = await res.json()
+                plaquesBancoGrande.push(p)
+                prod = p
+            }
+        } catch {}
+    }
+
     if (prod) {
         const qtdKgL = parseFloat(prod.quantidade_kg_l)
         const precoUn = qtdKgL > 0 ? (preco / qtdKgL).toFixed(2).replace('.', ',') : prod.preco_venda
@@ -316,7 +425,7 @@ async function adicionarPlacaGrande() {
         document.getElementById('qtd-input-g').value = 1
         document.getElementById('ean-input-g').focus()
     } else {
-        alert('Produto não encontrado. Use "Buscar Nome" para localizar.')
+        alert('Produto não encontrado. Verifique o código e tente novamente.')
     }
 }
 
@@ -327,38 +436,44 @@ function abrirBuscaNomeGrande() {
     document.getElementById('input-busca-nome-g').focus()
 }
 
-function onBuscaNomeKeydownGrande(e) {
+async function onBuscaNomeKeydownGrande(e) {
     if (e.key !== 'Enter') return
-    const termo = e.target.value.trim().toUpperCase()
-    if (!termo) return
-    const resultados = plaquesBancoGrande.filter(p =>
-        p.descricao?.toUpperCase().includes(termo) ||
-        p.codigo?.includes(termo) || p.ean?.includes(termo)
-    ).slice(0, 50)
+    const termo = e.target.value.trim()
+    if (!termo || termo.length < 2) return
 
     const tbody = document.querySelector('#tabela-busca-g tbody')
-    if (!resultados.length) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:10px;color:#999;">Nenhum produto encontrado</td></tr>'
-        return
-    }
-    tbody.innerHTML = resultados.map((p, i) => `
-        <tr data-index="${i}" style="cursor:pointer; border-bottom:1px solid #f0f0f0;"
-            onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background=''">
-            <td style="padding:8px 12px; font-size:12px; color:#666;">${p.codigo}</td>
-            <td style="padding:8px 12px; font-size:13px;">${p.descricao}</td>
-            <td style="padding:8px 12px; font-size:13px; text-align:right;">R$ ${parseFloat(p.preco_venda || 0).toFixed(2).replace('.', ',')}</td>
-        </tr>
-    `).join('')
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:10px;color:#999;">Buscando...</td></tr>'
 
-    tbody.querySelectorAll('tr').forEach(tr => {
-        tr.onclick = () => {
-            const i = parseInt(tr.getAttribute('data-index'))
-            document.getElementById('ean-input-g').value = resultados[i].codigo
-            document.getElementById('preco-input-g').value = resultados[i].preco_venda || ''
-            fecharModaisGrande()
-            document.getElementById('preco-input-g').focus()
+    try {
+        const res = await fetch(API+`/produtos/busca?q=${encodeURIComponent(termo)}`, { headers: authHeaders() })
+        const resultados = await res.json()
+
+        if (!resultados.length) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:10px;color:#999;">Nenhum produto encontrado</td></tr>'
+            return
         }
-    })
+
+        tbody.innerHTML = resultados.map((p, i) => `
+            <tr data-index="${i}" style="cursor:pointer; border-bottom:1px solid #f0f0f0;"
+                onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background=''">
+                <td style="padding:8px 12px; font-size:12px; color:#666;">${p.codigo}</td>
+                <td style="padding:8px 12px; font-size:13px;">${p.descricao}</td>
+                <td style="padding:8px 12px; font-size:13px; text-align:right;">R$ ${parseFloat(p.preco_venda || 0).toFixed(2).replace('.', ',')}</td>
+            </tr>
+        `).join('')
+
+        tbody.querySelectorAll('tr').forEach(tr => {
+            tr.onclick = () => {
+                const i = parseInt(tr.getAttribute('data-index'))
+                document.getElementById('ean-input-g').value = resultados[i].codigo
+                document.getElementById('preco-input-g').value = resultados[i].preco_venda != null ? resultados[i].preco_venda : ''
+                fecharModaisGrande()
+                document.getElementById('preco-input-g').focus()
+            }
+        })
+    } catch {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:10px;color:#ef4444;">Erro na busca</td></tr>'
+    }
 }
 
 async function processarImportacaoGrande() {
@@ -370,14 +485,30 @@ async function processarImportacaoGrande() {
     listaErros.innerHTML = ''
     let itensErros = [], contador = 0
 
-    texto.split(/\r?\n/).forEach(linha => {
+    for (const linha of texto.split(/\r?\n/)) {
         const colunas = linha.split(/\t| {2,}/)
         if (colunas.length >= 2) {
             const descProcurada = colunas[0].trim().toUpperCase()
             const precoNovo = parseFloat(colunas[1].replace('R$', '').replace(/\s/g, '').replace(',', '.').trim())
             if (!isNaN(precoNovo)) {
-                const prod = plaquesBancoGrande.find(p => p.descricao?.toUpperCase() === descProcurada) ||
-                             plaquesBancoGrande.find(p => p.descricao?.toUpperCase().includes(descProcurada))
+                let prod = plaquesBancoGrande.find(p => p.descricao?.toUpperCase() === descProcurada) ||
+                           plaquesBancoGrande.find(p => p.descricao?.toUpperCase().includes(descProcurada))
+                if (!prod) {
+                    try {
+                        const res = await fetch(API+'/produtos/busca?q='+encodeURIComponent(descProcurada), { headers: authHeaders() })
+                        if (res.ok) {
+                            const lista = await res.json()
+                            if (lista.length > 0) {
+                                const res2 = await fetch(API+'/produtos/'+encodeURIComponent(lista[0].codigo), { headers: authHeaders() })
+                                if (res2.ok) {
+                                    const p = await res2.json()
+                                    plaquesBancoGrande.push(p)
+                                    prod = p
+                                }
+                            }
+                        }
+                    } catch {}
+                }
                 if (prod) {
                     const qtdKgL = parseFloat(prod.quantidade_kg_l)
                     const precoUn = qtdKgL > 0 ? (precoNovo / qtdKgL).toFixed(2).replace('.', ',') : prod.preco_venda
@@ -388,7 +519,7 @@ async function processarImportacaoGrande() {
                 } else { itensErros.push(descProcurada) }
             }
         }
-    })
+    }
 
     if (itensErros.length > 0) {
         logErros.style.display = 'block'
@@ -417,7 +548,12 @@ function vincularEventosPlacasGrande() {
         document.getElementById('modal-import-g').style.display = 'block'
         document.getElementById('import-texto-g').focus()
     }
-    document.getElementById('btn-print-atual-g').onclick  = () => { window.print(); setTimeout(() => registrarImpressaoPlacas(), 2000) }
+    document.getElementById('btn-print-atual-g').onclick  = () => {
+        const folha = document.querySelector('#container-placas-g .folha-grande')
+        if (!folha) return
+        printFolha(folha.outerHTML, CSS_FOLHA_G)
+        setTimeout(registrarImpressaoPlacas, 1000)
+    }
     document.getElementById('btn-print-tudo-g').onclick   = imprimirTudoGrande
     document.getElementById('btn-pag-ant-g').onclick      = () => mudarPaginaPlacasGrande(-1)
     document.getElementById('btn-pag-prox-g').onclick     = () => mudarPaginaPlacasGrande(1)

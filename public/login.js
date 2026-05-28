@@ -1,8 +1,8 @@
-async function fazerLogin() {
+﻿async function fazerLogin() {
     const usuario = document.getElementById('usuario').value
     const senha = document.getElementById('senha').value
 
-    const response = await fetch('http://localhost:3000/login', {
+    const response = await fetch(API+'/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -17,7 +17,7 @@ async function fazerLogin() {
         localStorage.setItem('usuarioNome', data.user.nome)
         localStorage.setItem('usuario', data.user.usuario)
         localStorage.setItem('usuarioCargo', data.user.cargo || 'atendente')
-        window.location.href = 'home.html'
+        window.location.href = window.location.protocol === 'file:' ? 'home.html' : API + '/home.html'
     } else {
         document.getElementById('erro').innerText = data.error
     }
@@ -30,3 +30,71 @@ document.getElementById('btn-login').addEventListener('click', fazerLogin)
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') fazerLogin()
 })
+
+// ── Auto-detect server (Electron: tenta localhost, se falhar usa 192.168.2.55) ──
+;(async function autoDetectServer() {
+    const savedUrl = localStorage.getItem('serverUrl')
+    if (savedUrl) return
+    if (window.location.protocol !== 'file:') return
+    const erro = document.getElementById('erro')
+    erro.innerText = 'Detectando servidor...'
+    erro.style.color = '#facc15'
+    try {
+        const controller = new AbortController()
+        const t = setTimeout(() => controller.abort(), 1000)
+        await fetch('http://localhost:3000/', { method: 'HEAD', signal: controller.signal })
+        clearTimeout(t)
+        erro.innerText = ''
+    } catch {
+        erro.innerText = 'Servidor local não encontrado, tentando 192.168.2.55...'
+        localStorage.setItem('serverUrl', 'http://192.168.2.55:3000')
+        setTimeout(() => location.reload(), 1500)
+    }
+})()
+
+// ── Server config ──
+document.getElementById('btn-server-config-login').onclick = () => {
+    const area = document.getElementById('server-config-area')
+    area.style.display = area.style.display === 'none' ? 'block' : 'none'
+    if (area.style.display === 'block') {
+        document.getElementById('input-server-url').value = localStorage.getItem('serverUrl') || ''
+        document.getElementById('input-server-url').focus()
+    }
+}
+
+document.getElementById('btn-cancel-server').onclick = () => {
+    document.getElementById('server-config-area').style.display = 'none'
+}
+
+document.getElementById('btn-localhost-server').onclick = () => {
+    localStorage.removeItem('serverUrl')
+    document.getElementById('server-config-area').style.display = 'none'
+    document.getElementById('erro').innerText = 'Usando localhost:3000'
+    document.getElementById('erro').style.color = '#facc15'
+    setTimeout(() => location.reload(), 1500)
+}
+
+document.getElementById('btn-save-server').onclick = () => {
+    const url = document.getElementById('input-server-url').value.trim()
+    if (url) {
+        const clean = url.replace(/\/+$/, '')
+        localStorage.setItem('serverUrl', clean)
+        const origin = clean.match(/^https?:\/\/[^\/]+/)[0]
+        const meta = document.getElementById('meta-csp')
+        if (meta) {
+            let csp = meta.getAttribute('content')
+            if (csp.indexOf(origin) === -1) {
+                csp = csp.replace(/(connect-src[^;]*)/, '$1 ' + origin)
+                meta.setAttribute('content', csp)
+            }
+        }
+        document.getElementById('erro').innerText = 'Servidor salvo! Reconectando...'
+        document.getElementById('erro').style.color = '#4ade80'
+    } else {
+        localStorage.removeItem('serverUrl')
+        document.getElementById('erro').innerText = 'Usando servidor local (localhost:3000)'
+        document.getElementById('erro').style.color = '#facc15'
+    }
+    document.getElementById('server-config-area').style.display = 'none'
+    setTimeout(() => location.reload(), 1500)
+}

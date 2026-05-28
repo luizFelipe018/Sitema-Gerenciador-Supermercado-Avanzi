@@ -1,0 +1,10 @@
+[
+  {
+    "chave": "pasta_imagens",
+    "valor": "E:\\Banco de Imagens\\"
+  },
+  {
+    "chave": "pasta_pratos",
+    "valor": "E:\\Imagens\\Pratos"
+  }
+]
