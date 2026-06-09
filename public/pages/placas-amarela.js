@@ -20,6 +20,7 @@ const CSS_FOLHA_AM = `
 .placa-amarela h1:nth-child(5) { font-size:16px; }
 `
 var _salvandoAmarela = false
+var _dragIdxAm = -1
 
 function carregarEstilos() {
     if (!document.getElementById('placas-main-style')) {
@@ -153,6 +154,7 @@ async function carregarPlacasAmarela() {
 
     renderizarPlacasAmarela()
     vincularEventosPlacasAmarela()
+    window._placasAtuais = plaquesSalvasAmarela
 }
 
 function vincularEventosPlacasAmarela() {
@@ -206,7 +208,7 @@ async function adicionarPlacaAmarela() {
 
     if (!prod) {
         try {
-            const res = await fetch(API+'/produtos/'+encodeURIComponent(codigo), { headers: authHeaders() })
+            const res = await fetch(API+'/produtos/busca/ean/'+encodeURIComponent(codigo), { headers: authHeaders() })
             if (res.ok) {
                 const p = await res.json()
                 plaquesBancoAmarela.push(p)
@@ -216,7 +218,7 @@ async function adicionarPlacaAmarela() {
     }
     if (!prod) {
         try {
-            const res = await fetch(API+'/produtos/busca/ean/'+encodeURIComponent(codigo), { headers: authHeaders() })
+            const res = await fetch(API+'/produtos/'+encodeURIComponent(codigo), { headers: authHeaders() })
             if (res.ok) {
                 const p = await res.json()
                 plaquesBancoAmarela.push(p)
@@ -232,11 +234,6 @@ async function adicionarPlacaAmarela() {
             plaquesSalvasAmarela.push({ ...prod, preco, preco_info: precoUn, id_unico: Date.now() + Math.random() })
         }
         await salvarERenderizarAmarela()
-        const novasPlacasAm = []
-        for (let i = 0; i < quantidade; i++) {
-            novasPlacasAm.push({ descricao: prod.descricao, codigo: prod.codigo, ean: prod.ean, preco, tipo_placa: 'amarela' })
-        }
-        registrarLogPlacas(novasPlacasAm)
         document.getElementById('ean-input-am').value = ''
         document.getElementById('preco-input-am').value = ''
         document.getElementById('qtd-input-am').value = 1
@@ -272,9 +269,11 @@ function renderizarPlacasAmarela() {
     folha.className = 'folha-amarela'
     folha.style.animation = 'dashFadeUp 0.3s ease'
 
-    lista.forEach(p => {
+    lista.forEach((p, i) => {
         const div = document.createElement('div')
         div.className = 'placa-amarela'
+        div.draggable = true
+        div.dataset.idx = paginaPlacasAmarela * plaquesPorPaginaAmarela + i
         const uni = p.descricao_kglt?.toUpperCase() === 'UNIDADE' ? 'UN' : (p.descricao_kglt?.toUpperCase() || '')
         const art = uni === 'UN' ? 'A' : 'O'
         const textoEan = (p.ean && p.ean.toString().trim() !== '') ? `Cód.${p.ean}` : ''
@@ -326,6 +325,35 @@ function renderizarPlacasAmarela() {
             menu.style.left = e.clientX + 'px'
         }
 
+        div.ondragstart = (e) => {
+            _dragIdxAm = parseInt(div.dataset.idx)
+            e.dataTransfer.effectAllowed = 'move'
+            div.style.opacity = '0.4'
+        }
+        div.ondragover = (e) => {
+            e.preventDefault()
+            e.dataTransfer.dropEffect = 'move'
+            div.classList.add('drag-over')
+        }
+        div.ondragleave = () => {
+            div.classList.remove('drag-over')
+        }
+        div.ondrop = (e) => {
+            e.preventDefault()
+            div.classList.remove('drag-over')
+            const destino = parseInt(div.dataset.idx)
+            if (_dragIdxAm !== -1 && _dragIdxAm !== destino) {
+                const [item] = plaquesSalvasAmarela.splice(_dragIdxAm, 1)
+                plaquesSalvasAmarela.splice(destino, 0, item)
+                salvarERenderizarAmarela()
+            }
+            _dragIdxAm = -1
+        }
+        div.ondragend = () => {
+            div.style.opacity = ''
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'))
+        }
+
         folha.appendChild(div)
     })
     container.appendChild(folha)
@@ -338,15 +366,27 @@ async function onExcluirPlacaAmarela() {
     await salvarERenderizarAmarela()
 }
 
+async function onDuplicarPlacaAmarela() {
+    const idx = plaquesSalvasAmarela.indexOf(placaClicadaAmarela)
+    if (idx === -1) return
+    const clone = { ...placaClicadaAmarela, id_unico: Date.now() + Math.random() }
+    plaquesSalvasAmarela.splice(idx + 1, 0, clone)
+    await salvarERenderizarAmarela()
+}
+
 async function salvarERenderizarAmarela() {
     if (_salvandoAmarela) return
     _salvandoAmarela = true
     try {
-        await fetch(API+'/registros-placas', {
+        const res = await fetch(API+'/registros-placas', {
             method: 'POST',
             headers: { ...authHeaders(), 'Content-Type': 'application/json' },
             body: JSON.stringify({ tipo: 'amarela', placas: plaquesSalvasAmarela })
         })
+        const data = await res.json()
+        if (data.logIds && data.logIds.length) {
+            window._ultimasPlacasGeradas.push(...data.logIds)
+        }
     } catch (e) { console.error('Erro ao salvar placas amarelas:', e) }
     _salvandoAmarela = false
     renderizarPlacasAmarela()

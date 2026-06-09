@@ -164,6 +164,16 @@ function carregarAdmin() {
                         <p style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3); margin-bottom:16px;">
                             Editando: <span id="prod-editando" style="color:rgba(255,255,255,0.85); text-transform:none; font-weight:600;"></span>
                         </p>
+                        <div style="display:flex; gap:12px; margin-bottom:16px; align-items:center;">
+                            <button id="prod-btn-salvar" style="background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3); color:#fff; font-size:13px; font-weight:600; padding:10px 24px; border-radius:10px; border:none; cursor:pointer;">
+                                <svg style="width:14px; height:14px; vertical-align:middle; margin-right:4px; fill:currentColor;" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+                                Salvar Alterações
+                            </button>
+                            <button id="prod-btn-cancelar" style="border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.6); font-size:13px; font-weight:600; padding:10px 16px; border-radius:10px; cursor:pointer;">
+                                Cancelar
+                            </button>
+                            <p id="prod-msg" style="font-size:12px; min-height:16px; margin-left:8px;"></p>
+                        </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div style="display:flex; flex-direction:column; gap:4px;">
                                 <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Descrição</label>
@@ -207,16 +217,7 @@ function carregarAdmin() {
                             </div>
                         </div>
 
-                        <div style="display:flex; gap:12px; margin-top:20px; align-items:center;">
-                            <button id="prod-btn-salvar" style="background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3); color:#fff; font-size:13px; font-weight:600; padding:10px 24px; border-radius:10px; border:none; cursor:pointer;">
-                                <svg style="width:14px; height:14px; vertical-align:middle; margin-right:4px; fill:currentColor;" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
-                                Salvar Alterações
-                            </button>
-                            <button id="prod-btn-cancelar" style="border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.6); font-size:13px; font-weight:600; padding:10px 16px; border-radius:10px; cursor:pointer;">
-                                Cancelar
-                            </button>
-                            <p id="prod-msg" style="font-size:12px; min-height:16px; margin-left:8px;"></p>
-                        </div>
+
                     </div>
                 </div>
 
@@ -416,6 +417,20 @@ function abrirFormEdicao(p) {
             msgEl.textContent = 'Erro ao conectar com o servidor.'
         }
     })
+
+    // Shift+Enter salva e vai para o próximo campo
+    const inputsProd = ['pe-descricao','pe-marca','pe-ean','pe-preco','pe-departamento','pe-descricao-dep','pe-secao','pe-grupo','pe-qtd-kgl','pe-kglt']
+    inputsProd.forEach((id, i) => {
+        const el = document.getElementById(id)
+        if (el) el.onkeydown = (e) => {
+            if (e.key === 'Enter' && e.shiftKey) {
+                e.preventDefault()
+                novoBtn.click()
+                const prox = inputsProd[i + 1]
+                if (prox) document.getElementById(prox)?.focus()
+            }
+        }
+    })
 }
 
 // ── PRODUTOS INCOMPLETOS ──────────────────────────────
@@ -447,7 +462,7 @@ async function verificarIncompletos() {
     wrapper.innerHTML = `<p style="font-size:13px; color:rgba(255,255,255,0.4);">Carregando...</p>`
 
     try {
-        const res  = await fetch(API+'/produtos?page=1&limit=500', { headers: authHeaders() })
+    const res  = await fetch(API+'/produtos?page=1&limit=5000', { headers: authHeaders() })
         const json = await res.json()
         const data = json.data || []
         if (!Array.isArray(data)) { wrapper.innerHTML = `<p style="font-size:13px; color:#f87171;">Erro ao carregar.</p>`; return }
@@ -792,7 +807,7 @@ async function renderResultadoMarca(marca) {
     try {
         const data    = await carregarTodosProdutos()
         const termo   = marca.trim().toUpperCase()
-        const produtos = data.filter(p => p.descricao?.toUpperCase().includes(termo))
+        const produtos = data.filter(p => p.marca?.toUpperCase().includes(termo))
 
         if (!produtos.length) {
             resultEl.innerHTML = `<p style="font-size:13px; color:rgba(255,255,255,0.4);">Nenhum produto com "<strong>${marca}</strong>" na descrição.</p>`

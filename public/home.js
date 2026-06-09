@@ -187,8 +187,9 @@ async function registrarLogPlacas(placas) {
 
 function registrarImpressaoPlacas() {
     const ids = [...(window._ultimasPlacasGeradas || [])]
-    // Sempre mostra o popup ao imprimir
-    const overlay = document.createElement('div')
+    setTimeout(() => {
+        // Sempre mostra o popup ao imprimir
+        const overlay = document.createElement('div')
         overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:9999;display:flex;align-items:center;justify-content:center;'
 
         const box = document.createElement('div')
@@ -222,13 +223,33 @@ function registrarImpressaoPlacas() {
         btnSim.onclick = async () => {
             document.body.removeChild(overlay)
             try {
-                await fetch(API+'/log-placas/imprimir', {
-                    method: 'POST',
-                    headers: authHeaders(),
-                    body: JSON.stringify({ ids })
-                })
+                let idsParaMarcar = ids
+                // Fallback: if no accumulated IDs, auto-log current plaques
+                if (!idsParaMarcar.length && window._placasAtuais && window._placasAtuais.length) {
+                    const logPlacas = window._placasAtuais.map(p => ({
+                        descricao: p.descricao || '',
+                        codigo: p.codigo || null,
+                        ean: p.ean || null,
+                        preco: p.preco || 0,
+                        tipo_placa: p.tipo_placa || 'branca'
+                    }))
+                    const res = await fetch(API+'/log-placas', {
+                        method: 'POST',
+                        headers: authHeaders(),
+                        body: JSON.stringify(logPlacas)
+                    })
+                    const data = await res.json()
+                    if (data.ids && data.ids.length) idsParaMarcar = data.ids
+                }
+                if (idsParaMarcar.length) {
+                    await fetch(API+'/log-placas/imprimir', {
+                        method: 'POST',
+                        headers: authHeaders(),
+                        body: JSON.stringify({ ids: idsParaMarcar })
+                    })
+                }
                 window._ultimasPlacasGeradas = []
-                console.log('[PLACAS] Marcadas como impressas:', ids)
+                console.log('[PLACAS] Marcadas como impressas:', idsParaMarcar)
             } catch (e) {
                 console.warn('Erro ao registrar impressão:', e)
             }
@@ -242,6 +263,7 @@ function registrarImpressaoPlacas() {
         box.appendChild(botoes)
         overlay.appendChild(box)
         document.body.appendChild(overlay)
+    }, 500)
 }
 
 // ── SUBMENU OFERTAS ───────────────────────────────────
@@ -494,6 +516,18 @@ document.getElementById('btn-admin').addEventListener('click', () => {
     carregarAdmin()
 })
 
+document.getElementById('btn-database').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    carregarDatabase()
+})
+
+document.getElementById('btn-novidades').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    carregarNovidades()
+})
+
 document.getElementById('btn-logout').addEventListener('click', () => {
     localStorage.removeItem('token')
     localStorage.removeItem('usuarioNome')
@@ -505,21 +539,25 @@ document.getElementById('btn-logout').addEventListener('click', () => {
 // ── PERMISSIONS ─────────────────────────────────────
 aplicarPermissoesMenu()
 
-// ── MENU CONTEXTO (excluir placa) ─────────────────────
-document.getElementById('contextMenu').onclick = () => {
+// ── MENU CONTEXTO (excluir/duplicar placa) ────────────
+function executarContexto(fn) {
     const abaAtiva = document.querySelector('.submenu-btn.active, .submenu3-btn.active')?.id
-    if (abaAtiva === 'btn-placas-amarela') {
-        onExcluirPlacaAmarela()
-    } else if (abaAtiva === 'btn-placas-grande') {
-        onExcluirPlacaGrande()
-    } else {
-        onExcluirPlaca()
-    }
+    if (abaAtiva === 'btn-placas-amarela') fn('Amarela')
+    else if (abaAtiva === 'btn-placas-grande') fn('Grande')
+    else fn('')
     document.getElementById('contextMenu').style.display = 'none'
 }
+document.getElementById('ctx-excluir').onclick = () => executarContexto(suf => {
+    const fn = suf ? window['onExcluirPlaca' + suf] : onExcluirPlaca
+    if (fn) fn()
+})
+document.getElementById('ctx-duplicar').onclick = () => executarContexto(suf => {
+    const fn = suf ? window['onDuplicarPlaca' + suf] : onDuplicarPlaca
+    if (fn) fn()
+})
 
 document.addEventListener('click', (e) => {
-    if (!e.target.closest('.placa') && !e.target.closest('.placa-amarela')) {
+    if (!e.target.closest('.placa') && !e.target.closest('.placa-amarela') && !e.target.closest('.placa-grande')) {
         document.getElementById('contextMenu').style.display = 'none'
     }
     if (popupBuscaAberto && !e.target.closest('.modal-box')) {

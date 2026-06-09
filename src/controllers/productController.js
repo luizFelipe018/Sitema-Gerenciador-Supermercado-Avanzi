@@ -4,7 +4,7 @@ exports.findAll = async (req, res) => {
     try {
         const { busca, page, limit } = req.query
         const p = parseInt(page) || 1
-        const l = Math.min(parseInt(limit) || 50, 500)
+        const l = Math.min(parseInt(limit) || 50, 5000)
         const offset = (p - 1) * l
         const result = await productService.findAll({ busca, limit: l, offset })
         res.json(result)

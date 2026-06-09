@@ -15,6 +15,7 @@ app.use(require('./routes/utilitarios'))
 app.use(require('./routes/importar'))
 app.use(require('./routes/dashboard'))
 app.use(require('./routes/admin'))
+app.use(require('./routes/database'))
 
 app.use(express.static(path.join(__dirname, '..', 'public')))
 module.exports = app

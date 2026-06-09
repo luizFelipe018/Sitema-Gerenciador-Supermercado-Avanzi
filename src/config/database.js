@@ -12,6 +12,7 @@ const db = mysql.createPool({
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME     || 'supermercado',
     port:     process.env.DB_PORT     || 3399,
+    timezone: '-03:00',
     waitForConnections: true,
     connectionLimit:    10,
 })

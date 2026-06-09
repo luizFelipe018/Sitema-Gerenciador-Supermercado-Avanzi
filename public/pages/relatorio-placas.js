@@ -1,7 +1,6 @@
 ﻿// Função global — chamada ao imprimir qualquer placa
 function registrarImpressaoPlacas() {
     const ids = window._ultimasPlacasGeradas || []
-    if (!ids.length) return
 
     // Aguarda o diálogo de impressão fechar e pergunta ao usuário
     setTimeout(() => {
@@ -40,11 +39,30 @@ function registrarImpressaoPlacas() {
         btnSim.onclick = async () => {
             document.body.removeChild(overlay)
             try {
-                await fetch(API+'/log-placas/imprimir', {
-                    method: 'POST',
-                    headers: authHeaders(),
-                    body: JSON.stringify({ ids })
-                })
+                let idsParaMarcar = [...ids]
+                if (!idsParaMarcar.length && window._placasAtuais && window._placasAtuais.length) {
+                    const logPlacas = window._placasAtuais.map(p => ({
+                        descricao: p.descricao || '',
+                        codigo: p.codigo || null,
+                        ean: p.ean || null,
+                        preco: p.preco || 0,
+                        tipo_placa: p.tipo_placa || 'branca'
+                    }))
+                    const res = await fetch(API+'/log-placas', {
+                        method: 'POST',
+                        headers: authHeaders(),
+                        body: JSON.stringify(logPlacas)
+                    })
+                    const data = await res.json()
+                    if (data.ids && data.ids.length) idsParaMarcar = data.ids
+                }
+                if (idsParaMarcar.length) {
+                    await fetch(API+'/log-placas/imprimir', {
+                        method: 'POST',
+                        headers: authHeaders(),
+                        body: JSON.stringify({ ids: idsParaMarcar })
+                    })
+                }
                 window._ultimasPlacasGeradas = []
             } catch (e) {
                 console.warn('Erro ao registrar impressão:', e)

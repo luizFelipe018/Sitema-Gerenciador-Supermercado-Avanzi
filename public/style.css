@@ -82,6 +82,20 @@
 }
 
 /* ============================
+   DRAG AND DROP
+   ============================ */
+.placa, .placa-amarela, .placa-grande {
+    cursor: grab;
+}
+.placa:active, .placa-amarela:active, .placa-grande:active {
+    cursor: grabbing;
+}
+.placa.drag-over, .placa-amarela.drag-over, .placa-grande.drag-over {
+    border-color: #b51515 !important;
+    opacity: 0.5;
+}
+
+/* ============================
    IMPRESSÃO
    ============================ */
 @media print {

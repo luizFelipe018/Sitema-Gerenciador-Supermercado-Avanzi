@@ -1,6 +1,18 @@
 const router = require('express').Router()
 const authMiddleware = require('../middlewares/authMiddleware')
 
+// Ensure config and marca columns exist
+;(async () => {
+    try {
+        const db = require('../config/database')
+        await db.query(`ALTER TABLE registros_placas ADD COLUMN config TEXT NULL AFTER descricao_kglt`)
+    } catch {}
+    try {
+        const db = require('../config/database')
+        await db.query(`ALTER TABLE registros_placas ADD COLUMN marca VARCHAR(100) NULL AFTER config`)
+    } catch {}
+})()
+
 router.post('/log-placas', authMiddleware, async (req, res) => {
     try {
         const db = require('../config/database')
@@ -33,7 +45,7 @@ router.post('/log-placas/imprimir', authMiddleware, async (req, res) => {
         const db = require('../config/database')
         const { ids } = req.body
         if (!Array.isArray(ids) || !ids.length)
-            return res.status(400).json({ error: 'IDs obrigatórios' })
+            return res.json({ ok: true, atualizados: 0 })
         await db.query(
             'UPDATE log_placas SET impressa = 1, impressa_em = NOW() WHERE id IN (?)',
             [ids]
@@ -88,7 +100,7 @@ router.post('/registros-placas', authMiddleware, async (req, res) => {
 
         await db.query('DELETE FROM registros_placas WHERE usuario = ? AND tipo_placa = ?', [usuario, tipo])
 
-        if (placas.length === 0) return res.json({ ok: true, total: 0 })
+        if (placas.length === 0) return res.json({ ok: true, total: 0, logIds: [] })
 
         const valores = placas.map((p, i) => [
             usuario,
@@ -99,16 +111,33 @@ router.post('/registros-placas', authMiddleware, async (req, res) => {
             p.preco_info || null,
             p.quantidade_kg_l || 0,
             p.descricao_kglt || null,
+            p.config || null,
+            p.marca || null,
             i,
             tipo
         ])
 
         await db.query(
-            `INSERT INTO registros_placas (usuario, descricao, codigo, ean, preco, preco_info, quantidade_kg_l, descricao_kglt, ordem, tipo_placa) VALUES ?`,
+            `INSERT INTO registros_placas (usuario, descricao, codigo, ean, preco, preco_info, quantidade_kg_l, descricao_kglt, config, marca, ordem, tipo_placa) VALUES ?`,
             [valores]
         )
 
-        res.json({ ok: true, total: placas.length })
+        // Auto-log all plaques to log_placas for print tracking
+        const logValores = placas.map(p => [
+            p.descricao || '',
+            p.codigo || null,
+            p.ean || null,
+            p.preco || 0,
+            tipo
+        ])
+        const [logResult] = await db.query(
+            `INSERT INTO log_placas (descricao, codigo, ean, preco, tipo_placa) VALUES ?`,
+            [logValores]
+        )
+        const firstLogId = logResult.insertId
+        const logIds = Array.from({ length: logValores.length }, (_, i) => firstLogId + i)
+
+        res.json({ ok: true, total: placas.length, logIds })
     } catch (err) {
         res.status(500).json({ error: err.message })
     }

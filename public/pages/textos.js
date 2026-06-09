@@ -129,7 +129,7 @@ async function txtSalvar() {
     msgEl.style.color = 'rgba(255,255,255,0.4)'; msgEl.textContent = 'Salvando...'
 
     try {
-        const url    = txtEditandoId ? `/textos/${txtEditandoId}` : '/textos'
+        const url    = txtEditandoId ? `${API}/textos/${txtEditandoId}` : `${API}/textos`
         const method = txtEditandoId ? 'PUT' : 'POST'
         const res    = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify({ titulo, categoria, conteudo, tags }) })
 

@@ -17,7 +17,7 @@ router.get('/produtos/busca', authMiddleware, async (req, res) => {
         if (!q || q.length < 2) return res.json([])
         const termo = `%${q.trim()}%`
         const [rows] = await db.query(
-            'SELECT codigo, descricao, preco_venda FROM produtos WHERE descricao LIKE ? ORDER BY descricao LIMIT 30',
+            'SELECT codigo, descricao, preco_venda, marca FROM produtos WHERE descricao LIKE ? ORDER BY descricao LIMIT 30',
             [termo]
         )
         res.json(rows)

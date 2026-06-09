@@ -59,6 +59,7 @@ produtos: ['atendente', 'gerente', 'administrador'],
     
     // Admin only
     admin: ['administrador'],
+    database: ['administrador'],
     formatos: ['gerente', 'administrador'],
     atalhos: ['gerente', 'administrador'],
     textos: ['gerente', 'administrador'],

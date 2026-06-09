@@ -4,11 +4,10 @@ var paginaPlacasGrande = 0
 const plaquesPorPaginaGrande = 1
 var placaClicadaGrande = null
 var _salvandoGrande = false
-
 const CSS_FOLHA_G = `
-.folha-grande { display:flex; flex-direction:column; width:100%; height:297mm; margin:0; background:#fff !important; box-sizing:border-box; }
-.placa-grande { width:100%; flex:1; border:1px solid #000; background:#fff !important; box-sizing:border-box; }
-@media print { @page { size: A4; margin: 0; } .placa-grande > div { padding: 550px 135px 100px 135px !important; } }
+.folha-grande { display:flex; flex-direction:column; width:210mm; height:297mm; margin:0 auto 16px; background:#fff !important; box-sizing:border-box; box-shadow:0 2px 12px rgba(0,0,0,0.15); }
+.placa-grande { width:100%; height:100%; background:#fff !important; box-sizing:border-box; display:grid; place-items:end center; }
+@media print { @page { size: A4; margin: 0; } .folha-grande { box-shadow:none; margin:0; } .placa-grande { padding: 0 !important; } }
 `
 
 function carregarEstilos() {
@@ -18,6 +17,12 @@ function carregarEstilos() {
         link.rel = 'stylesheet'
         link.href = 'style.css'
         document.head.appendChild(link)
+    }
+    if (!document.getElementById('placas-grande-guide')) {
+        const style = document.createElement('style')
+        style.id = 'placas-grande-guide'
+        style.textContent = '#container-placas-g { display:flex; flex-wrap:wrap; gap:12px; } .placa-grande-conteudo { outline:1px dashed rgba(255,0,0,0.25); outline-offset:-1px; transform:scale(0.45); transform-origin:top left; } .placa-grande-conteudo * { color:#000 !important; }'
+        document.head.appendChild(style)
     }
 }
 
@@ -37,30 +42,41 @@ function quebrarNome(descricao) {
     }
 }
 
+function quebrarPorMarca(descricao, marca) {
+    if (!marca || !marca.trim()) return quebrarNome(descricao)
+    const idx = descricao.toUpperCase().indexOf(marca.trim().toUpperCase())
+    if (idx === -1) return quebrarNome(descricao)
+    return {
+        linha1: descricao.slice(0, idx).trim(),
+        linha2: descricao.slice(idx, idx + marca.trim().length),
+        linha3: descricao.slice(idx + marca.trim().length).trim()
+    }
+}
+
 async function carregarPlacasGrande() {
     carregarEstilos()
     setActive('btn-placas-grande')
     setConteudo(`
-        <div style="max-width:1200px; margin:0 auto;">
+        <div class="pg-wrapper" style="max-width:1200px; margin:0 auto;">
 
-            <div class="dash-glass dash-animate" style="padding:20px; margin-bottom:20px;">
-                <div id="pg-status-banco" style="font-size:11px; color:rgba(255,255,255,0.3); margin-bottom:10px; padding:6px 10px; border-radius:6px; background:rgba(255,255,255,0.03);">Carregando produtos do banco...</div>
-                <div style="display:flex; gap:12px; align-items:end; flex-wrap:wrap; margin-bottom:16px;">
-                    <div style="display:flex; flex-direction:column; gap:4px;">
+            <div class="dash-glass dash-animate pg-card" style="padding:20px; margin-bottom:20px;">
+                <div class="pg-status" id="pg-status-banco" style="font-size:11px; color:rgba(255,255,255,0.3); margin-bottom:10px; padding:6px 10px; border-radius:6px; background:rgba(255,255,255,0.03);">Carregando produtos do banco...</div>
+                <div class="pg-input-row" style="display:flex; gap:12px; align-items:end; flex-wrap:wrap; margin-bottom:16px;">
+                    <div class="pg-field-group" style="display:flex; flex-direction:column; gap:4px;">
                         <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Código / EAN</label>
                         <input type="text" id="ean-input-g" autocomplete="off" autofocus
-                            style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; width:160px; transition:all 0.3s;"
+                            style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; width:140px; transition:all 0.3s;"
                             onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
                             onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
                     </div>
-                    <div style="display:flex; flex-direction:column; gap:4px;">
+                    <div class="pg-field-group" style="display:flex; flex-direction:column; gap:4px;">
                         <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Preço (R$)</label>
                         <input type="number" id="preco-input-g" step="0.01"
                             style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; width:120px; transition:all 0.3s;"
                             onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
                             onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
                     </div>
-                    <div style="display:flex; flex-direction:column; gap:4px;">
+                    <div class="pg-field-group" style="display:flex; flex-direction:column; gap:4px;">
                         <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Qtd</label>
                         <input type="number" id="qtd-input-g" value="1" min="1"
                             style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; width:70px; transition:all 0.3s; text-align:center;"
@@ -87,7 +103,7 @@ async function carregarPlacasGrande() {
                         Importar
                     </button>
                 </div>
-                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06);">
+                <div class="pg-actions" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06);">
                     <button id="btn-print-atual-g" style="padding:8px 16px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; font-size:12px; font-weight:600; color:rgba(255,255,255,0.6); cursor:pointer; background:rgba(255,255,255,0.04); transition:all 0.3s; display:flex; align-items:center; gap:6px;"
                         onmouseenter="this.style.background='rgba(34,197,94,0.12)';this.style.borderColor='rgba(34,197,94,0.3)';this.style.color='#22c55e'"
                         onmouseleave="this.style.background='rgba(255,255,255,0.04)';this.style.borderColor='rgba(255,255,255,0.08)';this.style.color='rgba(255,255,255,0.6)'">
@@ -101,7 +117,7 @@ async function carregarPlacasGrande() {
                         Imprimir Tudo
                     </button>
 
-                    <div style="display:flex; align-items:center; gap:6px; margin-left:8px;">
+                    <div class="pg-pagination" style="display:flex; align-items:center; gap:6px; margin-left:8px;">
                         <button id="btn-pag-ant-g" style="padding:8px 12px; border:1px solid rgba(255,255,255,0.08); border-radius:8px; font-size:12px; color:rgba(255,255,255,0.4); cursor:pointer; background:transparent; transition:all 0.3s; display:flex; align-items:center; gap:4px;"
                             onmouseenter="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.7)'"
                             onmouseleave="this.style.background='transparent';this.style.color='rgba(255,255,255,0.4)'">
@@ -126,7 +142,7 @@ async function carregarPlacasGrande() {
                 </div>
             </div>
 
-            <div id="container-placas-g" style="padding:10px 0;"></div>
+            <div class="pg-plaques" id="container-placas-g" style="padding:10px 0;"></div>
 
         </div>
     `, 'Placas Grande')
@@ -156,72 +172,102 @@ async function carregarPlacasGrande() {
         const res = await fetch(API+'/registros-placas?tipo=grande', { headers: authHeaders() })
         const data = await res.json()
         if (Array.isArray(data)) {
-            plaquesSalvasGrande = data.map(p => ({
-                ...p,
-                preco: parseFloat(p.preco),
-                quantidade_kg_l: parseFloat(p.quantidade_kg_l || 0),
-                id_unico: Date.now() + Math.random()
-            }))
+            plaquesSalvasGrande = data.map(p => {
+                const prod = plaquesBancoGrande.find(x => String(x.codigo) === String(p.codigo) || (x.ean && p.ean && String(x.ean) === String(p.ean)))
+                const fs = p.config ? JSON.parse(p.config) : null
+                return {
+                    ...p,
+                    preco: parseFloat(p.preco),
+                    quantidade_kg_l: parseFloat(p.quantidade_kg_l || 0),
+                    id_unico: Date.now() + Math.random(),
+                    marca: p.marca || prod?.marca || '',
+                    _fs: fs || undefined
+                }
+            })
         }
     } catch { console.error('Erro ao carregar placas grandes salvas') }
 
     renderizarPlacasGrande()
     vincularEventosPlacasGrande()
+    window._placasAtuais = plaquesSalvasGrande
+}
+
+function calcBrandFontSize(texto) {
+    if (!texto) return 100
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    const availableWidth = 472
+    let fontSize = 400
+    ctx.font = `900 ${fontSize}px 'Arial Black', Arial, sans-serif`
+    let textWidth = ctx.measureText(texto.toUpperCase()).width
+    while (textWidth > availableWidth && fontSize > 8) {
+        fontSize -= 2
+        ctx.font = `900 ${fontSize}px 'Arial Black', Arial, sans-serif`
+        textWidth = ctx.measureText(texto.toUpperCase()).width
+    }
+    return fontSize
 }
 
 function montarPlacaGrandeHTML(p) {
-    const { linha1, linha2, linha3 } = quebrarNome(p.descricao || '')
+    const descricaoLimpa = (p.descricao || '').replace(/\s+(KG|LT|LITRO|LITROS|KILO|KILOS|QUILO|QUILOS)$/i, '')
+    const { linha1, linha2, linha3 } = quebrarPorMarca(descricaoLimpa, p.marca)
     const preco = parseFloat(p.preco)
     const precoFmt = preco.toFixed(2).replace('.', ',')
     const [reais, cents] = precoFmt.split(',')
+    const precoFontSize = p._fs?.preco || (reais.length <= 2 ? 140 : 130)
 
-    const qtdKgL = parseFloat(p.quantidade_kg_l)
-    const uni = p.descricao_kglt?.toUpperCase() === 'UNIDADE' ? 'UN'
-              : p.descricao_kglt?.toUpperCase() === 'QUILO'   ? 'KG'
-              : p.descricao_kglt?.toUpperCase() === 'LITRO'   ? 'LT'
-              : p.descricao_kglt?.toUpperCase() || ''
-    const art = uni === 'UN' ? 'A' : 'O'
+    const semEan = !p.ean || String(p.ean).trim() === ''
+    const qtdKgL = parseFloat(p.quantidade_kg_l) || (semEan ? 1 : 0)
+    const dkglt = (p.descricao_kglt || '').toUpperCase()
+    const uni = semEan
+        ? (dkglt.includes('LITRO') || dkglt === 'LT' ? 'LT' : 'KG')
+        : 'UN'
+    const uniRodape = qtdKgL > 0
+        ? (dkglt.includes('LITRO') || dkglt === 'LT'
+            ? 'LT'
+            : dkglt.includes('KILO') || dkglt.includes('QUILO') || dkglt === 'KG'
+                ? 'KG'
+                : semEan ? 'KG' : 'UN')
+        : null
+    const artRodape = uniRodape === 'UN' ? 'A' : 'O'
     const precoUn = (qtdKgL > 0) ? (preco / qtdKgL).toFixed(2).replace('.', ',') : null
-
-    const rodape = precoUn
-        ? `NESTA EMBALAGEM ${art} ${uni} SAI A R$ ${precoUn}`
+    const rodape = precoUn && uniRodape
+        ? (semEan
+            ? `${artRodape} ${uniRodape} SAI A R$ ${precoUn}`
+            : `NESTA EMBALAGEM ${artRodape} ${uniRodape} SAI A R$ ${precoUn}`)
         : ''
 
+    const brandFontSize = calcBrandFontSize(linha2)
+    const linha1FontSize = p._fs?.linha1 || Math.max(Math.round(brandFontSize * 0.4), 12)
+    const linha3FontSize = p._fs?.linha3 || Math.max(Math.round(brandFontSize * 0.4), 12)
+    const brandSz = p._fs?.linha2 || brandFontSize
+    const gapLinha3 = p._fs?.gap3 ?? Math.max(Math.round(linha3FontSize * 0.6), 4)
+
     return `
-        <div style="
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8mm 10mm;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', sans-serif;
-            font-weight: bold;
-            text-align: center;
-            overflow: hidden;
-        ">
-            <div style="width:100%; text-align:center;">
-                <div data-field="linha1" style="font-size:22px; font-weight:bold; text-transform:uppercase; letter-spacing:2px; white-space:nowrap; overflow:hidden;">${linha1}</div>
+        <div id="placa-grande-conteudo" class="placa-grande-conteudo" style="width:525px; height:544px; margin:0 auto 88px; position:relative; box-sizing:border-box; font-family:'Arial Black',Arial,sans-serif; font-weight:900;">
+            <div class="pg-texto-wrapper" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:2mm; line-height:1.7; padding-bottom:110px;">
+                <div class="pg-linha1-wrapper" style="width:100%; text-align:center; margin-top:30px;">
+                    <div class="pg-linha1" data-field="linha1" style="font-size:${linha1FontSize}px; font-weight:bold; text-transform:uppercase; white-space:nowrap; overflow:hidden; transform:scaleY(1.3);">${linha1}</div>
+                </div>
+
+                <div class="pg-linha2-wrapper" style="width:90%; text-align:center; display:flex; align-items:center; justify-content:center;">
+                    <div class="pg-linha2" data-field="linha2" style="font-size:${brandSz}px; font-weight:900; text-transform:uppercase; line-height:0.66; letter-spacing:2px; white-space:nowrap; width:100%; transform:scaleY(1.3);">${linha2}</div>
+                </div>
+
+                <div class="pg-linha3-wrapper" style="width:100%; text-align:center; margin-top:${gapLinha3}px;">
+                    <div class="pg-linha3" data-field="linha3" style="font-size:${linha3FontSize}px; font-weight:bold; text-transform:uppercase; transform:scaleY(1.3);">${linha3}</div>
+                </div>
             </div>
 
-            <div style="width:100%; text-align:center; flex:1; display:flex; align-items:center; justify-content:center;">
-                <div data-field="linha2" style="font-size:520px; font-weight:900; text-transform:uppercase; line-height:1; letter-spacing:2px; white-space:nowrap; overflow:hidden;">${linha2}</div>
-            </div>
-
-            <div style="width:100%; text-align:center;">
-                <div data-field="linha3" style="font-size:16px; font-weight:bold; text-transform:uppercase; white-space:nowrap; overflow:hidden;">${linha3}</div>
-            </div>
-
-            <div style="width:100%; display:flex; align-items:flex-end; justify-content:center; margin: 4mm 0 2mm;">
-                <span style="font-size:20px; font-weight:bold; margin-bottom:12px; margin-right:3px; position:relative; top:25px;">R$</span>
-                <span data-field="preco" style="font-size:90px; font-weight:900; line-height:1;">${reais},${cents}</span>
-                <span style="font-size:16px; font-weight:bold; margin-bottom:14px; margin-left:4px;">${uni}</span>
-            </div>
-
-            <div style="width:100%; text-align:center; border-top:1px solid #000; padding-top:3px;">
-                <div data-field="rodape" style="font-size:11px; font-weight:bold;">${rodape}</div>
+            <div class="pg-rodape-wrapper" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:1mm; position:absolute; bottom:0; left:0;">
+                <div class="pg-preco-wrapper" style="width:100%; display:flex; align-items:flex-end;${uni !== 'UN' ? " justify-content:space-between;" : " justify-content:center;"} transform:scaleY(1.3);">
+                    <span class="pg-preco-simbolo" style="font-size:20px; font-weight:bold; margin-right:2px; margin-bottom:20px; line-height:1;">R$</span>
+                    <span class="pg-preco-valor" data-field="preco" style="font-size:${precoFontSize}px; font-weight:900; line-height:1;">${reais},${cents}</span>
+                    <span class="pg-preco-unidade" style="font-size:20px; font-weight:bold;${uni !== 'UN' ? " margin-left:0;" : " margin-left:3px;"} margin-bottom:20px; line-height:1;">${uni}</span>
+                </div>
+                <div class="pg-rodape-texto-wrapper" style="width:100%; text-align:center; padding-top:2px; margin-top:90px;">
+                    <div class="pg-rodape-texto" data-field="rodape" style="font-size:14px; font-weight:bold; line-height:0.66; transform:scaleY(1.3);">${rodape}</div>
+                </div>
             </div>
         </div>
     `
@@ -252,18 +298,93 @@ function renderizarPlacasGrande() {
         return
     }
 
-    const folha = document.createElement('div')
-    folha.className = 'folha-grande'
-    folha.style.animation = 'dashFadeUp 0.3s ease'
-
     lista.forEach(p => {
         const div = document.createElement('div')
-        div.className = 'placa-grande'
+        div.style.cssText = 'background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.15); display:inline-flex;'
         div.innerHTML = montarPlacaGrandeHTML(p)
 
         div.querySelectorAll('[data-field]').forEach(el => {
             el.style.cursor = 'pointer'
+            const field = el.getAttribute('data-field')
+
+            let clickTimer = null
+            el.onclick = (e) => {
+                if (field === 'preco') return
+                if (clickTimer) { clearTimeout(clickTimer); clickTimer = null; return }
+                clickTimer = setTimeout(() => {
+                    clickTimer = null
+                    const field = el.getAttribute('data-field')
+                    if (!p._fs) p._fs = {}
+                    const atual = parseInt(el.style.fontSize) || 20
+                    const popup = document.createElement('div')
+                    popup.style.cssText = 'position:fixed;z-index:9999;display:flex;align-items:center;gap:6px;background:#1a1a1a;border:1px solid #444;border-radius:8px;padding:4px 8px;box-shadow:0 4px 20px rgba(0,0,0,0.6);user-select:none;'
+                    popup.style.top = (e.clientY - 40) + 'px'
+                    popup.style.left = (e.clientX - 60) + 'px'
+                    const span = document.createElement('span')
+                    span.style.cssText = 'color:#fff;font-size:13px;min-width:32px;text-align:center;'
+                    span.textContent = atual
+                    const btnMenos = document.createElement('button')
+                    btnMenos.textContent = '−'
+                    btnMenos.style.cssText = 'width:30px;height:30px;border:none;border-radius:6px;background:#b51515;color:#fff;font-size:18px;font-weight:bold;cursor:pointer;line-height:1;'
+                    const btnMais = document.createElement('button')
+                    btnMais.textContent = '+'
+                    btnMais.style.cssText = 'width:30px;height:30px;border:none;border-radius:6px;background:#22c55e;color:#fff;font-size:18px;font-weight:bold;cursor:pointer;line-height:1;'
+                    const ajustar = (delta) => {
+                        const fs = parseInt(el.style.fontSize) || atual
+                        const novo = Math.max(8, fs + delta)
+                        el.style.fontSize = novo + 'px'
+                        p._fs[field] = novo
+                        span.textContent = novo
+                    }
+                    btnMenos.onclick = (ev) => { ev.stopPropagation(); ajustar(-2) }
+                    btnMais.onclick = (ev) => { ev.stopPropagation(); ajustar(2) }
+                    popup.append(btnMenos, span, btnMais)
+
+                    if (field === 'linha3') {
+                        const gapSpan = document.createElement('span')
+                        gapSpan.style.cssText = 'color:#888;font-size:11px;margin:0 2px;'
+                        gapSpan.textContent = '↕'
+                        const dragHandle = document.createElement('div')
+                        dragHandle.style.cssText = 'width:20px;height:20px;background:rgba(255,255,255,0.1);border-radius:4px;cursor:ns-resize;display:flex;align-items:center;justify-content:center;font-size:12px;color:#aaa;'
+                        dragHandle.textContent = '⡇'
+                        let dragStart = null, gapIni = null
+                        dragHandle.onmousedown = (ev) => {
+                            ev.stopPropagation(); ev.preventDefault()
+                            const wrapper = el.parentElement
+                            gapIni = parseInt(wrapper.style.marginTop) || parseInt(getComputedStyle(wrapper).marginTop) || 20
+                            dragStart = ev.clientY
+                            const onMove = (me) => {
+                                const deltaGap = Math.round((me.clientY - dragStart) * 0.5)
+                                const novo = Math.max(0, gapIni + deltaGap)
+                                wrapper.style.marginTop = novo + 'px'
+                            }
+                            const onUp = (ue) => {
+                                document.removeEventListener('mousemove', onMove)
+                                document.removeEventListener('mouseup', onUp)
+                                const wrapper = el.parentElement
+                                const val = parseInt(wrapper.style.marginTop) || 0
+                                p._fs.gap3 = val
+                                salvarERenderizarGrande()
+                            }
+                            document.addEventListener('mousemove', onMove)
+                            document.addEventListener('mouseup', onUp)
+                        }
+                        popup.append(gapSpan, dragHandle)
+                    }
+                    document.body.appendChild(popup)
+                    const fecharPopup = (ev2) => {
+                        if (!popup.contains(ev2.target)) {
+                            popup.remove()
+                            document.removeEventListener('mousedown', fecharPopup)
+                            salvarERenderizarGrande()
+                        }
+                    }
+                    setTimeout(() => document.addEventListener('mousedown', fecharPopup), 100)
+                }, 300)
+            }
+
             el.ondblclick = () => {
+                if (clickTimer) { clearTimeout(clickTimer); clickTimer = null }
                 const field = el.getAttribute('data-field')
                 const input = document.createElement('input')
                 input.value = el.innerText.trim()
@@ -279,17 +400,15 @@ function renderizarPlacasGrande() {
                         const qtdKgL = parseFloat(p.quantidade_kg_l)
                         p.preco_info = qtdKgL > 0 ? (p.preco / qtdKgL).toFixed(2).replace('.', ',') : p.preco.toFixed(2)
                     } else if (field === 'linha1') {
-                        const palavras = p.descricao.trim().split(/\s+/)
-                        palavras[0] = v.toUpperCase()
-                        p.descricao = palavras.join(' ')
+                        const partes = quebrarPorMarca(p.descricao, p.marca)
+                        p.descricao = v.toUpperCase() + (partes.linha2 ? ' ' + partes.linha2 + (partes.linha3 ? ' ' + partes.linha3 : '') : '')
                     } else if (field === 'linha2') {
-                        const palavras = p.descricao.trim().split(/\s+/)
-                        palavras[1] = v.toUpperCase()
-                        p.descricao = palavras.join(' ')
+                        const partes = quebrarPorMarca(p.descricao, p.marca)
+                        p.descricao = (partes.linha1 ? partes.linha1 + ' ' : '') + v.toUpperCase() + (partes.linha3 ? ' ' + partes.linha3 : '')
+                        p.marca = v.toUpperCase()
                     } else if (field === 'linha3') {
-                        const palavras = p.descricao.trim().split(/\s+/)
-                        const novoResto = v.toUpperCase().split(/\s+/)
-                        p.descricao = [...palavras.slice(0, 2), ...novoResto].join(' ')
+                        const partes = quebrarPorMarca(p.descricao, p.marca)
+                        p.descricao = (partes.linha1 ? partes.linha1 + ' ' : '') + (partes.linha2 ? partes.linha2 + ' ' : '') + v.toUpperCase()
                     }
                     await salvarERenderizarGrande()
                 }
@@ -307,10 +426,9 @@ function renderizarPlacasGrande() {
             menu.style.left = e.clientX + 'px'
         }
 
-        folha.appendChild(div)
+        container.appendChild(div)
     })
 
-    container.appendChild(folha)
 }
 
 async function onExcluirPlacaGrande() {
@@ -320,21 +438,49 @@ async function onExcluirPlacaGrande() {
     await salvarERenderizarGrande()
 }
 
-async function salvarERenderizarGrande() {
+async function onDuplicarPlacaGrande() {
+    const idx = plaquesSalvasGrande.indexOf(placaClicadaGrande)
+    if (idx === -1) return
+    const clone = { ...placaClicadaGrande, id_unico: Date.now() + Math.random() }
+    plaquesSalvasGrande.splice(idx + 1, 0, clone)
+    await salvarERenderizarGrande()
+}
+
+async function salvarPlacasGrande() {
     if (_salvandoGrande) return
     _salvandoGrande = true
     try {
-        await fetch(API+'/registros-placas', {
+        const placas = plaquesSalvasGrande.map(p => ({
+            descricao: p.descricao,
+            codigo: p.codigo,
+            ean: p.ean,
+            preco: p.preco,
+            preco_info: p.preco_info,
+            quantidade_kg_l: p.quantidade_kg_l,
+            descricao_kglt: p.descricao_kglt,
+            marca: p.marca || null,
+            config: p._fs ? JSON.stringify(p._fs) : null
+        }))
+        const res = await fetch(API+'/registros-placas', {
             method: 'POST',
             headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tipo: 'grande', placas: plaquesSalvasGrande })
+            body: JSON.stringify({ tipo: 'grande', placas })
         })
+        const data = await res.json()
+        if (data.logIds && data.logIds.length) {
+            window._ultimasPlacasGeradas.push(...data.logIds)
+        }
     } catch (e) { console.error('Erro ao salvar placas grandes:', e) }
     _salvandoGrande = false
+}
+
+async function salvarERenderizarGrande() {
+    await salvarPlacasGrande()
     renderizarPlacasGrande()
 }
 
-function mudarPaginaPlacasGrande(v) {
+async function mudarPaginaPlacasGrande(v) {
+    await salvarPlacasGrande()
     const total = Math.ceil(plaquesSalvasGrande.length / plaquesPorPaginaGrande)
     paginaPlacasGrande = Math.max(0, Math.min(paginaPlacasGrande + v, total - 1))
     renderizarPlacasGrande()
@@ -387,7 +533,7 @@ async function adicionarPlacaGrande() {
 
     if (!prod) {
         try {
-            const url = API+'/produtos/'+encodeURIComponent(codigo)
+            const url = API+'/produtos/busca/ean/'+encodeURIComponent(codigo)
             const res = await fetch(url, { headers: authHeaders() })
             if (res.ok) {
                 const p = await res.json()
@@ -398,7 +544,7 @@ async function adicionarPlacaGrande() {
     }
     if (!prod) {
         try {
-            const url = API+'/produtos/busca/ean/'+encodeURIComponent(codigo)
+            const url = API+'/produtos/'+encodeURIComponent(codigo)
             const res = await fetch(url, { headers: authHeaders() })
             if (res.ok) {
                 const p = await res.json()
@@ -415,11 +561,6 @@ async function adicionarPlacaGrande() {
             plaquesSalvasGrande.push({ ...prod, preco, preco_info: precoUn, id_unico: Date.now() + Math.random() })
         }
         await salvarERenderizarGrande()
-        const novasPlacasG = []
-        for (let i = 0; i < quantidade; i++) {
-            novasPlacasG.push({ descricao: prod.descricao, codigo: prod.codigo, ean: prod.ean, preco, tipo_placa: 'grande' })
-        }
-        registrarLogPlacas(novasPlacasG)
         document.getElementById('ean-input-g').value = ''
         document.getElementById('preco-input-g').value = ''
         document.getElementById('qtd-input-g').value = 1
@@ -565,8 +706,17 @@ function vincularEventosPlacasGrande() {
         document.getElementById('import-texto-g').focus()
     }
     document.getElementById('btn-print-atual-g').onclick  = () => {
-        const folha = document.querySelector('#container-placas-g .folha-grande')
-        if (!folha) return
+        const folha = document.createElement('div')
+        folha.className = 'folha-grande'
+        const len = plaquesSalvasGrande.length
+        const start = paginaPlacasGrande * plaquesPorPaginaGrande
+        const page = plaquesSalvasGrande.slice(start, Math.min(start + plaquesPorPaginaGrande, len))
+        page.forEach(p => {
+            const div = document.createElement('div')
+            div.className = 'placa-grande'
+            div.innerHTML = montarPlacaGrandeHTML(p)
+            folha.appendChild(div)
+        })
         printFolha(folha.outerHTML, CSS_FOLHA_G)
         setTimeout(registrarImpressaoPlacas, 1000)
     }

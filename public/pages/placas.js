@@ -4,6 +4,7 @@ let paginaPlacas = 0
 const placasPorPagina = 10
 let placaClicada = null
 let _salvandoPlacas = false
+let _dragIdx = -1
 
 const CSS_FOLHA = `
 .folha { display:flex; flex-wrap:wrap; align-content:flex-start; width:100%; height:297mm; margin:0; padding:5mm; background:#fff !important; box-sizing:border-box; }
@@ -151,6 +152,7 @@ async function carregarPlacas() {
 
     renderizarPlacas()
     vincularEventosPlacas()
+    window._placasAtuais = placasSalvas
 }
 
 function vincularEventosPlacas() {
@@ -204,7 +206,7 @@ async function adicionarPlaca() {
 
     if (!prod) {
         try {
-            const res = await fetch(API+'/produtos/'+encodeURIComponent(codigo), { headers: authHeaders() })
+            const res = await fetch(API+'/produtos/busca/ean/'+encodeURIComponent(codigo), { headers: authHeaders() })
             if (res.ok) {
                 const p = await res.json()
                 placasBanco.push(p)
@@ -214,7 +216,7 @@ async function adicionarPlaca() {
     }
     if (!prod) {
         try {
-            const res = await fetch(API+'/produtos/busca/ean/'+encodeURIComponent(codigo), { headers: authHeaders() })
+            const res = await fetch(API+'/produtos/'+encodeURIComponent(codigo), { headers: authHeaders() })
             if (res.ok) {
                 const p = await res.json()
                 placasBanco.push(p)
@@ -230,11 +232,6 @@ async function adicionarPlaca() {
             placasSalvas.push({ ...prod, preco, preco_info: precoUn, id_unico: Date.now() + Math.random() })
         }
         await salvarERenderizar()
-        const novasPlacas = []
-        for (let i = 0; i < quantidade; i++) {
-            novasPlacas.push({ descricao: prod.descricao, codigo: prod.codigo, ean: prod.ean, preco, tipo_placa: 'branca' })
-        }
-        registrarLogPlacas(novasPlacas)
         document.getElementById('ean-input').value = ''
         document.getElementById('preco-input').value = ''
         document.getElementById('qtd-input').value = 1
@@ -270,9 +267,11 @@ function renderizarPlacas() {
     folha.className = 'folha'
     folha.style.animation = 'dashFadeUp 0.3s ease'
 
-    lista.forEach(p => {
+    lista.forEach((p, i) => {
         const div = document.createElement('div')
         div.className = 'placa'
+        div.draggable = true
+        div.dataset.idx = paginaPlacas * placasPorPagina + i
         const uni = p.descricao_kglt?.toUpperCase() === 'UNIDADE' ? 'UN' : (p.descricao_kglt?.toUpperCase() || '')
         const art = uni === 'UN' ? 'A' : 'O'
         const textoEan = (p.ean && p.ean.toString().trim() !== '') ? `Cód.${p.ean}` : ''
@@ -324,6 +323,35 @@ function renderizarPlacas() {
             menu.style.left = e.clientX + 'px'
         }
 
+        div.ondragstart = (e) => {
+            _dragIdx = parseInt(div.dataset.idx)
+            e.dataTransfer.effectAllowed = 'move'
+            div.style.opacity = '0.4'
+        }
+        div.ondragover = (e) => {
+            e.preventDefault()
+            e.dataTransfer.dropEffect = 'move'
+            div.classList.add('drag-over')
+        }
+        div.ondragleave = () => {
+            div.classList.remove('drag-over')
+        }
+        div.ondrop = (e) => {
+            e.preventDefault()
+            div.classList.remove('drag-over')
+            const destino = parseInt(div.dataset.idx)
+            if (_dragIdx !== -1 && _dragIdx !== destino) {
+                const [item] = placasSalvas.splice(_dragIdx, 1)
+                placasSalvas.splice(destino, 0, item)
+                salvarERenderizar()
+            }
+            _dragIdx = -1
+        }
+        div.ondragend = () => {
+            div.style.opacity = ''
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'))
+        }
+
         folha.appendChild(div)
     })
     container.appendChild(folha)
@@ -336,15 +364,27 @@ async function onExcluirPlaca() {
     await salvarERenderizar()
 }
 
+async function onDuplicarPlaca() {
+    const idx = placasSalvas.indexOf(placaClicada)
+    if (idx === -1) return
+    const clone = { ...placaClicada, id_unico: Date.now() + Math.random() }
+    placasSalvas.splice(idx + 1, 0, clone)
+    await salvarERenderizar()
+}
+
 async function salvarERenderizar() {
     if (_salvandoPlacas) return
     _salvandoPlacas = true
     try {
-        await fetch(API+'/registros-placas', {
+        const res = await fetch(API+'/registros-placas', {
             method: 'POST',
             headers: { ...authHeaders(), 'Content-Type': 'application/json' },
             body: JSON.stringify({ tipo: 'branca', placas: placasSalvas })
         })
+        const data = await res.json()
+        if (data.logIds && data.logIds.length) {
+            window._ultimasPlacasGeradas.push(...data.logIds)
+        }
     } catch (e) { console.error('Erro ao salvar placas:', e) }
     _salvandoPlacas = false
     renderizarPlacas()
