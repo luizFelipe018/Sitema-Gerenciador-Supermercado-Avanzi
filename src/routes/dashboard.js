@@ -29,9 +29,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
                 SUM(tipo_placa = 'amarela') AS amarela,
                 SUM(tipo_placa = 'grande')  AS grande,
                 COUNT(*)                    AS total
-            FROM log_placas
-            WHERE MONTH(criado_em) = MONTH(CURDATE())
-              AND YEAR(criado_em)  = YEAR(CURDATE())
+            FROM registros_placas
         `)
 
         const [[impressasMes]] = await db.query(`
@@ -47,7 +45,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
             SELECT
                 DATE(criado_em) AS dia,
                 COUNT(*)        AS total
-            FROM log_placas
+            FROM registros_placas
             WHERE criado_em >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
             GROUP BY dia
             ORDER BY dia ASC
@@ -55,9 +53,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
 
         const [topProdutos] = await db.query(`
             SELECT descricao, tipo_placa, COUNT(*) AS total
-            FROM log_placas
-            WHERE MONTH(criado_em) = MONTH(CURDATE())
-              AND YEAR(criado_em)  = YEAR(CURDATE())
+            FROM registros_placas
             GROUP BY descricao, tipo_placa
             ORDER BY total DESC
             LIMIT 10

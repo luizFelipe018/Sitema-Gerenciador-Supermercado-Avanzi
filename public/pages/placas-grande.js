@@ -7,7 +7,7 @@ var _salvandoGrande = false
 const CSS_FOLHA_G = `
 .folha-grande { display:flex; flex-direction:column; width:210mm; height:297mm; margin:0 auto 16px; background:#fff !important; box-sizing:border-box; box-shadow:0 2px 12px rgba(0,0,0,0.15); }
 .placa-grande { width:100%; height:100%; background:#fff !important; box-sizing:border-box; display:grid; place-items:end center; }
-@media print { @page { size: A4; margin: 0; } .folha-grande { box-shadow:none; margin:0; } .placa-grande { padding: 0 !important; } }
+@media print { @page { size: A4; margin: 0; } .folha-grande { box-shadow:none; margin:0; } .placa-grande { padding: 0 !important; } .pg-toggle-fracao { display:none !important; } }
 `
 
 function carregarEstilos() {
@@ -212,29 +212,38 @@ function montarPlacaGrandeHTML(p) {
     const descricaoLimpa = (p.descricao || '').replace(/\s+(KG|LT|LITRO|LITROS|KILO|KILOS|QUILO|QUILOS)$/i, '')
     const { linha1, linha2, linha3 } = quebrarPorMarca(descricaoLimpa, p.marca)
     const preco = parseFloat(p.preco)
-    const precoFmt = preco.toFixed(2).replace('.', ',')
-    const [reais, cents] = precoFmt.split(',')
-    const precoFontSize = p._fs?.preco || (reais.length <= 2 ? 140 : 130)
 
     const semEan = !p.ean || String(p.ean).trim() === ''
-    const qtdKgL = parseFloat(p.quantidade_kg_l) || (semEan ? 1 : 0)
+    const qtdKgL = (p.quantidade_kg_l !== null && p.quantidade_kg_l !== undefined && p.quantidade_kg_l !== '')
+        ? parseFloat(p.quantidade_kg_l)
+        : (semEan ? 1 : 0)
     const dkglt = (p.descricao_kglt || '').toUpperCase()
-    const uni = semEan
-        ? (dkglt.includes('LITRO') || dkglt === 'LT' ? 'LT' : 'KG')
-        : 'UN'
+    const ehPesoExato = qtdKgL > 0 && Math.abs(qtdKgL - 1) < 0.001
+    const uni = ehPesoExato
+        ? 'KG'
+        : (dkglt.includes('LITRO') || dkglt === 'LT')
+            ? 'LT'
+            : 'UN'
+
+    const fracionar = p._fs?.fracionar100g && uni === 'KG'
+    const uniDisplay = fracionar ? '100G' : uni
+    const precoExibir = fracionar ? preco / 10 : preco
+    const precoTrunc = Math.floor(precoExibir * 100) / 100
+    const precoFmtExib = precoTrunc.toFixed(2).replace('.', ',')
+    const [reaisExib, centsExib] = precoFmtExib.split(',')
+    const precoFontSize = p._fs?.preco || (reaisExib.length <= 2 ? 140 : 130)
+
     const uniRodape = qtdKgL > 0
         ? (dkglt.includes('LITRO') || dkglt === 'LT'
             ? 'LT'
             : dkglt.includes('KILO') || dkglt.includes('QUILO') || dkglt === 'KG'
                 ? 'KG'
-                : semEan ? 'KG' : 'UN')
+                : 'KG')
         : null
     const artRodape = uniRodape === 'UN' ? 'A' : 'O'
     const precoUn = (qtdKgL > 0) ? (preco / qtdKgL).toFixed(2).replace('.', ',') : null
     const rodape = precoUn && uniRodape
-        ? (semEan
-            ? `${artRodape} ${uniRodape} SAI A R$ ${precoUn}`
-            : `NESTA EMBALAGEM ${artRodape} ${uniRodape} SAI A R$ ${precoUn}`)
+        ? `${semEan ? '' : 'NESTA EMBALAGEM '}${artRodape} ${uniRodape} SAI A R$ ${precoUn}`
         : ''
 
     const brandFontSize = calcBrandFontSize(linha2)
@@ -260,14 +269,23 @@ function montarPlacaGrandeHTML(p) {
             </div>
 
             <div class="pg-rodape-wrapper" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:1mm; position:absolute; bottom:0; left:0;">
-                <div class="pg-preco-wrapper" style="width:100%; display:flex; align-items:flex-end;${uni !== 'UN' ? " justify-content:space-between;" : " justify-content:center;"} transform:scaleY(1.3);">
+                <div class="pg-preco-wrapper" style="width:100%; display:flex; align-items:flex-end;${uniDisplay !== 'UN' ? " justify-content:space-between;" : " justify-content:center;"} transform:scaleY(1.3);">
                     <span class="pg-preco-simbolo" style="font-size:20px; font-weight:bold; margin-right:2px; margin-bottom:20px; line-height:1;">R$</span>
-                    <span class="pg-preco-valor" data-field="preco" style="font-size:${precoFontSize}px; font-weight:900; line-height:1;">${reais},${cents}</span>
-                    <span class="pg-preco-unidade" style="font-size:20px; font-weight:bold;${uni !== 'UN' ? " margin-left:0;" : " margin-left:3px;"} margin-bottom:20px; line-height:1;">${uni}</span>
+                    <span class="pg-preco-valor" style="font-size:${precoFontSize}px; font-weight:900; line-height:1;">${reaisExib},${centsExib}</span>
+                    ${fracionar
+                        ? `<span class="pg-preco-unidade" style="font-size:16px; font-weight:bold; display:flex; flex-direction:column; align-items:center; line-height:1.15; margin-bottom:16px; margin-left:0;">
+                            <span>A CADA</span>
+                            <span>100G</span>
+                        </span>`
+                        : `<span class="pg-preco-unidade" style="font-size:20px; font-weight:bold;${uniDisplay !== 'UN' ? " margin-left:0;" : " margin-left:3px;"} margin-bottom:20px; line-height:1;">${uniDisplay}</span>`}
                 </div>
                 <div class="pg-rodape-texto-wrapper" style="width:100%; text-align:center; padding-top:2px; margin-top:90px;">
                     <div class="pg-rodape-texto" data-field="rodape" style="font-size:14px; font-weight:bold; line-height:0.66; transform:scaleY(1.3);">${rodape}</div>
                 </div>
+                ${uni === 'KG' ? `
+                <span class="pg-toggle-fracao" data-fracao="${fracionar ? '1' : '0'}" style="position:absolute;bottom:4px;right:6px;cursor:pointer;font-size:10px;color:rgba(0,0,0,0.25);background:rgba(0,0,0,0.04);border-radius:4px;padding:2px 5px;letter-spacing:0.3px;user-select:none;white-space:nowrap;">
+                    ${fracionar ? 'KG' : '100g'}
+                </span>` : ''}
             </div>
         </div>
     `
@@ -424,6 +442,16 @@ function renderizarPlacasGrande() {
             menu.style.display = 'block'
             menu.style.top = e.clientY + 'px'
             menu.style.left = e.clientX + 'px'
+        }
+
+        const toggleFracao = div.querySelector('.pg-toggle-fracao')
+        if (toggleFracao) {
+            toggleFracao.onclick = (e) => {
+                e.stopPropagation()
+                if (!p._fs) p._fs = {}
+                p._fs.fracionar100g = !p._fs.fracionar100g
+                salvarERenderizarGrande()
+            }
         }
 
         container.appendChild(div)

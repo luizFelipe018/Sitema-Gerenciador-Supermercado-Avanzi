@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="avanzi-dark">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self' https://images.openfoodfacts.org https://static.openfoodfacts.org http://localhost:3000 http://192.168.2.55:3000; script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com; img-src 'self' https://superavanzi.com.br blob: data: http://localhost:3000 http://192.168.2.55:3000 https://images.openfoodfacts.org https://static.openfoodfacts.org http://*.openfoodfacts.org https://*.openfoodfacts.com; connect-src 'self' http://localhost:3000 http://192.168.2.55:3000 https://images.openfoodfacts.org https://static.openfoodfacts.org https://world.openfoodfacts.org https://brasilapi.com.br https://easyqrcode.app.br; worker-src 'self' blob:;">
+    content="default-src 'self' https://images.openfoodfacts.org https://static.openfoodfacts.org http://localhost:3000 http://192.168.2.55:3000; script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com; img-src 'self' https://superavanzi.com.br blob: data: http://localhost:3000 http://192.168.2.55:3000 https://images.openfoodfacts.org https://static.openfoodfacts.org http://*.openfoodfacts.org https://*.openfoodfacts.com; connect-src 'self' http://localhost:3000 http://192.168.2.55:3000 https://images.openfoodfacts.org https://static.openfoodfacts.org https://world.openfoodfacts.org https://brasilapi.com.br https://easyqrcode.app.br; worker-src 'self' blob:;">
     <title>ERP Avanzi</title>
     <meta name="theme-color" content="#b51515">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -23,6 +23,7 @@
         }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css" rel="stylesheet">
     <style>
 :root {
             --primary: #b51515;
@@ -43,6 +44,63 @@
             --bg-content: #121212;
             --bg-input: rgba(255, 255, 255, 0.03);
             --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        /* ══════════════════════════════════════════════════
+           DAISYUI CUSTOM THEMES
+           ══════════════════════════════════════════════════ */
+        [data-theme="avanzi-dark"] {
+            --p: 0 79% 40%;
+            --pf: 0 79% 33%;
+            --pc: 0 0% 100%;
+            --s: 0 0% 13%;
+            --sf: 0 0% 10%;
+            --sc: 0 0% 100%;
+            --a: 0 0% 18%;
+            --af: 0 0% 14%;
+            --ac: 0 0% 100%;
+            --n: 0 0% 20%;
+            --nf: 0 0% 16%;
+            --nc: 0 0% 100%;
+            --b1: 0 0% 7%;
+            --b2: 0 0% 10%;
+            --b3: 0 0% 13%;
+            --bc: 0 0% 82%;
+            --in: 0 0% 15%;
+            --inc: 0 0% 95%;
+            --su: 142 71% 45%;
+            --suc: 0 0% 100%;
+            --wa: 48 96% 53%;
+            --wac: 0 0% 0%;
+            --er: 0 84% 60%;
+            --erc: 0 0% 100%;
+        }
+
+        [data-theme="avanzi-light"] {
+            --p: 0 79% 40%;
+            --pf: 0 79% 33%;
+            --pc: 0 0% 100%;
+            --s: 0 0% 85%;
+            --sf: 0 0% 80%;
+            --sc: 0 0% 15%;
+            --a: 0 0% 82%;
+            --af: 0 0% 78%;
+            --ac: 0 0% 15%;
+            --n: 0 0% 45%;
+            --nf: 0 0% 40%;
+            --nc: 0 0% 100%;
+            --b1: 0 0% 100%;
+            --b2: 0 0% 96%;
+            --b3: 0 0% 92%;
+            --bc: 0 0% 20%;
+            --in: 0 0% 96%;
+            --inc: 0 0% 15%;
+            --su: 142 71% 45%;
+            --suc: 0 0% 100%;
+            --wa: 48 96% 53%;
+            --wac: 0 0% 0%;
+            --er: 0 84% 60%;
+            --erc: 0 0% 100%;
         }
 
         /* LIGHT THEME */
@@ -75,6 +133,13 @@
         .glass, .sidebar, .sidebar-btn, .submenu-btn, .submenu3-btn, .card-3d, .modal-box, .input-modern, #page-title, #data-atual {
             transition: all 0.3s ease;
         }
+
+        /* DaisyUI shims — compatibilidade com tema existente */
+        body.theme-light .btn-ghost { color: #374151 !important; }
+        body.theme-light .btn-outline.btn-success { color: #16a34a !important; border-color: #16a34a !important; }
+        body.theme-light .btn-outline.btn-warning { color: #ca8a04 !important; border-color: #ca8a04 !important; }
+        body.theme-light .btn-outline.btn-info { color: #2563eb !important; border-color: #2563eb !important; }
+        .table-zebra tbody tr:hover { background: color-mix(in srgb, var(--bc) 8%, transparent) !important; }
 
         body {
             font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
@@ -1817,6 +1882,181 @@ body.theme-light .hover\:bg-white\/10:hover {
         body.theme-light .dash-chart-box {
             background: rgba(255,255,255,0.8);
             border-color: rgba(0,0,0,0.06);
+        }
+
+        /* ══════════════════════════════════════════════════
+           VISUAL ENHANCEMENTS — cores, luzes, animações
+           ══════════════════════════════════════════════════ */
+
+        /* ── Mesh animado no fundo ──────────────────────── */
+        #bg-decoration > div {
+            animation: bgFloat 25s ease-in-out infinite alternate;
+        }
+        #bg-decoration > div:first-child {
+            animation-duration: 25s;
+            background: radial-gradient(600px circle, rgba(181,21,21,0.08) 0%, transparent 70%) !important;
+        }
+        #bg-decoration > div:last-child {
+            animation-duration: 30s;
+            animation-delay: -5s;
+            background: radial-gradient(500px circle, rgba(181,21,21,0.05) 0%, transparent 70%) !important;
+        }
+        @keyframes bgFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-3%, 2%) scale(1.05); }
+            66% { transform: translate(2%, -2%) scale(0.95); }
+            100% { transform: translate(-1%, 3%) scale(1.02); }
+        }
+
+        /* ── overlay gradiente extra no fundo ──────────── */
+        #main-content::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(800px circle at 0% 0%, rgba(181,21,21,0.03) 0%, transparent 50%),
+                radial-gradient(600px circle at 100% 100%, rgba(255,200,50,0.02) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ── dash-glass turbinado ───────────────────────── */
+        .dash-glass {
+            position: relative;
+            isolation: isolate;
+        }
+        .dash-glass::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(181,21,21,0.15) 0%, rgba(255,255,255,0.05) 50%, rgba(181,21,21,0.05) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .dash-glass:hover::before {
+            opacity: 1;
+        }
+        .dash-glass:hover {
+            box-shadow:
+                0 8px 32px rgba(0,0,0,0.3),
+                0 0 0 1px rgba(181,21,21,0.1),
+                0 0 40px rgba(181,21,21,0.05);
+            border-color: rgba(181,21,21,0.2);
+        }
+        body.theme-light .dash-glass::before {
+            background: linear-gradient(135deg, rgba(181,21,21,0.12) 0%, rgba(0,0,0,0.03) 50%, transparent 100%);
+        }
+
+        /* ── sidebar glow aprimorado ────────────────────── */
+        .sidebar-btn.active {
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.08),
+                0 0 20px rgba(181,21,21,0.08);
+        }
+        .sidebar-btn.active .icon svg {
+            filter: drop-shadow(0 0 8px rgba(181,21,21,0.4));
+        }
+        .sidebar-btn::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, var(--primary), var(--primary-dark));
+            border-radius: 0 4px 4px 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+        .sidebar-btn.active::after {
+            opacity: 1;
+        }
+
+        /* ── gradiente animado em títulos de página ─────── */
+        .page-title-glow {
+            background: linear-gradient(135deg, #fafafa 0%, rgba(181,21,21,0.6) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        body.theme-light .page-title-glow {
+            background: linear-gradient(135deg, #1f2937 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ── cards com acento colorido ──────────────────── */
+        .card-accent-red {
+            border-left: 3px solid var(--primary) !important;
+            box-shadow: -2px 0 12px rgba(181,21,21,0.1);
+        }
+        .card-accent-yellow {
+            border-left: 3px solid #eab308 !important;
+            box-shadow: -2px 0 12px rgba(234,179,8,0.1);
+        }
+        .card-accent-green {
+            border-left: 3px solid #22c55e !important;
+            box-shadow: -2px 0 12px rgba(34,197,94,0.1);
+        }
+        .card-accent-blue {
+            border-left: 3px solid #3b82f6 !important;
+            box-shadow: -2px 0 12px rgba(59,130,246,0.1);
+        }
+
+        /* ── shimmer loading ─────────────────────────────── */
+        .shimmer {
+            background: linear-gradient(90deg,
+                rgba(255,255,255,0.02) 25%,
+                rgba(255,255,255,0.06) 50%,
+                rgba(255,255,255,0.02) 75%);
+            background-size: 200% 100%;
+            animation: shimmerMove 1.5s infinite;
+        }
+        @keyframes shimmerMove {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ── scrollbar estilizada ────────────────────────── */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.08);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(181,21,21,0.3); }
+        body.theme-light ::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.1);
+        }
+        body.theme-light ::-webkit-scrollbar-thumb:hover {
+            background: rgba(181,21,21,0.2);
+        }
+
+        /* ── animação de pulse no glow ───────────────────── */
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 8px rgba(181,21,21,0.2); }
+            50% { box-shadow: 0 0 20px rgba(181,21,21,0.4); }
+        }
+        .glow-pulse {
+            animation: glowPulse 3s ease-in-out infinite;
+        }
+
+        /* ── fade + slide up (reforço) ───────────────────── */
+        .fade-slide-up {
+            opacity: 0;
+            transform: translateY(16px);
+            animation: fadeSlideUp 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+        @keyframes fadeSlideUp {
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>

@@ -11,11 +11,13 @@ function initTema() {
 function setTheme(theme) {
     if (theme === 'light') {
         document.body.classList.add('theme-light')
+        document.documentElement.setAttribute('data-theme', 'avanzi-light')
         document.getElementById('icon-sol').classList.add('hidden')
         document.getElementById('icon-lua').classList.remove('hidden')
         document.getElementById('bg-decoration').style.display = 'none'
     } else {
         document.body.classList.remove('theme-light')
+        document.documentElement.setAttribute('data-theme', 'avanzi-dark')
         document.getElementById('icon-sol').classList.remove('hidden')
         document.getElementById('icon-lua').classList.add('hidden')
         document.getElementById('bg-decoration').style.display = 'block'
