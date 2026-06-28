@@ -30,15 +30,21 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
                 SUM(tipo_placa = 'grande')  AS grande,
                 COUNT(*)                    AS total
             FROM registros_placas
+            WHERE MONTH(criado_em) = MONTH(CURDATE())
+              AND YEAR(criado_em)  = YEAR(CURDATE())
         `)
 
         const [[impressasMes]] = await db.query(`
             SELECT
-                SUM(impressa = 1) AS impressas,
-                SUM(impressa = 0) AS geradas
-            FROM log_placas
-            WHERE MONTH(criado_em) = MONTH(CURDATE())
-              AND YEAR(criado_em)  = YEAR(CURDATE())
+                SUM(sub.impressa_max = 1) AS impressas,
+                SUM(sub.impressa_max = 0) AS geradas
+            FROM (
+                SELECT MAX(l.impressa) AS impressa_max
+                FROM log_placas l
+                WHERE MONTH(l.criado_em) = MONTH(CURDATE())
+                  AND YEAR(l.criado_em)  = YEAR(CURDATE())
+                GROUP BY COALESCE(l.codigo, CONCAT(l.descricao, l.ean, l.preco, l.tipo_placa))
+            ) sub
         `)
 
         const [placasDias] = await db.query(`
@@ -54,6 +60,8 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
         const [topProdutos] = await db.query(`
             SELECT descricao, tipo_placa, COUNT(*) AS total
             FROM registros_placas
+            WHERE MONTH(criado_em) = MONTH(CURDATE())
+              AND YEAR(criado_em)  = YEAR(CURDATE())
             GROUP BY descricao, tipo_placa
             ORDER BY total DESC
             LIMIT 10
@@ -76,6 +84,18 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
             topProdutos,
             listasMes
         })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+router.delete('/dashboard/zerar', authMiddleware, async (req, res) => {
+    try {
+        const db = require('../config/database')
+        await db.query('DELETE FROM registros_placas')
+        await db.query('DELETE FROM log_placas')
+        await db.query('DELETE FROM listas_precos')
+        res.json({ ok: true, message: 'Dashboard zerado' })
     } catch (err) {
         res.status(500).json({ error: err.message })
     }

@@ -49,7 +49,7 @@ async function carregarPlacasAmarela() {
                     </div>
                     <div style="display:flex; flex-direction:column; gap:4px;">
                         <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Preço (R$)</label>
-                        <input type="number" id="preco-input-am" step="0.01"
+                        <input type="text" id="preco-input-am" inputmode="decimal"
                             style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; width:120px; transition:all 0.3s;"
                             onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
                             onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
@@ -145,7 +145,7 @@ async function carregarPlacasAmarela() {
         if (Array.isArray(data)) {
             plaquesSalvasAmarela = data.map(p => ({
                 ...p,
-                preco: parseFloat(p.preco),
+                preco: Math.round(parseFloat(p.preco) * 100) / 100,
                 quantidade_kg_l: parseFloat(p.quantidade_kg_l || 0),
                 id_unico: Date.now() + Math.random()
             }))
@@ -200,7 +200,8 @@ function vincularEventosPlacasAmarela() {
 
 async function adicionarPlacaAmarela() {
     const codigo = document.getElementById('ean-input-am').value.trim()
-    const preco = parseFloat(document.getElementById('preco-input-am').value)
+    var precoRaw = document.getElementById('preco-input-am').value
+    const preco = Math.round(parseFloat(precoRaw.replace(',', '.')) * 100) / 100
     const quantidade = parseInt(document.getElementById('qtd-input-am').value) || 1
     if (!codigo || isNaN(preco)) return
 
@@ -274,9 +275,21 @@ function renderizarPlacasAmarela() {
         div.className = 'placa-amarela'
         div.draggable = true
         div.dataset.idx = paginaPlacasAmarela * plaquesPorPaginaAmarela + i
-        const uni = p.descricao_kglt?.toUpperCase() === 'UNIDADE' ? 'UN' : (p.descricao_kglt?.toUpperCase() || '')
+        const semEan = !p.ean || String(p.ean).trim() === ''
+        const mUni = (p.descricao || '').match(/(\d+[.,]?\d*)\s*(L|ML|KG|G)\b|\b(KG|L)\b/i)
+        let uni
+        if (mUni) {
+            const mUnit = mUni[2] || mUni[3]
+            uni = (mUnit === 'L' || mUnit === 'ML') ? 'LT' : 'KG'
+        } else {
+            const raw = (p.descricao_kglt || '').toUpperCase()
+            if (raw === 'UNIDADE') uni = 'UN'
+            else if (raw === 'LITRO' || raw === 'LITROS' || raw === 'LT') uni = 'LT'
+            else if (raw === 'KG' || raw === 'KILO' || raw === 'QUILO' || raw === 'G') uni = 'KG'
+            else uni = semEan ? 'KG' : 'UN'
+        }
         const art = uni === 'UN' ? 'A' : 'O'
-        const textoEan = (p.ean && p.ean.toString().trim() !== '') ? `Cód.${p.ean}` : ''
+        const textoEan = !semEan ? `Cód.${p.ean}` : ''
 
         div.innerHTML = `
             <h1 style="font-size:40px;  text-decoration: underline;">OFERTA</h1>

@@ -153,7 +153,7 @@ function montarArte(pizzas, dataFormatada) {
     `
 
     const fundo = document.createElement('img')
-    fundo.src = '/terca-pizza-fundo'
+    fundo.src = 'terca_pizza_fundo.png'
     fundo.crossOrigin = 'anonymous'
     fundo.style.cssText = `position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover;`
     arte.appendChild(fundo)

@@ -71,7 +71,7 @@ async function carregarPlacasGrande() {
                     </div>
                     <div class="pg-field-group" style="display:flex; flex-direction:column; gap:4px;">
                         <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Preço (R$)</label>
-                        <input type="number" id="preco-input-g" step="0.01"
+                        <input type="text" id="preco-input-g" inputmode="decimal"
                             style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; width:120px; transition:all 0.3s;"
                             onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
                             onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
@@ -177,7 +177,7 @@ async function carregarPlacasGrande() {
                 const fs = p.config ? JSON.parse(p.config) : null
                 return {
                     ...p,
-                    preco: parseFloat(p.preco),
+                    preco: Math.round(parseFloat(p.preco) * 100) / 100,
                     quantidade_kg_l: parseFloat(p.quantidade_kg_l || 0),
                     id_unico: Date.now() + Math.random(),
                     marca: p.marca || prod?.marca || '',
@@ -217,34 +217,24 @@ function montarPlacaGrandeHTML(p) {
     const qtdKgL = (p.quantidade_kg_l !== null && p.quantidade_kg_l !== undefined && p.quantidade_kg_l !== '')
         ? parseFloat(p.quantidade_kg_l)
         : (semEan ? 1 : 0)
-    const dkglt = (p.descricao_kglt || '').toUpperCase()
-    const ehPesoExato = qtdKgL > 0 && Math.abs(qtdKgL - 1) < 0.001
-    const uni = ehPesoExato
-        ? 'KG'
-        : (dkglt.includes('LITRO') || dkglt === 'LT')
-            ? 'LT'
-            : 'UN'
+    const uniBase = semEan ? 'KG' : 'UN'
+    const uni = p._fs?.unidade || uniBase
 
     const fracionar = p._fs?.fracionar100g && uni === 'KG'
     const uniDisplay = fracionar ? '100G' : uni
     const precoExibir = fracionar ? preco / 10 : preco
-    const precoTrunc = Math.floor(precoExibir * 100) / 100
+    const precoTrunc = Math.round(precoExibir * 100) / 100
     const precoFmtExib = precoTrunc.toFixed(2).replace('.', ',')
     const [reaisExib, centsExib] = precoFmtExib.split(',')
     const precoFontSize = p._fs?.preco || (reaisExib.length <= 2 ? 140 : 130)
 
-    const uniRodape = qtdKgL > 0
-        ? (dkglt.includes('LITRO') || dkglt === 'LT'
-            ? 'LT'
-            : dkglt.includes('KILO') || dkglt.includes('QUILO') || dkglt === 'KG'
-                ? 'KG'
-                : 'KG')
-        : null
+    const mUniRod = (p.descricao || '').match(/(\d+[.,]?\d*)\s*(L|ML|KG|G)\b|\b(KG|L)\b/i)
+    const mUnit = mUniRod && (mUniRod[2] || mUniRod[3])
+    const uniRodape = p._fs?.unidade || (mUnit ? ((mUnit === 'L' || mUnit === 'ML') ? 'LT' : 'KG') : (!semEan ? 'UN' : 'KG'))
     const artRodape = uniRodape === 'UN' ? 'A' : 'O'
-    const precoUn = (qtdKgL > 0) ? (preco / qtdKgL).toFixed(2).replace('.', ',') : null
-    const rodape = precoUn && uniRodape
-        ? `${semEan ? '' : 'NESTA EMBALAGEM '}${artRodape} ${uniRodape} SAI A R$ ${precoUn}`
-        : ''
+    const precoKgL = qtdKgL > 0 ? qtdKgL : 1
+    const precoUn = (preco / precoKgL).toFixed(2).replace('.', ',')
+    const rodape = p._fs?.rodape || `${semEan ? '' : 'NESTA EMBALAGEM '}${artRodape} ${uniRodape} SAI A R$ ${precoUn}`
 
     const brandFontSize = calcBrandFontSize(linha2)
     const linha1FontSize = p._fs?.linha1 || Math.max(Math.round(brandFontSize * 0.4), 12)
@@ -277,7 +267,7 @@ function montarPlacaGrandeHTML(p) {
                             <span>A CADA</span>
                             <span>100G</span>
                         </span>`
-                        : `<span class="pg-preco-unidade" style="font-size:20px; font-weight:bold;${uniDisplay !== 'UN' ? " margin-left:0;" : " margin-left:3px;"} margin-bottom:20px; line-height:1;">${uniDisplay}</span>`}
+                        : `<span class="pg-preco-unidade" data-field="unidade" style="font-size:20px; font-weight:bold;${uniDisplay !== 'UN' ? " margin-left:0;" : " margin-left:3px;"} margin-bottom:20px; line-height:1;">${uniDisplay}</span>`}
                 </div>
                 <div class="pg-rodape-texto-wrapper" style="width:100%; text-align:center; padding-top:2px; margin-top:90px;">
                     <div class="pg-rodape-texto" data-field="rodape" style="font-size:14px; font-weight:bold; line-height:0.66; transform:scaleY(1.3);">${rodape}</div>
@@ -401,9 +391,19 @@ function renderizarPlacasGrande() {
                 }, 300)
             }
 
-            el.ondblclick = () => {
+            el.ondblclick = async () => {
                 if (clickTimer) { clearTimeout(clickTimer); clickTimer = null }
                 const field = el.getAttribute('data-field')
+
+                if (field === 'unidade') {
+                    if (!p._fs) p._fs = {}
+                    const ciclo = { KG: 'LT', LT: 'UN', UN: 'KG' }
+                    p._fs.unidade = ciclo[el.innerText.trim()] || 'KG'
+                    delete p._fs.fracionar100g
+                    await salvarERenderizarGrande()
+                    return
+                }
+
                 const input = document.createElement('input')
                 input.value = el.innerText.trim()
                 input.style.cssText = 'width:90%; font-size:' + el.style.fontSize + '; font-weight:bold; text-align:center; border:2px solid #b51515; border-radius:6px; background:#fff; color:#000; outline:none; padding:2px 6px; font-family:\'Segoe UI\',sans-serif;'
@@ -427,6 +427,9 @@ function renderizarPlacasGrande() {
                     } else if (field === 'linha3') {
                         const partes = quebrarPorMarca(p.descricao, p.marca)
                         p.descricao = (partes.linha1 ? partes.linha1 + ' ' : '') + (partes.linha2 ? partes.linha2 + ' ' : '') + v.toUpperCase()
+                    } else if (field === 'rodape') {
+                        if (!p._fs) p._fs = {}
+                        p._fs.rodape = v
                     }
                     await salvarERenderizarGrande()
                 }
@@ -553,7 +556,7 @@ function imprimirTudoGrande() {
 async function adicionarPlacaGrande() {
     const codigo = document.getElementById('ean-input-g').value.trim()
     const precoRaw = document.getElementById('preco-input-g').value
-    const preco = parseFloat(precoRaw.replace(',', '.'))
+    const preco = Math.round(parseFloat(precoRaw.replace(',', '.')) * 100) / 100
     const quantidade = parseInt(document.getElementById('qtd-input-g').value) || 1
     if (!codigo || isNaN(preco)) return
 

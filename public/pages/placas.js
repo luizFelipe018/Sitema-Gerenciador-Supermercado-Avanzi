@@ -275,20 +275,20 @@ function renderizarPlacas() {
         const uni = p.descricao_kglt?.toUpperCase() === 'UNIDADE' ? 'UN' : (p.descricao_kglt?.toUpperCase() || '')
         const art = uni === 'UN' ? 'A' : 'O'
         const textoEan = (p.ean && p.ean.toString().trim() !== '') ? `Cód.${p.ean}` : ''
+        const textoInfo = p._fs?.rodape || (p.preco_info ? `NESTA EMBALAGEM ${art} ${uni} SAI R$ ${p.preco_info}` : '')
 
         div.innerHTML = `
             <h1 style="font-size:16px;" data-field="descricao">${p.descricao || ''}</h1>
             <h1 style="font-size:92px;" data-field="preco"><span style="font-size:18px; position:relative; top:25px;color:#000;">R$</span> ${parseFloat(p.preco).toFixed(2).replace('.', ',')}</h1>
-            <h1 style="font-size:16px;" data-field="info">${p.preco_info ? `NESTA EMBALAGEM ${art} ${uni} SAI R$ ${p.preco_info}` : ''}</h1>
+            <h1 style="font-size:16px;" data-field="rodape">${textoInfo}</h1>
             <h1 style="font-size:16px;" data-field="ean">${textoEan}</h1>
         `
 
-        div.querySelectorAll('h1').forEach(h => {
-            h.ondblclick = () => {
+        div.querySelectorAll('[data-field]').forEach(h => {
+            h.ondblclick = async () => {
                 const field = h.getAttribute('data-field')
                 const input = document.createElement('input')
-                const valorOriginal = h.innerText.replace('R$', '').replace('Cód.', '').replace(/NESTA EMBALAGEM .* SAI R\$/i, '').trim()
-                input.value = valorOriginal
+                input.value = h.innerText.trim()
                 input.style.cssText = 'width:90%; font-size:' + h.style.fontSize + '; text-align:center; font-weight:bold; border:2px solid #b51515; border-radius:6px; background:#fff; color:#000; outline:none; padding:2px 6px;'
                 h.replaceWith(input)
                 input.focus()
@@ -302,7 +302,14 @@ function renderizarPlacas() {
                             const qtdKgL = parseFloat(p.quantidade_kg_l)
                             p.preco_info = qtdKgL > 0 ? (p.preco / qtdKgL).toFixed(2).replace('.', ',') : p.preco.toFixed(2)
                         } else if (field === 'ean') { p.ean = v }
-                        else if (field === 'info') { p.preco_info = v }
+                        else if (field === 'rodape') {
+                            if (!p._fs) p._fs = {}
+                            if (v) {
+                                p._fs.rodape = v
+                            } else {
+                                delete p._fs.rodape
+                            }
+                        }
                         else if (field === 'descricao') { p.descricao = v.toUpperCase() }
                         await salvarERenderizar()
                     } else {

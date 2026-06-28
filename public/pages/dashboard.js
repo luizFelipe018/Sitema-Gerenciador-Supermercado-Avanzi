@@ -36,6 +36,19 @@
     }
 }
 
+async function zerarDashboard() {
+    if (!confirm('Tem certeza? Isso vai apagar TODOS os registros de placas, logs e listas de preços.')) return
+    if (!confirm('Última confirmação: essa ação NÃO pode ser desfeita. Continuar?')) return
+    try {
+        const res = await fetch(API+'/dashboard/zerar', { method: 'DELETE', headers: authHeaders() })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error)
+        carregarDashboard()
+    } catch (e) {
+        alert('Erro ao zerar: ' + e.message)
+    }
+}
+
 function dashRenderizar(d) {
     const mes = new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' })
     const pct = (v, t) => t > 0 ? ((v / t) * 100).toFixed(1) : 0
@@ -49,10 +62,16 @@ function dashRenderizar(d) {
                     <p style="font-size:14px; font-weight:600; color:rgba(255,255,255,0.9); text-transform:capitalize;">${mes}</p>
                     <p style="font-size:12px; color:rgba(255,255,255,0.25); margin-top:2px;">Visão geral do sistema</p>
                 </div>
-                <button onclick="carregarDashboard()" class="dash-refresh-btn">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
-                    Atualizar
-                </button>
+                <div style="display:flex; gap:8px;">
+                    <button onclick="carregarDashboard()" class="dash-refresh-btn">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                        Atualizar
+                    </button>
+                    <button onclick="zerarDashboard()" class="dash-refresh-btn" style="color:#ef4444; border-color:rgba(239,68,68,0.3);">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                        Zerar
+                    </button>
+                </div>
             </div>
 
             <!-- Cards principais -->
@@ -146,7 +165,7 @@ function dashRenderizar(d) {
 }
 
 function dashCard(icon, label, valorFormatado, color, bg, glow) {
-    const raw = valorFormatado.replace(/\./g, '').replace(/,/g, '')
+    const raw = parseInt(valorFormatado.replace(/\./g, '')) || 0
     return `
         <div class="dash-glass dash-animate" style="padding:20px; position:relative; overflow:hidden;">
             <div style="position:absolute; top:-40px; right:-40px; width:120px; height:120px; border-radius:50%; background:${glow}; filter:blur(40px); pointer-events:none;"></div>
@@ -305,6 +324,8 @@ async function dashGraficoDepto(porDepto) {
     const canvas = document.getElementById('chart-depto')
     if (!canvas) return
 
+    if (window._chartDepto) window._chartDepto.destroy()
+
     const labels = porDepto.map(d => d.depto.length > 20 ? d.depto.slice(0, 20) + '\u2026' : d.depto)
     const valores = porDepto.map(d => d.total)
     const cores = [
@@ -313,7 +334,7 @@ async function dashGraficoDepto(porDepto) {
         '#dc2626','#2563eb','#16a34a','#d97706','#8b5cf6'
     ]
 
-    new Chart(canvas, {
+    window._chartDepto = new Chart(canvas, {
         type: 'bar',
         data: {
             labels,
@@ -360,6 +381,8 @@ async function dashGraficoDias(placasDias) {
     const canvas = document.getElementById('chart-dias')
     if (!canvas) return
 
+    if (window._chartDias) window._chartDias.destroy()
+
     const hoje = new Date()
     const labels = [], valores = []
     for (let i = 29; i >= 0; i--) {
@@ -375,7 +398,7 @@ async function dashGraficoDias(placasDias) {
         valores.push(found ? parseInt(found.total) : 0)
     }
 
-    new Chart(canvas, {
+    window._chartDias = new Chart(canvas, {
         type: 'line',
         data: {
             labels,
