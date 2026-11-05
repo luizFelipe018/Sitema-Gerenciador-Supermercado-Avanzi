@@ -1,10 +1,40 @@
 const router = require('express').Router()
 const authMiddleware = require('../middlewares/authMiddleware')
 
+// ── Migrações da tabela de itens ─────────────────────────────
+// A lista é um retrato (snapshot) do momento da oferta: família, marca e
+// departamento são copiados para o item para o designer receber tudo pronto,
+// mesmo que o cadastro do produto mude depois.
+;(async () => {
+    const db = require('../config/database')
+    const colunas = [
+        ['familia', 'VARCHAR(100) NULL'],
+        ['marca', 'VARCHAR(100) NULL'],
+        ['departamento', 'VARCHAR(100) NULL'],
+        ['inclusao', "ENUM('individual','familia') NOT NULL DEFAULT 'individual'"]
+    ]
+    for (const [col, def] of colunas) {
+        try {
+            const [existe] = await db.query('SHOW COLUMNS FROM listas_precos_itens LIKE ?', [col])
+            if (!existe.length) {
+                await db.query(`ALTER TABLE listas_precos_itens ADD COLUMN \`${col}\` ${def}`)
+            }
+        } catch (e) {
+            console.error('[listas] migração:', e.message)
+        }
+    }
+})()
+
 router.get('/listas', authMiddleware, async (req, res) => {
     try {
         const db = require('../config/database')
-        const [rows] = await db.query('SELECT * FROM listas_precos ORDER BY criado_em DESC')
+        const [rows] = await db.query(`
+            SELECT l.*,
+                   (SELECT COUNT(*) FROM listas_precos_itens i WHERE i.lista_id = l.id) AS total_itens,
+                   (SELECT COALESCE(SUM(i.preco),0) FROM listas_precos_itens i WHERE i.lista_id = l.id) AS valor_total
+            FROM listas_precos l
+            ORDER BY l.criado_em DESC
+        `)
         res.json(rows)
     } catch (err) { res.status(500).json({ error: err.message }) }
 })
@@ -12,10 +42,13 @@ router.get('/listas', authMiddleware, async (req, res) => {
 router.post('/listas', authMiddleware, async (req, res) => {
     try {
         const db = require('../config/database')
-        const { nome } = req.body
+        const { nome, data_oferta } = req.body
         if (!nome) return res.status(400).json({ error: 'Nome obrigatório' })
-        const [result] = await db.query('INSERT INTO listas_precos (nome) VALUES (?)', [nome])
-        res.status(201).json({ id: result.insertId, nome })
+        const [result] = await db.query(
+            'INSERT INTO listas_precos (nome, data_oferta) VALUES (?, ?)',
+            [nome, data_oferta || null]
+        )
+        res.status(201).json({ id: result.insertId, nome, data_oferta: data_oferta || null })
     } catch (err) { res.status(500).json({ error: err.message }) }
 })
 
@@ -52,9 +85,14 @@ router.post('/listas/:id/duplicar', authMiddleware, async (req, res) => {
             [req.params.id]
         )
         if (itens.length) {
-            const valores = itens.map(i => [novaId, i.codigo, i.ean, i.descricao, i.preco, i.ordem])
+            const valores = itens.map(i => [
+                novaId, i.codigo, i.ean, i.descricao, i.preco, i.ordem,
+                i.familia, i.marca, i.departamento, i.inclusao
+            ])
             await db.query(
-                'INSERT INTO listas_precos_itens (lista_id, codigo, ean, descricao, preco, ordem) VALUES ?',
+                `INSERT INTO listas_precos_itens
+                    (lista_id, codigo, ean, descricao, preco, ordem, familia, marca, departamento, inclusao)
+                 VALUES ?`,
                 [valores]
             )
         }
@@ -82,20 +120,52 @@ router.get('/listas/:id/itens', authMiddleware, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }) }
 })
 
+/** Adiciona um item. Aceita os dados da família para manter o retrato da oferta. */
 router.post('/listas/:id/itens', authMiddleware, async (req, res) => {
     try {
         const db = require('../config/database')
-        const { codigo, ean, descricao, preco } = req.body
+        const { codigo, ean, descricao, preco, familia, marca, departamento, inclusao } = req.body
         if (!descricao) return res.status(400).json({ error: 'Descrição obrigatória' })
+
         const [[{ max_ordem }]] = await db.query(
             'SELECT COALESCE(MAX(ordem),0) as max_ordem FROM listas_precos_itens WHERE lista_id = ?',
             [req.params.id]
         )
+        const ordem = max_ordem + 1
+
         const [result] = await db.query(
-            'INSERT INTO listas_precos_itens (lista_id, codigo, ean, descricao, preco, ordem) VALUES (?,?,?,?,?,?)',
-            [req.params.id, codigo||null, ean||null, descricao, preco||0, max_ordem+1]
+            `INSERT INTO listas_precos_itens
+                (lista_id, codigo, ean, descricao, preco, ordem, familia, marca, departamento, inclusao)
+             VALUES (?,?,?,?,?,?,?,?,?,?)`,
+            [
+                req.params.id,
+                codigo || null,
+                ean || null,
+                descricao,
+                preco || 0,
+                ordem,
+                familia || null,
+                marca || null,
+                departamento || null,
+                inclusao === 'familia' ? 'familia' : 'individual'
+            ]
         )
-        res.status(201).json({ id: result.insertId, lista_id: req.params.id, codigo, ean, descricao, preco, ordem: max_ordem+1 })
+        res.status(201).json({
+            id: result.insertId, lista_id: Number(req.params.id),
+            codigo, ean, descricao, preco, ordem,
+            familia: familia || null, marca: marca || null,
+            departamento: departamento || null,
+            inclusao: inclusao === 'familia' ? 'familia' : 'individual'
+        })
+    } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
+/** Remove todos os itens da lista (mantém a lista). */
+router.delete('/listas/:id/itens', authMiddleware, async (req, res) => {
+    try {
+        const db = require('../config/database')
+        const [r] = await db.query('DELETE FROM listas_precos_itens WHERE lista_id = ?', [req.params.id])
+        res.json({ ok: true, removidos: r.affectedRows })
     } catch (err) { res.status(500).json({ error: err.message }) }
 })
 
@@ -133,17 +203,22 @@ router.get('/listas/:id/exportar-xlsx', authMiddleware, async (req, res) => {
 
         const ExcelJS = require('exceljs')
         const wb = new ExcelJS.Workbook()
-        const ws = wb.addWorksheet('Planilha1')
+        const ws = wb.addWorksheet('Ofertas')
 
         ws.columns = [
-            { key: 'codigo',    width: 14 },
-            { key: 'descricao', width: 45 },
-            { key: 'ean',       width: 18 },
-            { key: 'preco',     width: 12 },
+            { key: 'ordem',      width: 6 },
+            { key: 'codigo',     width: 14 },
+            { key: 'descricao',  width: 46 },
+            { key: 'ean',        width: 16 },
+            { key: 'preco',      width: 12 },
+            { key: 'familia',    width: 30 },
+            { key: 'marca',      width: 20 },
+            { key: 'departamento', width: 22 },
+            { key: 'inclusao',   width: 14 }
         ]
 
-        const header = ws.addRow(['CODIGO', 'DESCRICAO', 'EAN', 'PRECO'])
-        header.height = 20
+        const header = ws.addRow(['#', 'CODIGO', 'DESCRICAO', 'EAN', 'PRECO', 'FAMILIA', 'MARCA', 'DEPARTAMENTO', 'ORIGEM'])
+        header.height = 22
         header.eachCell(cell => {
             cell.font      = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FFFFFFFF' } }
             cell.fill      = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFB51515' } }
@@ -172,7 +247,17 @@ router.get('/listas/:id/exportar-xlsx', authMiddleware, async (req, res) => {
 
         const addRow = (item, tipo, idx) => {
             const preco = parseFloat(item.preco || 0).toFixed(2).replace('.', ',')
-            const row   = ws.addRow([item.codigo || '', item.descricao || '', item.ean || '', preco])
+            const row   = ws.addRow([
+                idx + 1,
+                item.codigo || '',
+                item.descricao || '',
+                item.ean || '',
+                preco,
+                item.familia || '',
+                item.marca || '',
+                item.departamento || '',
+                item.inclusao === 'familia' ? 'FAMÍLIA' : 'ÚNICO'
+            ])
 
             let fill, fontColor, prefix = ''
             if (tipo === 'adicionado') {
@@ -194,11 +279,13 @@ router.get('/listas/:id/exportar-xlsx', authMiddleware, async (req, res) => {
                 cell.font      = { name:'Calibri', size:11, color:{ argb: fontColor }, strike: tipo === 'removido' }
                 cell.fill      = fill
                 cell.border    = borda
-                cell.alignment = col === 2 ? { horizontal:'left',   vertical:'middle' }
-                               : col === 4 ? { horizontal:'right',  vertical:'middle' }
-                               :             { horizontal:'center', vertical:'middle' }
-                if (col === 3) cell.numFmt = '@'
-                if (col === 2 && prefix) cell.value = prefix + cell.value
+                cell.alignment = col === 3 ? { horizontal:'left',   vertical:'middle' }
+                               : col === 5 ? { horizontal:'right',  vertical:'middle' }
+                               : col === 1 ? { horizontal:'center', vertical:'middle' }
+                               :             { horizontal:'left',   vertical:'middle' }
+                if (col === 4) cell.numFmt = '@'
+                if (col === 3 && prefix) cell.value = prefix + cell.value
+                if (col === 9) cell.alignment = { horizontal: 'center', vertical: 'middle' }
             })
         }
 
@@ -209,7 +296,7 @@ router.get('/listas/:id/exportar-xlsx', authMiddleware, async (req, res) => {
 
             ws.addRow([])
             const legenda = ws.addRow([`Alterações: +${adicionados.length} adicionado(s)   −${removidos.length} removido(s)   =${mantidos.length} mantido(s)`])
-            ws.mergeCells(`A${legenda.number}:D${legenda.number}`)
+            ws.mergeCells(`A${legenda.number}:I${legenda.number}`)
             legenda.getCell(1).font      = { name:'Calibri', size:10, bold:true, color:{ argb:'FF374151' } }
             legenda.getCell(1).alignment = { horizontal:'left' }
         } else {
@@ -219,7 +306,7 @@ router.get('/listas/:id/exportar-xlsx', authMiddleware, async (req, res) => {
         ws.addRow([])
         const agora = new Date().toLocaleString('pt-BR')
         const rodape = ws.addRow([`Gerado em: ${agora}`])
-        ws.mergeCells(`A${rodape.number}:D${rodape.number}`)
+        ws.mergeCells(`A${rodape.number}:I${rodape.number}`)
         rodape.getCell(1).font      = { name: 'Calibri', size: 10, italic: true, color: { argb: 'FF666666' } }
         rodape.getCell(1).alignment = { horizontal: 'left' }
 

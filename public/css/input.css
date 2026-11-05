@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+@theme {
+    --color-avanzi-red: #b51515;
+    --color-avanzi-yellow: #ffe400;
+}

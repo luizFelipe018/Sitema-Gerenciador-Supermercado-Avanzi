@@ -1,0 +1,52 @@
+﻿=== COLUNAS EXCEL (19) ===
+1: C├│digo
+2: Descri├º├úo
+3: EAN
+4: Depto.
+5: Se├º├úo
+6: Grupo
+7: Subgrupo
+8: C├│digo
+9: Fam├¡lia
+10: Associado
+11: Status
+12: Composto
+13: NCM/SH
+14: Tributa├º├úo PIS/COFINS
+15: Exce├º├úo IPI
+16: Exce├º├úo ICMS
+17: CEST
+18: Classifica├º├úo Trib.
+19: Data ├Ültima Entrada
+
+=== DADOS BANCO ATUAL (29) ===
+[dotenv@17.3.1] injecting env (9) from .env -- tip: ­ƒøá´©Å  run anywhere with `dotenvx run -- yourcommand`
+1: codigo | varchar(20)
+2: descricao | varchar(255)
+3: ean | varchar(20)
+4: departamento | varchar(10)
+5: descricao_departamento | varchar(100)
+6: secao | varchar(10)
+7: grupo | varchar(10)
+8: familia | varchar(50)
+9: status | varchar(50)
+10: ncm | varchar(20)
+11: estoque_atual | decimal(15,3)
+12: pmz | decimal(15,4)
+13: custo | decimal(15,4)
+14: preco_venda | decimal(15,4)
+15: preco_oferta | decimal(15,4)
+16: preco_venda_kg | decimal(15,4)
+17: preco_oferta_kg | decimal(15,4)
+18: validade | varchar(20)
+19: data_cadastro | date
+20: data_alteracao | date
+21: qtde_vendida_mes | decimal(15,3)
+22: vendas_media | decimal(15,4)
+23: participa_cotacao | tinyint(1)
+24: quantidade_kg_l | decimal(10,3)
+25: descricao_kglt | varchar(50)
+26: marca | varchar(100)
+27: ultima_alteracao_preco | date
+28: data_ultima_entrada | date
+29: aceita_troca | tinyint(1)

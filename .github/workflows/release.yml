@@ -1,0 +1,43 @@
+name: Release
+
+# Publica o instalador na Release do GitHub a cada tag v* (auto-update dos PCs)
+# Uso: git tag v1.1.4 && git push origin v1.1.4
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # O .env (credenciais do banco / JWT) vem do Secret do repositorio — nunca commitado
+      - name: Criar .env a partir dos secrets
+        shell: bash
+        run: |
+          cat > .env << 'EOF'
+          DB_HOST=${{ secrets.DB_HOST }}
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_PORT=${{ secrets.DB_PORT }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          EOF
+
+      - name: Buildar e publicar na Release
+        run: npm run build:publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

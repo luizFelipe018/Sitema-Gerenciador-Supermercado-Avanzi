@@ -1,6 +1,18 @@
-// 🔐 Proteção
+// 🔐 Proteção — sessão máxima de 4 horas
 const token = localStorage.getItem('token')
 if (!token) window.location.href = 'login.html'
+else {
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        const now = Math.floor(Date.now() / 1000)
+        if ((payload.exp && now >= payload.exp) || (payload.iat && now - payload.iat > 4 * 60 * 60)) {
+            localStorage.removeItem('token')
+    localStorage.removeItem('tokenExp')
+            localStorage.removeItem('tokenExp')
+            window.location.href = 'login.html'
+        }
+    } catch { /* token opaco: deixa a API validar via 401 */ }
+}
 
 // ── TEMA CLARO/ESCURO ──────────────────────────────
 function initTema() {
@@ -109,35 +121,79 @@ function setConteudo(html, titulo) {
 }
 
 function printFolha(htmlContent, extraCss) {
-    const w = window.open('', '_blank', 'width=800,height=600')
-    if (!w) { alert('Permita pop-ups para imprimir.'); return }
-    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    // Imprime num iframe escondido da propria pagina. window.open nao era
+    // confiavel: o "Imprimir tudo" chamava dentro de setTimeout, o popup perdia
+    // a \"acao do usuario\" e o navegador bloqueava (nenhuma guia abria).
+    const iframe = document.createElement('iframe')
+    iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;'
+    document.body.appendChild(iframe)
+
+    // As placas usam background-image (CSS), que NAO aparece em imgDoc.images —
+    // por isso o print antigo disparava com a arte ainda carregando (banner
+    // sumia) ou antes da rasterizacao do iframe oculto (textos sumiam), conforme
+    // cache/rede no momento do clique. Aqui listamos os url(...) do HTML e
+    // pre-carregamos todos antes de imprimir.
+    const urlsFundo = []
+    const reUrl = /url\(\s*['"]?([^'")]+)['"]?\s*\)/g
+    let m
+    while ((m = reUrl.exec(htmlContent))) {
+        const u = m[1].trim()
+        if (/^data:/i.test(u)) continue
+        try { urlsFundo.push(new URL(u, location.href).href) } catch (e) { /* URL invalida, ignora */ }
+    }
+    const preloads = [...new Set(urlsFundo)].map(u => new Promise(res => {
+        const img = new Image()
+        img.onload = img.onerror = () => res()
+        img.src = u
+    }))
+
+    const doc = iframe.contentDocument
+    doc.open()
+    doc.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
         <style>
-            @page { size: A4; margin: 0; }
+            @page { size: A4 landscape; margin: 0; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             body { margin: 0; padding: 0; background: #fff; font-family: 'Segoe UI', sans-serif; }
             ${extraCss || ''}
         </style>
     </head><body>${htmlContent}</body></html>`)
-    w.document.close()
-    w.focus()
-    setTimeout(() => { w.print(); w.close() }, 500)
+    doc.close()
+
+    let imprimiu = false
+    const imprimir = () => {
+        if (imprimiu) return
+        imprimiu = true
+        iframe.contentWindow.focus()
+        iframe.contentWindow.print()
+        // deixa o iframe vivo ate o dialogo fechar, depois descarta
+        setTimeout(() => iframe.remove(), 120000)
+    }
+
+    // espera fontes e <img> carregarem (ate 5s) e as imagens de fundo (ate 4s),
+    // depois da uma folga para o navegador rasterizar o iframe oculto.
+    const encerrar = async () => {
+        const t0 = Date.now()
+        const esperaDom = () => new Promise(res => {
+            const verifica = () => {
+                const imgDoc = iframe.contentDocument
+                const imgs = Array.from(imgDoc.images)
+                let fontsOk = true
+                try { fontsOk = !imgDoc.fonts || imgDoc.fonts.status !== 'loading' } catch (e) { /* ignora */ }
+                if ((imgs.every(img => img.complete) && fontsOk) || Date.now() - t0 > 5000) res()
+                else setTimeout(verifica, 120)
+            }
+            verifica()
+        })
+        await esperaDom()
+        await Promise.race([Promise.all(preloads), new Promise(res => setTimeout(res, 4000))])
+        await new Promise(res => setTimeout(res, 350))
+        imprimir()
+    }
+    encerrar()
 }
 
 function authHeaders() {
     return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-}
-
-function fecharModais() {
-    document.getElementById('modal-busca').style.display = 'none'
-    document.getElementById('modal-import').style.display = 'none'
-    document.getElementById('log-erros').style.display = 'none'
-}
-
-function fecharModaisAmarela() {
-    document.getElementById('modal-busca-am').style.display = 'none'
-    document.getElementById('modal-import-am').style.display = 'none'
-    document.getElementById('log-erros-am').style.display = 'none'
 }
 
 function fecharModaisGrande() {
@@ -147,17 +203,11 @@ function fecharModaisGrande() {
 }
 
 // ── FECHAR MODAIS ─────────────────────────────────────
-document.getElementById('fechar-busca').onclick = () => { document.getElementById('modal-busca').style.display = 'none' }
-document.getElementById('fechar-import').onclick = () => { document.getElementById('modal-import').style.display = 'none' }
-document.getElementById('fechar-busca-am').onclick = () => { document.getElementById('modal-busca-am').style.display = 'none' }
-document.getElementById('fechar-import-am').onclick = () => { document.getElementById('modal-import-am').style.display = 'none' }
 document.getElementById('fechar-busca-g').onclick = () => { document.getElementById('modal-busca-g').style.display = 'none' }
 document.getElementById('fechar-import-g').onclick = () => { document.getElementById('modal-import-g').style.display = 'none' }
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        fecharModais()
-        fecharModaisAmarela()
         fecharModaisGrande()
         document.getElementById('contextMenu').style.display = 'none'
         if (popupBuscaAberto) fecharPopupBuscaGlobal()
@@ -233,7 +283,7 @@ function registrarImpressaoPlacas() {
                         codigo: p.codigo || null,
                         ean: p.ean || null,
                         preco: p.preco || 0,
-                        tipo_placa: p.tipo_placa || 'branca'
+                        tipo_placa: p.tipo_placa || 'grande4'
                     }))
                     const res = await fetch(API+'/log-placas', {
                         method: 'POST',
@@ -283,6 +333,25 @@ function abrirSubmenuOfertas() {
     btnOfertasMenu.classList.add('open')
 }
 
+// ── SUBMENU MARKETING ────────────────────────────────────
+const btnMarketingMenu = document.getElementById('btn-marketing-menu')
+const submenuMarketing  = document.getElementById('submenu-marketing')
+
+if (btnMarketingMenu && submenuMarketing) {
+    btnMarketingMenu.addEventListener('click', () => {
+        const aberto = submenuMarketing.classList.contains('open')
+        submenuMarketing.classList.toggle('open', !aberto)
+        btnMarketingMenu.classList.toggle('open', !aberto)
+    })
+}
+
+function abrirSubmenuMarketing() {
+    if (submenuMarketing && btnMarketingMenu) {
+        submenuMarketing.classList.add('open')
+        btnMarketingMenu.classList.add('open')
+    }
+}
+
 // ── SUBMENU PLACAS ────────────────────────────────────
 const btnPlacasMenu = document.getElementById('btn-placas-menu')
 const submenuPlacas = document.getElementById('submenu-placas')
@@ -315,7 +384,7 @@ document.getElementById('btn-inicio').addEventListener('click', () => {
     btnPlacasMenu.classList.remove('open')
     submenuOfertas.classList.remove('open')
     btnOfertasMenu.classList.remove('open')
-    carregarDashboard()
+    carregarInicio()
 })
 
 document.getElementById('btn-dashboard').addEventListener('click', () => {
@@ -334,25 +403,34 @@ document.getElementById('btn-produtos').addEventListener('click', () => {
     carregarProdutos()
 })
 
-document.getElementById('btn-placas').addEventListener('click', () => {
-    abrirSubmenuPlacas()
-    document.getElementById('submenu-modelos').classList.add('open')
-    document.getElementById('btn-modelos-menu').classList.add('open2')
-    carregarPlacas()
-})
-
-document.getElementById('btn-placas-amarela').addEventListener('click', () => {
-    abrirSubmenuPlacas()
-    document.getElementById('submenu-modelos').classList.add('open')
-    document.getElementById('btn-modelos-menu').classList.add('open2')
-    carregarPlacasAmarela()
-})
-
 document.getElementById('btn-placas-grande').addEventListener('click', () => {
     abrirSubmenuPlacas()
     document.getElementById('submenu-modelos').classList.add('open')
     document.getElementById('btn-modelos-menu').classList.add('open2')
     carregarPlacasGrande()
+})
+
+document.getElementById('btn-placas-grande-4').addEventListener('click', () => {
+    abrirSubmenuPlacas()
+    document.getElementById('submenu-modelos').classList.add('open')
+    document.getElementById('btn-modelos-menu').classList.add('open2')
+    carregarPlacasGrande4()
+})
+
+document.getElementById('btn-placas-a4').addEventListener('click', () => {
+    abrirSubmenuPlacas()
+    document.getElementById('submenu-modelos').classList.add('open')
+    document.getElementById('btn-modelos-menu').classList.add('open2')
+    carregarPlacasA4()
+})
+
+document.getElementById('btn-arte-semanal')?.addEventListener('click', () => {
+    if (submenuPlacas) { submenuPlacas.classList.remove('open') }
+    if (btnPlacasMenu) { btnPlacasMenu.classList.remove('open') }
+    if (submenuOfertas) { submenuOfertas.classList.remove('open') }
+    if (btnOfertasMenu) { btnOfertasMenu.classList.remove('open') }
+    if (typeof abrirSubmenuMarketing === 'function') abrirSubmenuMarketing()
+    carregarArteSemanal()
 })
 
 document.getElementById('btn-relatorio-placas').addEventListener('click', () => {
@@ -446,6 +524,14 @@ document.getElementById('btn-busca-rapida').addEventListener('click', () => {
     carregarBuscaRapida()
 })
 
+document.getElementById('btn-marcas-massa')?.addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuOfertas.classList.remove('open')
+    btnOfertasMenu.classList.remove('open')
+    if (typeof carregarMarcasMassa === 'function') carregarMarcasMassa()
+})
+
 document.getElementById('btn-gerenciador-placas').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
@@ -496,12 +582,11 @@ document.getElementById('btn-cotacao').addEventListener('click', () => {
     carregarCotacao()
 })
 
-document.getElementById('btn-dashboard-vendas').addEventListener('click', () => {
-    submenuPlacas.classList.remove('open')
+document.getElementById('btn-auditoria').addEventListener('click', () => {    submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
     submenuOfertas.classList.remove('open')
     btnOfertasMenu.classList.remove('open')
-    carregarDashboardVendas()
+    carregarAuditoria()
 })
 
 document.getElementById('btn-calc-kglt').addEventListener('click', () => {
@@ -530,8 +615,17 @@ document.getElementById('btn-novidades').addEventListener('click', () => {
     carregarNovidades()
 })
 
-document.getElementById('btn-logout').addEventListener('click', () => {
+document.getElementById('btn-logout').addEventListener('click', async () => {
+    // Registra a saída na trilha de auditoria antes de limpar a sessão
+    try {
+        await fetch(API + '/logout', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        })
+    } catch (e) { /* offline: segue o logout mesmo assim */ }
+
     localStorage.removeItem('token')
+    localStorage.removeItem('tokenExp')
     localStorage.removeItem('usuarioNome')
     localStorage.removeItem('usuario')
     localStorage.removeItem('usuarioCargo')
@@ -544,22 +638,33 @@ aplicarPermissoesMenu()
 // ── MENU CONTEXTO (excluir/duplicar placa) ────────────
 function executarContexto(fn) {
     const abaAtiva = document.querySelector('.submenu-btn.active, .submenu3-btn.active')?.id
-    if (abaAtiva === 'btn-placas-amarela') fn('Amarela')
-    else if (abaAtiva === 'btn-placas-grande') fn('Grande')
+    if (abaAtiva === 'btn-placas-grande') fn('Grande')
+    else if (abaAtiva === 'btn-placas-grande-4') fn('Grande4')
+    else if (abaAtiva === 'btn-placas-a4') fn('A4')
     else fn('')
     document.getElementById('contextMenu').style.display = 'none'
 }
 document.getElementById('ctx-excluir').onclick = () => executarContexto(suf => {
-    const fn = suf ? window['onExcluirPlaca' + suf] : onExcluirPlaca
+    const fn = suf ? window['onExcluirPlaca' + suf] : window.onExcluirPlaca
     if (fn) fn()
 })
 document.getElementById('ctx-duplicar').onclick = () => executarContexto(suf => {
-    const fn = suf ? window['onDuplicarPlaca' + suf] : onDuplicarPlaca
+    const fn = suf ? window['onDuplicarPlaca' + suf] : window.onDuplicarPlaca
+    if (fn) fn()
+})
+// Salva a predefinição de texto da placa selecionada
+document.getElementById('ctx-salvar-predef').onclick = () => executarContexto(suf => {
+    const fn = suf ? window['onSalvarPredef' + suf] : window.onSalvarPredef
+    if (fn) fn()
+})
+// Define a predefinição da placa como padrão das novas placas
+document.getElementById('ctx-padrao-novas').onclick = () => executarContexto(suf => {
+    const fn = suf ? window['onSalvarPredefPadrao' + suf] : window.onSalvarPredefPadrao
     if (fn) fn()
 })
 
 document.addEventListener('click', (e) => {
-    if (!e.target.closest('.placa') && !e.target.closest('.placa-amarela') && !e.target.closest('.placa-grande')) {
+    if (!e.target.closest('.placa') && !e.target.closest('.placa-grande') && !e.target.closest('.placa-grande-4')) {
         document.getElementById('contextMenu').style.display = 'none'
     }
     if (popupBuscaAberto && !e.target.closest('.modal-box')) {
@@ -580,38 +685,158 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
     })
 })
 
-// ── FECHAR MODAIS ─────────────────────────────────────
-document.getElementById('fechar-busca').onclick = () => { document.getElementById('modal-busca').style.display = 'none' }
-document.getElementById('fechar-import').onclick = () => { document.getElementById('modal-import').style.display = 'none' }
-document.getElementById('fechar-busca-am').onclick = () => { document.getElementById('modal-busca-am').style.display = 'none' }
-document.getElementById('fechar-import-am').onclick = () => { document.getElementById('modal-import-am').style.display = 'none' }
-document.getElementById('fechar-busca-g').onclick = () => { document.getElementById('modal-busca-g').style.display = 'none' }
-document.getElementById('fechar-import-g').onclick = () => { document.getElementById('modal-import-g').style.display = 'none' }
 
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        fecharModais()
-        fecharModaisAmarela()
-        fecharModaisGrande()
-        document.getElementById('contextMenu').style.display = 'none'
-    }
-})
+// ══════════════════════════════════════════════════════════
+// USUÁRIO LOGADO — avatar, nome, cargo e painel de conta
+// ══════════════════════════════════════════════════════════
+const CARGOS = {
+    administrador: 'Administrador',
+    gerente: 'Gerente',
+    atendente: 'Atendente'
+}
 
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        fecharModais()
-        fecharModaisAmarela()
-        fecharModaisGrande()
-        document.getElementById('contextMenu').style.display = 'none'
-    }
-})
+/** Iniciais (até 2 letras) a partir do nome completo */
+function iniciaisDoUsuario(nome) {
+    const partes = String(nome || '').trim().split(/\s+/).filter(Boolean)
+    if (!partes.length) return '?'
+    if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase()
+    return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
+}
+
+/** Aplica o usuário logado em todos os pontos da interface */
+function renderUsuarioLogado() {
+    const nome = localStorage.getItem('usuarioNome') || getUsuario() || 'Usuário'
+    const login = getUsuario()
+    const cargo = getCargo()
+
+    const iniciais = iniciaisDoUsuario(nome)
+    const rotuloCargo = CARGOS[cargo] || cargo
+
+    // avatares
+    ;['user-avatar', 'user-avatar-header', 'user-avatar-popover'].forEach(id => {
+        const el = document.getElementById(id)
+        if (el) el.textContent = iniciais
+    })
+
+    // nome e cargo no rodapé da sidebar
+    const nomeEl = document.getElementById('nomeUsuario')
+    if (nomeEl) nomeEl.textContent = nome
+    const cargoEl = document.getElementById('cargoUsuario')
+    if (cargoEl) cargoEl.textContent = rotuloCargo
+
+    // nome e cargo no cabeçalho
+    const nomeHeader = document.getElementById('nomeUsuarioHeader')
+    if (nomeHeader) nomeHeader.textContent = nome
+    const cargoHeader = document.getElementById('cargoUsuarioHeader')
+    if (cargoHeader) cargoHeader.textContent = rotuloCargo
+
+    // botão do cabeçalho visível
+    const btnHeader = document.getElementById('btn-minha-conta-header')
+    if (btnHeader) btnHeader.style.display = 'inline-flex'
+    const infoHeader = document.getElementById('user-info-header')
+    if (infoHeader) infoHeader.style.display = 'block'
+
+    // painel de conta
+    const painelNome = document.getElementById('popover-nome')
+    if (painelNome) painelNome.textContent = nome
+    const painelUsuario = document.getElementById('popover-usuario')
+    if (painelUsuario) painelUsuario.textContent = '@' + login
+    const painelCargo = document.getElementById('popover-cargo')
+    if (painelCargo) painelCargo.textContent = rotuloCargo
+
+    const permissoes = contarPermissoes()
+    const painelPerm = document.getElementById('popover-permissoes')
+    if (painelPerm) painelPerm.textContent = permissoes
+}
 
 // ── INÍCIO ────────────────────────────────────────────
 initTema()
 document.getElementById('data-atual').textContent = new Date().toLocaleDateString('pt-BR', {
     weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
 })
+renderUsuarioLogado()
 carregarInicio()
+
+
+/** Quantas páginas o usuário atual pode acessar */
+function contarPermissoes() {
+    if (!window.PERMISSOES) return '—'
+    const total = Object.keys(window.PERMISSOES).length
+    const permitidas = Object.keys(window.PERMISSOES)
+        .filter(p => window.podeAcessar(p)).length
+    return `${permitidas} de ${total} áreas`
+}
+
+/** Abre/fecha o painel do usuário */
+function alternarPainelUsuario(alvo, jaPosicionado) {
+    const painel = document.getElementById('painel-usuario')
+    if (!painel) return
+
+    const aberto = painel.style.display !== 'none'
+    if (aberto) {
+        painel.style.display = 'none'
+        return
+    }
+
+    // posição: abaixo do botão do header, acima do botão da sidebar
+    if (!jaPosicionado && alvo) {
+        const r = alvo.getBoundingClientRect()
+        const emBaixo = r.left < window.innerWidth / 2
+        painel.style.left = emBaixo ? `${r.left}px` : 'auto'
+        painel.style.right = emBaixo ? 'auto' : `${window.innerWidth - r.right}px`
+        painel.style.top = `${r.bottom + 8}px`
+    }
+    painel.style.display = 'block'
+
+    // busca o último acesso no servidor
+    const ultimo = document.getElementById('popover-ultimo')
+    if (ultimo) ultimo.textContent = 'carregando…'
+    fetch(API + '/usuarios/minha-conta', { headers: authHeaders() })
+        .then(r => r.ok ? r.json() : null)
+        .then(d => {
+            if (!ultimo) return
+            if (!d || !d.ultimo_login) { ultimo.textContent = 'agora'; return }
+            const dt = new Date(String(d.ultimo_login).replace(' ', 'T'))
+            ultimo.textContent = isNaN(dt.getTime())
+                ? String(d.ultimo_login)
+                : dt.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
+        })
+        .catch(() => { if (ultimo) ultimo.textContent = '—' })
+}
+
+// listeners dos dois botões de conta
+document.getElementById('btn-minha-conta')?.addEventListener('click', (e) => {
+    e.stopPropagation()
+    const alvo = e.currentTarget
+    const painel = document.getElementById('painel-usuario')
+    if (!painel) return
+    const r = alvo.getBoundingClientRect()
+    // no rodapé da sidebar o painel abre para cima
+    painel.style.left = `${r.left}px`
+    painel.style.right = 'auto'
+    painel.style.top = `${r.top - painel.offsetHeight - 10}px`
+    alternarPainelUsuario(alvo, true)
+})
+
+document.getElementById('btn-minha-conta-header')?.addEventListener('click', (e) => {
+    e.stopPropagation()
+    alternarPainelUsuario(e.currentTarget)
+})
+
+// fecha o painel ao clicar fora
+document.addEventListener('click', (e) => {
+    const painel = document.getElementById('painel-usuario')
+    if (!painel || painel.style.display === 'none') return
+    if (!painel.contains(e.target) && !e.target.closest('#btn-minha-conta') && !e.target.closest('#btn-minha-conta-header')) {
+        painel.style.display = 'none'
+    }
+})
+
+// logout pelo painel
+document.getElementById('btn-logout-popover')?.addEventListener('click', () => {
+    document.getElementById('btn-logout').click()
+})
+
 
 // ── POPUP BUSCA RÁPIDA GLOBAL (Ctrl+Tab) ───────────
 let popupBuscaAberto = false
@@ -700,11 +925,11 @@ async function executarBuscaGlobal(termo, selecionarPrimeiro = false) {
             abrirSubmenuPlacas()
             document.getElementById('submenu-modelos').classList.add('open')
             document.getElementById('btn-modelos-menu').classList.add('open2')
-            carregarPlacas()
+            carregarPlacasGrande4()
             setTimeout(() => {
-                document.getElementById('ean-input').value = codigo
-                document.getElementById('preco-input').value = preco
-                document.getElementById('preco-input').focus()
+                document.getElementById('ean-input-g4').value = codigo
+                document.getElementById('preco-input-g4').value = preco
+                document.getElementById('preco-input-g4').focus()
             }, 150)
         }
     })

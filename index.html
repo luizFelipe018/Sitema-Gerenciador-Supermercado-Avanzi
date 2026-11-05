@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="avanzi-dark">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self' https://images.openfoodfacts.org https://static.openfoodfacts.org; script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com; img-src 'self' https://superavanzi.com.br blob: data: https://images.openfoodfacts.org https://static.openfoodfacts.org http://*.openfoodfacts.org https://*.openfoodfacts.com; connect-src 'self' http://localhost:3000 ws://localhost:5173 https://images.openfoodfacts.org https://static.openfoodfacts.org https://world.openfoodfacts.org https://brasilapi.com.br https://easyqrcode.app.br; worker-src 'self' blob:;">
+    <title>ERP Avanzi</title>
+    <meta name="theme-color" content="#b51515">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Avanzi ERP">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <script>window.TAILWIND_CONFIG = { disableDevWarning: true }</script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { theme: { extend: { colors: { red: { avanzi: '#b51515', dark: '#8a0f0f' } } } } }</script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css" rel="stylesheet">
+    <style>
+:root {
+            --primary: #b51515;
+            --primary-dark: #8a0f0f;
+            --primary-light: #d42020;
+            --primary-glow: rgba(181, 21, 21, 0.4);
+            --sidebar-bg: #0a0a0a;
+            --sidebar-hover: #141414;
+            --sidebar-active: #b51515;
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --bg-main: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%);
+            --bg-card: #141414;
+            --bg-header: rgba(255, 255, 255, 0.03);
+            --bg-content: #121212;
+            --bg-input: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+        [data-theme="avanzi-dark"] {
+            --p: 0 79% 40%; --pf: 0 79% 33%; --pc: 0 0% 100%;
+            --s: 0 0% 13%; --sf: 0 0% 10%; --sc: 0 0% 100%;
+            --a: 0 0% 18%; --af: 0 0% 14%; --ac: 0 0% 100%;
+            --n: 0 0% 20%; --nf: 0 0% 16%; --nc: 0 0% 100%;
+            --b1: 0 0% 7%; --b2: 0 0% 10%; --b3: 0 0% 13%; --bc: 0 0% 82%;
+            --in: 0 0% 15%; --inc: 0 0% 95%;
+            --su: 142 71% 45%; --suc: 0 0% 100%;
+            --wa: 48 96% 53%; --wac: 0 0% 0%;
+            --er: 0 84% 60%; --erc: 0 0% 100%;
+        }
+        [data-theme="avanzi-light"] {
+            --p: 0 79% 40%; --pf: 0 79% 33%; --pc: 0 0% 100%;
+            --s: 0 0% 85%; --sf: 0 0% 80%; --sc: 0 0% 15%;
+            --a: 0 0% 82%; --af: 0 0% 78%; --ac: 0 0% 15%;
+            --n: 0 0% 45%; --nf: 0 0% 40%; --nc: 0 0% 100%;
+            --b1: 0 0% 100%; --b2: 0 0% 96%; --b3: 0 0% 92%; --bc: 0 0% 20%;
+            --in: 0 0% 96%; --inc: 0 0% 15%;
+            --su: 142 71% 45%; --suc: 0 0% 100%;
+            --wa: 48 96% 53%; --wac: 0 0% 0%;
+            --er: 0 84% 60%; --erc: 0 0% 100%;
+        }
+        body.theme-light {
+            --primary: #b51515; --primary-dark: #a11212; --primary-glow: rgba(181,21,21,0.25);
+            --sidebar-bg: #f8f9fa; --sidebar-hover: #f1f3f5; --sidebar-active: #b51515;
+            --glass: rgba(255,255,255,0.7); --glass-border: rgba(0,0,0,0.08);
+            --text-primary: #1f2937; --text-secondary: #4b5563; --text-muted: #9ca3af;
+            --bg-main: #f3f4f6 !important; --bg-card: #ffffff; --bg-header: rgba(255,255,255,0.9);
+            --bg-content: #f3f4f6 !important; --bg-input: #ffffff; --border-color: #e5e7eb;
+            background: #f3f4f6 !important;
+        }
+        * { box-sizing: border-box; }
+        .glass, .sidebar, .sidebar-btn, .submenu-btn, .submenu3-btn, .card-3d, .modal-box, .input-modern, #page-title, #data-atual { transition: all 0.3s ease; }
+        body.theme-light .btn-ghost { color: #374151 !important; }
+        body.theme-light .btn-outline.btn-success { color: #16a34a !important; border-color: #16a34a !important; }
+        body.theme-light .btn-outline.btn-warning { color: #ca8a04 !important; border-color: #ca8a04 !important; }
+        body.theme-light .btn-outline.btn-info { color: #2563eb !important; border-color: #2563eb !important; }
+        .table-zebra tbody tr:hover { background: color-mix(in srgb, var(--bc) 8%, transparent) !important; }
+        body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; background: var(--bg-main); color: var(--text-primary); min-height: 100vh; }
+        #page-title { color: #fff; }
+        #data-atual { color: rgba(255,255,255,0.4); }
+        body.theme-light #page-title { color: #111827; }
+        body.theme-light #data-atual { color: #9ca3af; }
+        #btn-global-search { color: rgba(255,255,255,0.5); }
+        #btn-theme-toggle { color: rgba(255,255,255,0.5); }
+        body.theme-light #btn-global-search { color: #4b5563; }
+        body.theme-light #btn-theme-toggle { color: #4b5563; }
+        #conteudo { background: #121212; }
+        body.theme-light #conteudo { background: #f3f4f6; }
+        #conteudo .bg-white, #conteudo [class*="bg-white"], .bg-white { background: #1a1a1a !important; border-color: rgba(255,255,255,0.08) !important; }
+        #conteudo > div:first-child { background: #1a1a1a !important; }
+        #conteudo table { background: #1a1a1a !important; }
+        #conteudo thead th { background: #252525 !important; color: #a1a1aa !important; border-bottom-color: rgba(255,255,255,0.08) !important; }
+        #conteudo tbody td { color: #e5e5e5 !important; border-bottom-color: rgba(255,255,255,0.06) !important; }
+        #conteudo tbody tr:hover { background: #252525 !important; }
+        #conteudo input, #conteudo textarea, #conteudo select { background: #252525 !important; border-color: rgba(255,255,255,0.1) !important; color: #fafafa !important; }
+        #conteudo input::placeholder, #conteudo textarea::placeholder { color: #71717a !important; }
+        #conteudo h1, #conteudo h2, #conteudo h3, #conteudo h4 { color: #fafafa !important; }
+        #conteudo p, #conteudo span { color: #a1a1aa !important; }
+        body.theme-light #conteudo .bg-white, body.theme-light #conteudo [class*="bg-white"], body.theme-light #conteudo [class*="rounded"] { background: #ffffff !important; border-color: #e5e7eb !important; }
+        body.theme-light #conteudo .border { border-color: #e5e7eb !important; }
+        body.theme-light #conteudo table { background: #ffffff !important; }
+        body.theme-light #conteudo thead th { background: #f3f4f6 !important; color: #374151 !important; border-bottom-color: #e5e7eb !important; }
+        body.theme-light #conteudo tbody td { color: #1f2937 !important; border-bottom-color: #f3f4f6 !important; }
+        body.theme-light #conteudo tbody tr { background: #ffffff !important; }
+        body.theme-light #conteudo tbody tr:hover { background: #f9fafb !important; }
+        body.theme-light #conteudo input, body.theme-light #conteudo textarea, body.theme-light #conteudo select { background: #ffffff !important; border-color: #d1d5db !important; color: #111827 !important; }
+        body.theme-light #conteudo input:focus, body.theme-light #conteudo textarea:focus { border-color: #b51515 !important; box-shadow: 0 0 0 3px rgba(181,21,21,0.1) !important; }
+        body.theme-light #conteudo input::placeholder, body.theme-light #conteudo textarea::placeholder { color: #9ca3af !important; }
+        body.theme-light #conteudo h1, body.theme-light #conteudo h2, body.theme-light #conteudo h3, body.theme-light #conteudo h4 { color: #111827 !important; }
+        body.theme-light #conteudo p, body.theme-light #conteudo span, body.theme-light #conteudo label { color: #374151 !important; }
+        body.theme-light .bg-green-50 { background: #f0fdf4 !important; }
+        body.theme-light .bg-yellow-50 { background: #fefce8 !important; }
+        body.theme-light .bg-red-50 { background: #fef2f2 !important; }
+        body.theme-light .bg-blue-50 { background: #eff6ff !important; }
+        body.theme-light .text-green-600 { color: #16a34a !important; }
+        body.theme-light .text-red-600 { color: #dc2626 !important; }
+        body.theme-light .text-red-500 { color: #ef4444 !important; }
+        body.theme-light .text-yellow-600 { color: #ca8a04 !important; }
+        body.theme-light .text-yellow-500 { color: #eab308 !important; }
+        body.theme-light .text-blue-600 { color: #2563eb !important; }
+        body.theme-light .text-gray-900, body.theme-light .text-gray-800, body.theme-light .text-gray-700, body.theme-light .text-gray-600 { color: #111827 !important; }
+        body.theme-light .text-gray-500 { color: #374151 !important; }
+        body.theme-light .text-gray-400 { color: #6b7280 !important; }
+        body.theme-light .text-gray-300 { color: #9ca3af !important; }
+        body.theme-light .text-gray-200 { color: #d1d5db !important; }
+        #container-placas .placa, #container-placas .folha, #container-placas-am .placa-amarela, #container-placas-am .folha-amarela, #container-placas-g .placa-grande, #container-placas-g .folha-grande { background: #fff !important; color: #000 !important; }
+        #container-placas .placa h1, #container-placas .placa span, #container-placas .placa div, #container-placas-am .placa-amarela h1, #container-placas-am .placa-amarela span, #container-placas-am .placa-amarela div, #container-placas-g .placa-grande h1, #container-placas-g .placa-grande span, #container-placas-g .placa-grande div { color: #000 !important; }
+        #container-placas-am .folha-amarela { background: #ffe400 !important; }
+        #container-placas-am .placa-amarela { background: #ffe400 !important; color: #000 !important; }
+        #container-placas-am .placa-amarela h1, #container-placas-am .placa-amarela span, #container-placas-am .placa-amarela div { color: #000 !important; }
+        body.theme-light .placa { background: #fff !important; color: #000 !important; }
+        body.theme-light .placa h1, body.theme-light .placa span, body.theme-light .placa div { color: #000 !important; }
+        body.theme-light .placa-amarela { background: #ffe400 !important; color: #000 !important; }
+        body.theme-light .placa-amarela h1, body.theme-light .placa-amarela span, body.theme-light .placa-amarela div { color: #000 !important; }
+        body.theme-light #container-placas, body.theme-light #container-placas-am, body.theme-light #container-placas-g { background: transparent !important; }
+        body.theme-light .folha { background: #fff !important; }
+        body.theme-light .folha-amarela { background: #ffe400 !important; }
+        body.theme-light .placa { background: #fff !important; color: #000 !important; }
+        body.theme-light .placa-amarela { background: #ffe400 !important; color: #000 !important; }
+        body.theme-light input, body.theme-light textarea, body.theme-light select { background: #ffffff !important; border-color: #e5e7eb !important; color: #111827 !important; }
+        body.theme-light .bg-green-100, body.theme-light .bg-yellow-100, body.theme-light .bg-red-100, body.theme-light .bg-gray-100 { background-color: #f3f4f6 !important; }
+        body.theme-light #user-avatar, body.theme-light #user-avatar-header { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark)) !important; color: #fff !important; }
+        body.theme-light .text-white\/50 { color: #6b7280 !important; }
+        body.theme-light .text-white\/30 { color: #9ca3af !important; }
+        body.theme-light #btn-logout { color: #6b7280 !important; }
+        body.theme-light #main-header { background: rgba(255,255,255,0.9); border-color: rgba(0,0,0,0.08); }
+        body.theme-light #page-title { color: #111827; }
+        body.theme-light #data-atual { color: #9ca3af; }
+        body.theme-light .sidebar-btn { color: #4b5563; }
+        body.theme-light .sidebar-btn:hover { background: rgba(0,0,0,0.04); color: #111827; }
+        body.theme-light .sidebar-btn.active { color: #fff; }
+        body.theme-light .submenu-btn { color: #6b7280; }
+        body.theme-light .submenu-btn:hover { background: rgba(0,0,0,0.04); color: #111827; }
+        body.theme-light .submenu3-btn { color: #9ca3af; }
+        body.theme-light .submenu3-btn:hover { background: rgba(0,0,0,0.03); color: #374151; }
+        body.theme-light .cat-title { color: #d1d5db; }
+        body.theme-light .kbd { background: rgba(0,0,0,0.06); border-color: rgba(0,0,0,0.1); color: #6b7280; }
+        body.theme-light .text-white\/40 { color: rgba(0,0,0,0.4); }
+        body.theme-light .text-white\/50 { color: rgba(0,0,0,0.5); }
+        body.theme-light .text-white\/30 { color: rgba(0,0,0,0.3); }
+        body.theme-light .hover\:bg-white\/10:hover { background: rgba(0,0,0,0.05); }
+        body.theme-light .sidebar { background: #f8fafc !important; border-color: #e2e8f0 !important; }
+        body.theme-light .sidebar-btn { color: #475569 !important; }
+        body.theme-light .sidebar-btn:hover { background: #f1f5f9 !important; color: #0f172a !important; }
+        body.theme-light .sidebar-btn.active { background: #b51515 !important; color: #ffffff !important; }
+        body.theme-light .submenu-btn { color: #64748b !important; }
+        body.theme-light .submenu-btn:hover { background: #f1f5f9 !important; color: #0f172a !important; }
+        body.theme-light .submenu-btn.active { background: rgba(181,21,21,0.15) !important; color: #b51515 !important; }
+        body.theme-light .submenu3-btn { color: #94a3b8 !important; }
+        body.theme-light .submenu3-btn:hover { background: #f1f5f9 !important; color: #374151 !important; }
+        body.theme-light .submenu3-btn.active { background: rgba(181,21,21,0.1) !important; color: #b51515 !important; }
+        body.theme-light .cat-title { color: #64748b !important; }
+        body.theme-light .kbd { background: #f1f5f9 !important; color: #64748b !important; border-color: #e2e8f0 !important; }
+        body.theme-light #nomeUsuario { color: #64748b !important; }
+        body.theme-light #btn-logout { color: #94a3b8 !important; }
+        body.theme-light #btn-logout:hover { color: #dc2626 !important; background: #fef2f2 !important; }
+        body.theme-light [style*="background: #fff"], body.theme-light [style*="background:#fff"], body.theme-light [style*="background: white"], body.theme-light [style*="background:white"] { background: #ffffff !important; }
+        body.theme-light [style*="background: #1a1a1a"], body.theme-light [style*="background:#1a1a1a"], body.theme-light [style*="background: #252525"], body.theme-light [style*="background:#252525"], body.theme-light [style*="background: #121212"], body.theme-light [style*="background:#121212"], body.theme-light [style*="background: #000"], body.theme-light [style*="background:#000"] { background: #ffffff !important; }
+        body.theme-light #conteudo > * { background-color: #ffffff !important; }
+        body.theme-light .rounded-xl, body.theme-light .rounded-lg, body.theme-light .rounded-md, body.theme-light .rounded { background-color: #ffffff !important; }
+        body.theme-light .shadow-sm, body.theme-light .shadow, body.theme-light .shadow-lg { background-color: #ffffff !important; }
+        body.theme-light .modal-box { background: linear-gradient(145deg, #ffffff, #f9fafb); border: 1px solid rgba(0,0,0,0.08); }
+        body.theme-light .modal-header, body.theme-light .modal-footer { border-color: rgba(0,0,0,0.08); }
+        body.theme-light .modal-header h3, body.theme-light .text-white { color: #111827 !important; }
+        body.theme-light .text-white\/40, body.theme-light .text-white\/30 { color: #6b7280 !important; }
+        body.theme-light .table-modern thead th { background: #f9fafb; color: #6b7280; border-color: rgba(0,0,0,0.08); }
+        body.theme-light .table-modern tbody td { color: #374151; border-color: rgba(0,0,0,0.06); }
+        body.theme-light .table-modern tbody tr:hover { background: #f9fafb; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%); min-height: 100vh; }
+        .glass { background: rgba(255,255,255,0.03); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); }
+        body.theme-light .glass { background: rgba(255,255,255,0.8); backdrop-filter: blur(20px); border: 1px solid rgba(0,0,0,0.08); }
+        .card-3d { background: linear-gradient(145deg, #1a1a1a, #141414); border-radius: 16px; border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3), 0 2px 4px -2px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05); }
+        .sidebar { background: rgba(15,15,15,0.85); backdrop-filter: blur(20px); border-right: 1px solid rgba(255,255,255,0.06); }
+        .sidebar-btn { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 16px; border-radius: 10px; font-size: 13px; font-weight: 500; color: var(--text-secondary); background: transparent; border: none; cursor: pointer; }
+        .sidebar-btn:hover { color: var(--text-primary); transform: translateX(4px); }
+        .sidebar-btn.active { color: #fff; background: linear-gradient(135deg, rgba(181,21,21,0.2) 0%, rgba(181,21,21,0.05) 80%); }
+        .submenu { display: none; flex-direction: column; padding-left: 8px; margin: 2px 0 2px 4px; border-left: 1px solid rgba(255,255,255,0.06); }
+        .submenu.open { display: flex; }
+        .submenu-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px 9px 20px; border-radius: 8px; font-size: 12.5px; font-weight: 500; color: var(--text-muted); background: transparent; border: none; cursor: pointer; }
+        .submenu-btn:hover { background: rgba(255,255,255,0.04); color: var(--text-secondary); transform: translateX(3px); }
+        .submenu-btn.active { color: #fff; background: rgba(181,21,21,0.12); }
+        .submenu3-btn { display: flex; align-items: center; gap: 8px; width: 100%; padding: 7px 12px 7px 28px; border-radius: 7px; font-size: 12px; font-weight: 500; color: var(--text-muted); background: transparent; border: none; cursor: pointer; }
+        .submenu3-btn:hover { background: rgba(255,255,255,0.04); color: var(--text-secondary); transform: translateX(3px); }
+        .submenu3-btn.active { color: #fff; background: rgba(181,21,21,0.10); }
+        .cat-title { font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.12em; padding: 20px 16px 7px; opacity: 0.5; }
+        .submenu2 { display: none; flex-direction: column; padding-left: 8px; margin: 2px 0 2px 4px; border-left: 1px solid rgba(255,255,255,0.06); }
+        .submenu2.open { display: flex; }
+        .input-modern { width: 100%; padding: 14px 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; font-size: 14px; color: var(--text-primary); outline: none; }
+        .table-modern { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .table-modern thead th { padding: 14px 18px; text-align: left; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--glass-border); }
+        .table-modern tbody td { padding: 16px 18px; font-size: 13px; color: var(--text-secondary); border-bottom: 1px solid var(--glass-border); }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 9999; display: none; }
+        .modal-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(145deg, #1a1a1a, #141414); border-radius: 20px; z-index: 10000; border: 1px solid var(--glass-border); overflow: hidden; }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between; }
+        .modal-body { padding: 24px; }
+        .modal-footer { padding: 16px 24px 20px; border-top: 1px solid var(--glass-border); }
+        .context-menu { position: fixed; background: linear-gradient(145deg, #1f1f1f, #171717); padding: 6px; display: none; cursor: pointer; z-index: 9999; border-radius: 14px; }
+        .folha { width: 209mm; height: 296mm; display: flex; flex-wrap: wrap; padding: 5mm 0 0 7px; background: #fff; align-content: flex-start; margin: 0 auto 20px; }
+        .placa { width: 103mm; height: 19.9%; border: 1px solid #000; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; padding: 5px; }
+        .folha-amarela { width: 209mm; height: 296mm; display: flex; flex-wrap: wrap; padding: 5mm 0 0 7px; background: #ffe400; align-content: flex-start; margin: 0 auto 20px; }
+        .placa-amarela { width: 103mm; height: 24.3%; border: 1px solid #000; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; padding: 5px; }
+        .folha-grande { width: 209mm; height: 296mm; display: flex; flex-direction: column; background: #fff; margin: 0 auto 20px; }
+        .placa-grande { width: 100%; flex: 1; border: 1px solid #000; display: flex; flex-direction: column; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .sidebar-toggle-btn { display: none; }
+        .sidebar-overlay { display: none; }
+        @media (max-width: 1024px) {
+            .sidebar-toggle-btn { display: flex !important; }
+            .sidebar { position: fixed !important; top: 0; left: 0; height: 100vh; z-index: 30 !important; transform: translateX(-100%); transition: transform 0.3s ease; }
+            .sidebar.open-mobile { transform: translateX(0); }
+            .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); z-index: 25; }
+            .sidebar-overlay.active { display: block; }
+            #conteudo { padding: 1rem !important; }
+        }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar w-64 min-w-64 h-screen flex flex-col relative z-20">
+        <button id="btn-sidebar-close" class="sidebar-toggle-btn absolute top-3 right-3 w-8 h-8 rounded-lg items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all z-10" style="display:none;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+        <div class="p-5 border-b border-glass relative overflow-hidden">
+            <div class="relative flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-lg" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <div>
+                    <h1 class="text-white font-bold text-sm leading-tight">Supermercado<br>Avanzi</h1>
+                    <p class="text-white/30 text-xs mt-0.5">Sistema de Gestão</p>
+                </div>
+            </div>
+        </div>
+        <nav class="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-0.5">
+            <button id="btn-inicio" class="sidebar-btn active"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Início <span class="arrow">▶</span></button>
+            <div class="cat-title">Consulta</div>
+            <button id="btn-busca-rapida" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span> Busca Rápida <kbd class="kbd ml-auto">Ctrl+Tab</kbd></button>
+            <button id="btn-produtos" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 002 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></span> Produtos</button>
+            <button id="btn-imagens" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg></span> Imagens</button>
+            <div class="cat-title">Placas</div>
+            <button id="btn-placas-menu" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/></svg></span> Gerar Placas <span class="arrow">▶</span></button>
+            <div id="submenu-placas" class="submenu">
+                <button id="btn-modelos-menu" class="submenu-btn flex justify-between items-center w-full"><span class="flex items-center gap-2"><span class="dot"></span> Modelos</span><span class="arrow2">▶</span></button>
+                <div id="submenu-modelos" class="submenu2">
+                    <button id="btn-placas" class="submenu3-btn"><span class="dot"></span> Branca</button>
+                    <button id="btn-placas-amarela" class="submenu3-btn"><span class="dot"></span> Amarela</button>
+                    <button id="btn-placas-grande" class="submenu3-btn"><span class="dot"></span> Grande</button>
+                </div>
+                <button id="btn-relatorio-placas" class="submenu-btn"><span class="dot"></span> Relatório</button>
+                <button id="btn-gerenciador-placas" class="submenu-btn"><span class="dot"></span> Histórico</button>
+                <button id="btn-estoque-placas" class="submenu-btn" style="border-top:1px solid rgba(255,255,255,0.04); margin-top:4px; padding-top:10px;"><span class="dot"></span> Estoque de Placas</button>
+            </div>
+            <div class="cat-title">Ofertas</div>
+            <button id="btn-ofertas-menu" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg></span> Ofertas Diárias <span class="arrow">▶</span></button>
+            <div id="submenu-ofertas" class="submenu">
+                <button id="btn-terca-pizza" class="submenu-btn"><span class="dot"></span> Terça da Pizza</button>
+                <button id="btn-cardapio" class="submenu-btn"><span class="dot"></span> Cardápio Restaurante</button>
+                <button id="btn-importar-cardapio" class="submenu-btn"><span class="dot"></span> Importar Cardápio</button>
+            </div>
+            <div class="cat-title">Relatórios</div>
+            <button id="btn-dashboard" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg></span> Dashboard</button>
+            <button id="btn-auditoria" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> Auditoria</button>
+            <button id="btn-cotacao" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></span> Cotação</button>
+            <div class="cat-title">Utilitários</div>
+            <button id="btn-atalhos" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span> Atalhos</button>
+            <button id="btn-formatos" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/></svg></span> Formatos</button>
+            <button id="btn-capitalize" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/></svg></span> Capitalize</button>
+            <button id="btn-importar" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/></svg></span> Importar</button>
+            <button id="btn-textos" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/></svg></span> Textos</button>
+            <button id="btn-listas" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/></svg></span> Listas</button>
+            <button id="btn-criar-texto" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg></span> Criar Texto</button>
+            <div class="cat-title">Ferramentas</div>
+            <button id="btn-novidades" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg></span> Novidades</button>
+            <button id="btn-qrcode" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></span> QR Code</button>
+            <button id="btn-feriados" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/></svg></span> Feriados</button>
+            <button id="btn-calc-kglt" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/></svg></span> Calc KG/LT</button>
+            <button id="btn-admin" class="sidebar-btn" style="display:none;"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/></svg></span> Admin</button>
+            <button id="btn-database" class="sidebar-btn"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/></svg></span> Database</button>
+        </nav>
+        <div class="p-4 border-t border-glass relative">
+            <div class="relative flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);">
+                    <span id="user-avatar">—</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p id="nomeUsuario" class="text-white/50 text-xs truncate"></p>
+                </div>
+                <button id="btn-logout" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all" title="Sair">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <!-- MAIN -->
+    <main id="main-content" class="flex-1 flex flex-col overflow-hidden relative z-10">
+        <div id="bg-decoration" class="absolute inset-0 pointer-events-none overflow-hidden">
+            <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-red-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-red-500/3 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+        </div>
+        <header id="main-header" class="glass border-b border-glass px-8 py-5 flex items-center justify-end relative z-10">
+            <div class="flex items-center gap-3">
+                <button id="btn-sidebar-toggle" class="sidebar-toggle-btn header-text w-10 h-10 rounded-xl items-center justify-center hover:bg-white/10 transition-all flex-shrink-0" title="Menu">
+                    <svg id="icon-hamburguer" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    <svg id="icon-close-menu" class="hidden" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+                <div style="text-align:right">
+                    <h2 id="page-title" class="header-title text-xl font-bold">Dashboard</h2>
+                    <p id="data-atual" class="header-subtitle text-xs mt-1"></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="btn-global-search" class="header-text flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm hover:bg-white/10 transition-all glass">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    <span>Buscar...</span>
+                    <kbd class="kbd">Ctrl+Tab</kbd>
+                </button>
+                <button id="btn-theme-toggle" class="header-text w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all" title="Alternar tema">
+                    <svg id="icon-sol" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2"/></svg>
+                    <svg id="icon-lua" class="hidden" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);">
+                    <span id="user-avatar-header">—</span>
+                </div>
+            </div>
+        </header>
+        <div id="conteudo" class="flex-1 overflow-y-auto p-8 fade-in relative z-10"></div>
+    </main>
+
+    <!-- CONTEXT MENU -->
+    <div id="contextMenu" class="context-menu">
+        <div id="ctx-duplicar" class="context-menu-item"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Duplicar Placa</div>
+        <div id="ctx-excluir" class="context-menu-item"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> Excluir Placa</div>
+    </div>
+
+    <!-- POPUP BUSCA GLOBAL -->
+    <div id="popupBuscaGlobal" class="modal-overlay">
+        <div class="modal-box" style="width:680px; max-width:90vw;">
+            <div class="modal-header">
+                <h3 class="font-semibold text-white text-lg">Busca Rápida</h3>
+                <button onclick="window.fecharPopupBuscaGlobal()" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 20px 24px;">
+                <input type="text" id="input-busca-global" placeholder="Digite código, EAN ou descrição do produto..." class="input-modern" autofocus>
+            </div>
+            <div id="resultado-busca-global" class="px-6 pb-4" style="max-height:400px; overflow-y:auto;">
+                <div class="text-center text-white/30 py-12 text-sm">Digite para buscar...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAIS (Branca, Amarela, Grande) -->
+    <div id="modal-busca" class="modal-overlay"><div class="modal-box" style="width:600px;"><div class="modal-header"><h3 class="font-semibold text-white text-lg">Buscar Produto</h3><button id="fechar-busca" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg></button></div><div class="modal-body" style="padding: 20px 24px;"><input type="text" id="input-busca-nome" placeholder="Digite o nome e pressione ENTER" class="input-modern mb-4"><div style="max-height:300px; overflow-y:auto;"><table id="tabela-busca" class="table-modern"><thead><tr><th>Código</th><th>Descrição</th><th style="text-align:right;">Preço</th></tr></thead><tbody></tbody></table></div></div></div></div>
+    <div id="modal-import" class="modal-overlay"><div class="modal-box" style="width:560px;"><div class="modal-header"><h3 class="font-semibold text-white text-lg">Importação Rápida</h3><button id="fechar-import" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg></button></div><div class="modal-body"><textarea id="import-texto" rows="7" placeholder="Ex: ARROZ TIO JOAO 5KG&#9;29,90" class="input-modern font-mono text-sm" style="resize:none;"></textarea><div id="log-erros" class="mt-4 p-4 rounded-xl text-sm" style="background:rgba(248,113,113,0.1); color:#f87171; display:none;"><strong>⚠️ Itens não encontrados:</strong><ul id="lista-erros" class="mt-2 pl-4"></ul></div></div><div class="modal-footer"><button id="btn-processar-import" class="btn-3d w-full" style="background: linear-gradient(135deg, #16a34a, #15803d);">Gerar Placas</button></div></div></div>
+    <div id="modal-busca-am" class="modal-overlay"><div class="modal-box" style="width:600px; border:2px solid #ca8a04;"><div class="modal-header" style="border-color:#ca8a04;"><h3 class="font-semibold text-white text-lg">Buscar Produto</h3><button id="fechar-busca-am" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg></button></div><div class="modal-body" style="padding: 20px 24px;"><input type="text" id="input-busca-nome-am" placeholder="Digite o nome e pressione ENTER" class="input-modern mb-4"><div style="max-height:300px; overflow-y:auto;"><table id="tabela-busca-am" class="table-modern"><thead><tr><th>Código</th><th>Descrição</th><th style="text-align:right;">Preço</th></tr></thead><tbody></tbody></table></div></div></div></div>
+    <div id="modal-import-am" class="modal-overlay"><div class="modal-box" style="width:560px; border:2px solid #ca8a04;"><div class="modal-header" style="border-color:#ca8a04;"><h3 class="font-semibold text-white text-lg">Importação Rápida</h3><button id="fechar-import-am" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg></button></div><div class="modal-body"><textarea id="import-texto-am" rows="7" placeholder="Ex: ARROZ TIO JOAO 5KG&#9;29,90" class="input-modern font-mono text-sm" style="resize:none;"></textarea><div id="log-erros-am" class="mt-4 p-4 rounded-xl text-sm" style="background:rgba(248,113,113,0.1); color:#f87171; display:none;"><strong>⚠️ Itens não encontrados:</strong><ul id="lista-erros-am" class="mt-2 pl-4"></ul></div></div><div class="modal-footer"><button id="btn-processar-import-am" class="btn-3d w-full" style="background: linear-gradient(135deg, #ca8a04, #a16207);">Gerar Placas</button></div></div></div>
+    <div id="modal-busca-g" class="modal-overlay"><div class="modal-box" style="width:600px;"><div class="modal-header"><h3 class="font-semibold text-white text-lg">Buscar Produto</h3><button id="fechar-busca-g" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg></button></div><div class="modal-body" style="padding: 20px 24px;"><input type="text" id="input-busca-nome-g" placeholder="Digite o nome e pressione ENTER" class="input-modern mb-4"><div style="max-height:300px; overflow-y:auto;"><table id="tabela-busca-g" class="table-modern"><thead><tr><th>Código</th><th>Descrição</th><th style="text-align:right;">Preço</th></tr></thead><tbody></tbody></table></div></div></div></div>
+    <div id="modal-import-g" class="modal-overlay"><div class="modal-box" style="width:560px;"><div class="modal-header"><h3 class="font-semibold text-white text-lg">Importação Rápida</h3><button id="fechar-import-g" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg></button></div><div class="modal-body"><textarea id="import-texto-g" rows="7" placeholder="Ex: ARROZ TIO JOAO 5KG&#9;29,90" class="input-modern font-mono text-sm" style="resize:none;"></textarea><div id="log-erros-g" class="mt-4 p-4 rounded-xl text-sm" style="background:rgba(248,113,113,0.1); color:#f87171; display:none;"><strong>⚠️ Itens não encontrados:</strong><ul id="lista-erros-g" class="mt-2 pl-4"></ul></div></div><div class="modal-footer"><button id="btn-processar-import-g" class="btn-3d w-full" style="background: linear-gradient(135deg, #16a34a, #15803d);">Gerar Placas</button></div></div></div>
+
+    <!-- SCRIPTS (legacy globals) -->
+    <script src="/shared.js"></script>
+    <script src="/pages/placas-core.js"></script>
+    <script src="/pages/inicio.js"></script>
+    <script src="/pages/produtos.js"></script>
+    <script src="/pages/placas.js"></script>
+    <script src="/pages/placas-amarela.js"></script>
+    <script src="/pages/placas-grande.js"></script>
+    <script src="/pages/relatorio-placas.js"></script>
+    <script src="/pages/imagens.js"></script>
+    <script src="/pages/terca-pizza.js"></script>
+    <script src="/pages/cardapio.js"></script>
+    <script src="/pages/listas.js"></script>
+    <script src="/pages/textos.js"></script>
+    <script src="/pages/importar.js"></script>
+    <script src="/pages/capitalize.js"></script>
+    <script src="/pages/formatos.js"></script>
+    <script src="/pages/atalhos.js"></script>
+    <script src="/pages/dashboard.js"></script>
+    <script src="/pages/auditoria.js"></script>
+    <script src="/pages/admin.js"></script>
+    <script src="/pages/busca-rapida.js"></script>
+    <script src="/pages/gerenciador-placas.js"></script>
+    <script src="/pages/estoque-placas.js"></script>
+    <script src="/pages/importar-cardapio.js"></script>
+    <script src="/pages/feriados.js"></script>
+    <script src="/pages/calc-kglt.js"></script>
+    <script src="/pages/novidades.js"></script>
+    <script src="/pages/criar-texto.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/easyqrcodejs@4.6.2/dist/easy.qrcode.min.js"></script>
+    <script src="/pages/qrcode.js"></script>
+    <script src="/pages/cotacao.js"></script>
+    <script src="/pages/database.js"></script>
+    <script src="/pwa.js"></script>
+    <script src="/home.js"></script>
+    <!-- Module entry (future ES module migration) -->
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>

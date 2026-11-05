@@ -2,10 +2,57 @@ const API = localStorage.getItem('serverUrl') || (window.location.protocol === '
 
 // ── Global fetch interceptor — catches 401 and redirects to login ──
 const _originalFetch = window.fetch
+const FETCH_TIMEOUT_MS = 15000
 window.fetch = async function(...args) {
+    // Timeout amigável: evita travar em "Failed to fetch" (IP/servidor fora do ar)
+    const [url, opts = {}] = args
+    if (typeof url === 'string' && url.includes(API) &&
+        !(opts && typeof opts.signal !== 'undefined')) {
+        const controller = new AbortController()
+        const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+        try {
+            const res = await _originalFetch(url, { ...opts, signal: controller.signal })
+            clearTimeout(timer)
+            if (res.status === 401) {
+                localStorage.removeItem('token')
+                localStorage.removeItem('tokenExp')
+                localStorage.removeItem('usuario')
+                localStorage.removeItem('usuarioCargo')
+                if (window.location.pathname !== '/login.html' && !window.location.pathname.endsWith('login.html')) {
+                    window.location.href = 'login.html'
+                }
+            }
+            return res
+        } catch (e) {
+            clearTimeout(timer)
+            const isTimeout = e && e.name === 'AbortError'
+            const isNetwork = e && (e.name === 'TypeError' || /Failed to fetch|Load failed|NetworkError/.test(String(e.message || '')))
+            // IP salvo antigo/indisponível: descarta e tenta 1x o localhost (mesma máquina)
+            const savedUrl = localStorage.getItem('serverUrl')
+            if ((isTimeout || isNetwork) && savedUrl && url.includes(savedUrl) && window.location.protocol === 'file:') {
+                localStorage.removeItem('serverUrl')
+                const retryUrl = url.replace(savedUrl, 'http://localhost:3000')
+                try {
+                    return await _originalFetch(retryUrl, opts)
+                } catch { /* cai no erro abaixo */ }
+            }
+            if (isTimeout) {
+                const err = /** @type {Error} */ (new Error('Sem conexão com o servidor (tempo limite esgotado). Verifique se o servidor está rodando e se o endereço está correto.'))
+                err.name = 'TimeoutError'
+                throw err
+            }
+            if (isNetwork) {
+                const err = /** @type {Error} */ (new Error('Sem conexão com o servidor. Verifique se o servidor está rodando e se o endereço está correto.'))
+                err.name = 'TimeoutError'
+                throw err
+            }
+            throw e
+        }
+    }
     const res = await _originalFetch.apply(this, args)
     if (res.status === 401) {
         localStorage.removeItem('token')
+        localStorage.removeItem('tokenExp')
         localStorage.removeItem('usuario')
         localStorage.removeItem('usuarioCargo')
         if (window.location.pathname !== '/login.html' && !window.location.pathname.endsWith('login.html')) {
@@ -42,8 +89,9 @@ window.isGerente = function() {
 window.PERMISSOES = {
     // Páginas básicas - todos acessam
     placas: ['atendente', 'gerente', 'administrador'],
-    placasAmarela: ['atendente', 'gerente', 'administrador'],
     placasGrande: ['atendente', 'gerente', 'administrador'],
+    placasGrande4: ['atendente', 'gerente', 'administrador'],
+    placasA4: ['atendente', 'gerente', 'administrador'],
 produtos: ['atendente', 'gerente', 'administrador'],
     imagens: ['atendente', 'gerente', 'administrador'],
     buscaRapida: ['atendente', 'gerente', 'administrador'],
@@ -70,10 +118,12 @@ produtos: ['atendente', 'gerente', 'administrador'],
     
     // Dashboard - gerente e admin
     dashboard: ['gerente', 'administrador'],
-    dashboardVendas: ['gerente', 'administrador'],
     cotacao: ['gerente', 'administrador'],
     relatorioPlacas: ['gerente', 'administrador'],
     gerenciadorPlacas: ['gerente', 'administrador'],
+
+    // Auditoria - gerente e admin (controle de quem fez as placas)
+    auditoria: ['gerente', 'administrador'],
 }
 
 window.podeAcessar = function(pagina) {

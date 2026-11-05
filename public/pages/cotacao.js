@@ -1,7 +1,7 @@
 async function carregarCotacao() {
     setActive('btn-cotacao')
     setConteudo(`
-        <div class="dash-glass dash-animate" style="padding:20px; margin-bottom:20px;">
+        <div class="dash-glass dash-animate" style="padding:20px; margin-bottom:24px;">
             <div style="display:flex; gap:12px; flex-wrap; align-items:end; margin-bottom:16px;">
                 <div class="flex flex-col gap-1" style="flex:1; min-width:200px;">
                     <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Selecione a Lista</label>
@@ -17,7 +17,7 @@ async function carregarCotacao() {
                 </button>
             </div>
         </div>
-        <div id="cot-graficos" class="dash-glass dash-animate" style="padding:20px; margin-bottom:20px; display:grid; grid-template-columns:1fr 1fr; gap:16px;"></div>
+        <div id="cot-graficos" class="dash-glass dash-animate" style="padding:20px; margin-bottom:24px; display:grid; grid-template-columns:1fr 1fr; gap:24px;"></div>
         <div id="cot-tabela" class="dash-table-wrap dash-glass dash-animate" style="padding:20px;">
             <p style="text-align:center; color:rgba(255,255,255,0.3); font-size:13px; padding:40px 0;">Selecione uma lista para comparar</p>
         </div>

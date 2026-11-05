@@ -1,4 +1,4 @@
-const CACHE_NAME = 'avanzi-erp-v1';
+const CACHE_NAME = 'avanzi-erp-v3';
 const ASSETS_TO_CACHE = [
   '/',
   '/login.html',
@@ -30,11 +30,29 @@ self.addEventListener('activate', (event) => {
 // Fetch - servir do cache ou buscar da rede
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+  const url = new URL(request.url);
 
-  // Não cachear requisições API
-  if (request.url.includes('localhost:3000') &&
-      !request.url.includes('/imagem') &&
-      !request.url.includes('/terca')) {
+  // Documentos, estilos e scripts: sempre da rede (evita CSS/JS velhos colando as caixas)
+  if (request.mode === 'navigate' ||
+      request.destination === 'document' ||
+      request.destination === 'style' ||
+      request.destination === 'script') {
+    event.respondWith(
+      fetch(request).then((response) => {
+        if (response && response.status === 200 && url.origin === self.location.origin) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+        }
+        return response;
+      }).catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // Não cachear requisições API (qualquer host na porta 3000)
+  if (url.port === '3000' &&
+      !url.pathname.includes('/imagem') &&
+      !url.pathname.includes('/terca')) {
     return;
   }
 

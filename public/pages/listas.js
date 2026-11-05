@@ -1,475 +1,529 @@
-let bancoProdutosListas = []
-let listaAtiva = null
-let sugestaoIndex = -1
-let sugestoesAtuais = []
+/* ═══════════════════════════════════════════════════════════════
+   LISTAS DE PREÇO — montagem do cartaz de ofertas para o designer
+   Fluxo: criar lista → adicionar produtos (unitário ou família
+   inteira) → revisar → finalizar → exportar Excel / imprimir.
+   Design system v2 (public/design.css)
+   ═══════════════════════════════════════════════════════════════ */
 
+let listaAtiva = null
+let selecaoProduto = null   // produto escolhido na busca
+let sugestoesAtuais = []
+let sugestaoIndex = -1
+
+// ── TOASTS ──────────────────────────────────────────────
+function toast(mensagem, tipo = 'info') {
+    let cont = document.getElementById('ds-toasts')
+    if (!cont) {
+        cont = document.createElement('div')
+        cont.id = 'ds-toasts'
+        cont.className = 'ds-toasts'
+        document.body.appendChild(cont)
+    }
+    const icones = {
+        ok:    '<polyline points="20 6 9 17 4 12"/>',
+        erro:  '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+        aviso: '<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+        info:  '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'
+    }
+    const el = document.createElement('div')
+    el.className = `ds-toast is-${tipo}`
+    el.innerHTML = `
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+             style="flex:0 0 auto;color:var(--${tipo === 'ok' ? 'ok' : tipo === 'erro' ? 'danger' : tipo === 'aviso' ? 'warn' : 'info'})">${icones[tipo] || icones.info}</svg>
+        <span>${String(mensagem).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]))}</span>`
+    cont.appendChild(el)
+    setTimeout(() => {
+        el.style.transition = 'opacity .25s, transform .25s'
+        el.style.opacity = '0'
+        el.style.transform = 'translateX(16px)'
+        setTimeout(() => el.remove(), 260)
+    }, 3200)
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PÁGINA
+// ═══════════════════════════════════════════════════════════════
 async function carregarListas() {
     setActive('btn-listas')
+
     setConteudo(`
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div class="ds-page-head fade-in">
+            <div>
+                <div class="ds-page-eyebrow">Panfleto de ofertas</div>
+                <h1 class="ds-page-title">Listas de preço</h1>
+                <p class="ds-page-sub">Monte a lista de produtos do cartaz e envie o Excel para o designer.</p>
+            </div>
+            <button id="btn-nova-lista" class="ds-btn ds-btn-primary">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Nova lista
+            </button>
+        </div>
 
-            <!-- Coluna esquerda: histórico -->
-            <div class="flex flex-col gap-3">
-                <div class="dash-glass dash-animate" style="padding:20px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px;">
-                    <div style="padding:16px 0; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between;">
-                        <h3 style="font-size:13px; font-weight:700; color:rgba(255,255,255,0.85);">Minhas Listas</h3>
-                        <button id="btn-nova-lista" class="px-3 py-1.5 text-white text-xs font-semibold rounded-lg" style="background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3);">
-                            <svg style="width:12px;height:12px;display:inline;vertical-align:middle;margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                            Nova Lista
-                        </button>
+        <div class="ds-grid" style="grid-template-columns:300px minmax(0,1fr); align-items:start" id="listas-grid">
+            <!-- Coluna: listas -->
+            <div class="ds-card" style="overflow:hidden">
+                <div class="ds-card-head">
+                    <div class="ds-card-title">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        Minhas listas
                     </div>
+                    <span class="ds-chip" id="lista-contagem">—</span>
+                </div>
+                <div style="padding:12px 14px; border-bottom:1px solid var(--border)">
+                    <input id="filtro-listas" type="text" class="ds-input" placeholder="Filtrar por nome..." style="height:32px; font-size:12px;">
+                </div>
+                <div id="historico-listas" style="max-height:560px; overflow-y:auto"></div>
+            </div>
 
-                    <!-- Criar nova lista -->
-                    <div id="form-nova-lista" style="display:none; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.06);">
-                        <input id="input-nome-lista" type="text" placeholder="Nome da lista"
-                            style="width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; margin-bottom:8px; outline:none;"
-                            onfocus="this.style.borderColor='rgba(181,21,21,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
-                        <input id="input-data-lista" type="date"
-                            style="width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; margin-bottom:8px; outline:none;"
-                            onfocus="this.style.borderColor='rgba(181,21,21,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
-                        <div style="display:flex; gap:8px;">
-                            <button id="btn-criar-lista" class="flex-1 py-1.5 text-white text-xs font-semibold rounded-lg" style="background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3);">Criar</button>
-                            <button id="btn-cancelar-lista" class="flex-1 py-1.5 text-xs font-semibold rounded-lg" style="border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.6);">Cancelar</button>
-                        </div>
-                    </div>
-
-                    <div id="historico-listas" style="max-height:600px; overflow-y:auto;">
-                        <p style="text-align:center; color:rgba(255,255,255,0.3); font-size:11px; padding:24px 0;">Carregando...</p>
+            <!-- Coluna: lista ativa -->
+            <div id="area-lista-ativa">
+                <div class="ds-card ds-card-pad" style="text-align:center; padding:56px 24px;">
+                    <div class="ds-empty" style="padding:0">
+                        <svg width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        <div class="ds-empty-title">Nenhuma lista aberta</div>
+                        <div class="ds-empty-text">Selecione uma lista na coluna ao lado ou crie uma nova para começar a montar o panfleto.</div>
                     </div>
                 </div>
             </div>
-
-            <!-- Coluna direita: lista ativa -->
-            <div class="lg:col-span-2" id="area-lista-ativa">
-                <div class="dash-glass dash-animate" style="padding:40px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px; text-align:center;">
-                    <p style="color:rgba(255,255,255,0.4); font-size:13px;">Selecione ou crie uma lista</p>
-                </div>
-            </div>
-
         </div>
     `, 'Listas de Preços')
 
-    if (bancoProdutosListas.length === 0) {
-        try {
-            const res  = await fetch(API+'/produtos?page=1&limit=500', { headers: authHeaders() })
-            const json = await res.json()
-            if (json.data && Array.isArray(json.data)) bancoProdutosListas = json.data
-        } catch {}
+    document.getElementById('btn-nova-lista').onclick = abrirModalNovaLista
+    document.getElementById('filtro-listas').addEventListener('input', e => {
+        renderHistoricoListas(e.target.value.trim().toLowerCase())
+    })
+
+    // em telas estreitas as colunas se empilham
+    const ajustarGrid = () => {
+        const grid = document.getElementById('listas-grid')
+        if (!grid) return
+        grid.style.gridTemplateColumns = window.innerWidth < 1000 ? 'minmax(0,1fr)' : '300px minmax(0,1fr)'
     }
+    ajustarGrid()
+    window.addEventListener('resize', ajustarGrid)
 
-    // Data padrão = hoje
-    document.getElementById('input-data-lista').value = new Date().toISOString().split('T')[0]
-
-    vincularEventosListas()
     await atualizarHistorico()
 }
 
-function vincularEventosListas() {
-    document.getElementById('btn-nova-lista').onclick = () => {
-        const form = document.getElementById('form-nova-lista')
-        form.style.display = form.style.display === 'none' ? 'block' : 'none'
-        if (form.style.display === 'block') document.getElementById('input-nome-lista').focus()
-    }
-    document.getElementById('btn-cancelar-lista').onclick = () => {
-        document.getElementById('form-nova-lista').style.display = 'none'
-        document.getElementById('input-nome-lista').value = ''
-    }
-    document.getElementById('btn-criar-lista').onclick = criarLista
-    document.getElementById('input-nome-lista').onkeydown = (e) => { if (e.key === 'Enter') criarLista() }
-}
+// ── HISTÓRICO ───────────────────────────────────────────
+let todasListas = []
 
 async function atualizarHistorico() {
     const el = document.getElementById('historico-listas')
     if (!el) return
     try {
-        const res    = await fetch(API+'/listas', { headers: authHeaders() })
+        const res = await fetch(API + '/listas', { headers: authHeaders() })
         const listas = await res.json()
-
-        if (!listas.length) {
-            el.innerHTML = `<p style="text-align:center; color:rgba(255,255,255,0.3); font-size:11px; padding:24px 0;">Nenhuma lista criada ainda.</p>`
-            return
-        }
-
-        el.innerHTML = listas.map(l => {
-            const dt     = new Date(l.criado_em)
-            const data   = dt.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'2-digit' })
-            const hora   = dt.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' })
-            const ativo  = listaAtiva?.id === l.id
-            const finalBadge = l.finalizada
-                ? `<span style="font-size:10px; padding:2px 6px; border-radius:6px; font-weight:700; background:rgba(22,163,74,0.15); color:#4ade80;">Finalizada</span>`
-                : `<span style="font-size:10px; padding:2px 6px; border-radius:6px; font-weight:700; background:rgba(234,179,8,0.15); color:#facc15;">Rascunho</span>`
-            const filhaBadge = l.lista_pai_id
-                ? `<span style="font-size:10px; color:#60a5fa; margin-left:4px;"><svg style="width:10px;height:10px;display:inline;vertical-align:middle;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg> versão</span>` : ''
-
-            return `
-                <div class="lista-item" style="padding:12px 16px; display:flex; align-items:start; justify-content:space-between; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.04); transition:background 0.15s; ${ativo ? 'background:rgba(181,21,21,0.08);' : ''}"
-                    data-id="${l.id}" data-nome="${l.nome}" data-finalizada="${l.finalizada}" data-pai="${l.lista_pai_id || ''}"
-                    onmouseover="if(!this.style.background.includes('0.08'))this.style.background='rgba(255,255,255,0.02)'"
-                    onmouseout="if(!this.style.background.includes('0.08'))this.style.background=''">
-                    <div style="flex:1; min-width:0;">
-                        <div style="display:flex; align-items:center; gap:4px; flex-wrap:wrap;">
-                            <p style="font-size:13px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; ${ativo ? 'color:#f87171;' : 'color:rgba(255,255,255,0.85);'}">${l.nome}</p>
-                            ${filhaBadge}
-                        </div>
-                        <p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:2px;">${data} às ${hora}</p>
-                        <div style="margin-top:4px;">${finalBadge}</div>
-                    </div>
-                    <button class="btn-excluir-lista" style="color:rgba(255,255,255,0.2); font-size:16px; font-weight:700; line-height:1; margin-left:8px; flex-shrink:0; background:none; border:none; cursor:pointer; padding:4px;"
-                        data-id="${l.id}"
-                        onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='rgba(255,255,255,0.2)'">
-                        <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                    </button>
-                </div>
-            `
-        }).join('')
-
-        el.querySelectorAll('.lista-item').forEach(item => {
-            item.onclick = (e) => {
-                if (e.target.classList.contains('btn-excluir-lista') || e.target.closest('.btn-excluir-lista')) return
-                abrirLista({
-                    id:         parseInt(item.getAttribute('data-id')),
-                    nome:       item.getAttribute('data-nome'),
-                    finalizada: item.getAttribute('data-finalizada') === '1',
-                    pai_id:     item.getAttribute('data-pai') ? parseInt(item.getAttribute('data-pai')) : null
-                })
-            }
-        })
-
-        el.querySelectorAll('.btn-excluir-lista').forEach(btn => {
-            btn.onclick = async (e) => {
-                e.stopPropagation()
-                if (!confirm('Excluir esta lista?')) return
-                await fetch(API+`/listas/${btn.getAttribute('data-id')}`, { method:'DELETE', headers:authHeaders() })
-                if (listaAtiva?.id === parseInt(btn.getAttribute('data-id'))) {
-                    listaAtiva = null
-                    document.getElementById('area-lista-ativa').innerHTML = `
-                        <div class="dash-glass dash-animate" style="padding:40px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px; text-align:center;">
-                            <p style="color:rgba(255,255,255,0.4); font-size:13px;">Selecione ou crie uma lista</p>
-                        </div>`
-                }
-                await atualizarHistorico()
-            }
-        })
+        if (!Array.isArray(listas)) throw new Error('resposta inválida')
+        todasListas = listas
+        const filtro = document.getElementById('filtro-listas')?.value.trim().toLowerCase() || ''
+        renderHistoricoListas(filtro)
     } catch {
-        el.innerHTML = `<p style="text-align:center; color:#f87171; font-size:11px; padding:24px 0;">Erro ao carregar.</p>`
+        el.innerHTML = `<div class="ds-empty" style="padding:28px 12px"><div class="ds-empty-title" style="color:var(--danger)">Erro ao carregar as listas</div></div>`
     }
 }
 
-async function criarLista() {
-    const nome = document.getElementById('input-nome-lista').value.trim()
-    const data = document.getElementById('input-data-lista').value
-    if (!nome) return
-    const res   = await fetch(API+'/listas', {
-        method:'POST', headers:authHeaders(),
-        body: JSON.stringify({ nome, data_oferta: data || null })
+function renderHistoricoListas(filtro = '') {
+    const el = document.getElementById('historico-listas')
+    if (!el) return
+
+    const listas = todasListas.filter(l => !filtro || String(l.nome).toLowerCase().includes(filtro))
+    const chip = document.getElementById('lista-contagem')
+    if (chip) chip.textContent = `${listas.length}`
+
+    if (!listas.length) {
+        el.innerHTML = `<div class="ds-empty" style="padding:28px 12px">
+            <div class="ds-empty-text">${filtro ? 'Nenhuma lista com esse nome.' : 'Nenhuma lista criada ainda.'}</div>
+        </div>`
+        return
+    }
+
+    el.innerHTML = listas.map(l => {
+        const dt = new Date(l.criado_em)
+        const data = isNaN(dt.getTime()) ? '' : dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' })
+        const hora = isNaN(dt.getTime()) ? '' : dt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+        const ativo = listaAtiva?.id === l.id
+        const itens = Number(l.total_itens || 0)
+        const valor = Number(l.valor_total || 0)
+
+        return `
+        <div class="ds-lista-item ${ativo ? 'is-ativa' : ''}" data-id="${l.id}">
+            <div style="min-width:0; flex:1">
+                <div style="display:flex; align-items:center; gap:6px">
+                    <p class="ds-lista-nome">${String(l.nome).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]))}</p>
+                    ${l.finalizada ? '<span class="ds-chip ds-chip-ok">Finalizada</span>' : '<span class="ds-chip ds-chip-warn">Rascunho</span>'}
+                </div>
+                <p class="ds-lista-meta">
+                    ${data} às ${hora} · ${itens} item(ns) · R$ ${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </p>
+                ${l.data_oferta ? `<p class="ds-lista-meta">Oferta em: ${new Date(l.data_oferta).toLocaleDateString('pt-BR')}</p>` : ''}
+            </div>
+            <button class="ds-icon-btn btn-excluir-lista" data-id="${l.id}" title="Excluir lista">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            </button>
+        </div>`
+    }).join('')
+
+    el.querySelectorAll('.ds-lista-item').forEach(item => {
+        item.onclick = (e) => {
+            if (e.target.closest('.btn-excluir-lista')) return
+            const l = todasListas.find(x => x.id === parseInt(item.getAttribute('data-id')))
+            if (l) abrirLista({ ...l, pai_id: l.lista_pai_id })
+        }
     })
-    const lista = await res.json()
-    document.getElementById('form-nova-lista').style.display = 'none'
-    document.getElementById('input-nome-lista').value = ''
-    await atualizarHistorico()
-    abrirLista({ ...lista, finalizada: false })
+
+    el.querySelectorAll('.btn-excluir-lista').forEach(btn => {
+        btn.onclick = async (e) => {
+            e.stopPropagation()
+            if (!confirm('Excluir esta lista e todos os seus itens?')) return
+            const res = await fetch(API + `/listas/${btn.getAttribute('data-id')}`, { method: 'DELETE', headers: authHeaders() })
+            if (res.ok) {
+                if (listaAtiva?.id === parseInt(btn.getAttribute('data-id'))) {
+                    listaAtiva = null
+                    document.getElementById('area-lista-ativa').innerHTML = `
+                        <div class="ds-card ds-card-pad" style="text-align:center; padding:56px 24px;">
+                            <div class="ds-empty" style="padding:0">
+                                <div class="ds-empty-title">Nenhuma lista aberta</div>
+                                <div class="ds-empty-text">Selecione uma lista ou crie uma nova.</div>
+                            </div>
+                        </div>`
+                }
+                toast('Lista excluída', 'ok')
+                await atualizarHistorico()
+            } else {
+                toast('Erro ao excluir a lista', 'erro')
+            }
+        }
+    })
 }
 
-// ── ABRIR LISTA ───────────────────────────────────────
+// ── NOVA LISTA ──────────────────────────────────────────
+function abrirModalNovaLista() {
+    const modal = document.createElement('div')
+    modal.className = 'ds-modal-overlay'
+    modal.innerHTML = `
+        <div class="ds-modal" style="width:420px">
+            <div class="ds-modal-head">
+                <h3>Nova lista de ofertas</h3>
+                <button class="ds-icon-btn" data-fechar>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="ds-modal-body">
+                <div class="ds-field">
+                    <label class="ds-label" for="novo-nome">Nome da lista</label>
+                    <input id="novo-nome" type="text" class="ds-input" placeholder="Ex: Ofertas Semana 42 -保湿" autocomplete="off">
+                </div>
+                <div class="ds-field">
+                    <label class="ds-label" for="novo-data">Data da oferta</label>
+                    <input id="novo-data" type="date" class="ds-input">
+                </div>
+            </div>
+            <div class="ds-modal-foot">
+                <button class="ds-btn" data-fechar style="flex:1">Cancelar</button>
+                <button class="ds-btn ds-btn-primary" id="novo-criar" style="flex:1">Criar lista</button>
+            </div>
+        </div>`
+    document.body.appendChild(modal)
+
+    const hoje = new Date()
+    const offset = hoje.getTimezoneOffset()
+    modal.querySelector('#novo-data').value = new Date(hoje.getTime() - offset * 60000).toISOString().slice(0, 10)
+
+    const fechar = () => modal.remove()
+    modal.querySelectorAll('[data-fechar]').forEach(b => b.onclick = fechar)
+    modal.onclick = e => { if (e.target === modal) fechar() }
+
+    const criar = async () => {
+        const nome = modal.querySelector('#novo-nome').value.trim()
+        if (!nome) { toast('Informe o nome da lista', 'aviso'); return }
+        const data = modal.querySelector('#novo-data').value
+        const res = await fetch(API + '/listas', {
+            method: 'POST', headers: authHeaders(),
+            body: JSON.stringify({ nome, data_oferta: data || null })
+        })
+        if (!res.ok) { toast('Erro ao criar a lista', 'erro'); return }
+        const lista = await res.json()
+        fechar()
+        toast('Lista criada', 'ok')
+        await atualizarHistorico()
+        abrirLista({ ...lista, finalizada: false })
+    }
+    modal.querySelector('#novo-criar').onclick = criar
+    modal.querySelector('#novo-nome').onkeydown = e => { if (e.key === 'Enter') criar() }
+    modal.querySelector('#novo-nome').focus()
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LISTA ATIVA
+// ═══════════════════════════════════════════════════════════════
 async function abrirLista(lista) {
     listaAtiva = lista
+    selecaoProduto = null
     await atualizarHistorico()
 
-    const area       = document.getElementById('area-lista-ativa')
-    const finalizada = lista.finalizada
+    const area = document.getElementById('area-lista-ativa')
+    const finalizada = !!lista.finalizada
 
     area.innerHTML = `
-        <div class="dash-glass dash-animate" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px; overflow:hidden;">
-            <div style="padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <span style="font-size:15px; font-weight:800; color:rgba(255,255,255,0.85); letter-spacing:0.02em;">${lista.nome}</span>
-                    ${finalizada
-                        ? `<span style="font-size:10px; padding:4px 12px; border-radius:999px; font-weight:800; background:rgba(22,163,74,0.15); color:#4ade80;">Finalizada</span>`
-                        : `<span style="font-size:10px; padding:4px 12px; border-radius:999px; font-weight:800; background:rgba(234,179,8,0.15); color:#facc15;">Rascunho</span>`
-                    }
+        <div class="ds-card" style="overflow:hidden">
+            <div class="ds-card-head" style="flex-wrap:wrap; gap:12px">
+                <div style="min-width:0">
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap">
+                        <h2 style="font-size:16px; font-weight:800; letter-spacing:-.02em; color:var(--text-1)">${String(lista.nome).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]))}</h2>
+                        ${finalizada ? '<span class="ds-chip ds-chip-ok">Finalizada</span>' : '<span class="ds-chip ds-chip-warn">Rascunho</span>'}
+                    </div>
+                    <p class="ds-lista-meta" id="lista-subtitulo">carregando…</p>
                 </div>
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <div style="display:flex; gap:7px; flex-wrap:wrap">
                     ${!finalizada ? `
-                        <button id="btn-finalizar-lista" style="display:flex; align-items:center; gap:6px; padding:8px 16px; color:#fff; font-size:11px; font-weight:800; border-radius:10px; background:linear-gradient(135deg,#16a34a,#15803d); box-shadow:0 4px 16px rgba(22,163,74,0.3); border:none; cursor:pointer;">
-                            <svg style="width:12px;height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                            Finalizar Lista
-                        </button>
-                    ` : `
-                        <button id="btn-duplicar-lista" style="display:flex; align-items:center; gap:6px; padding:8px 16px; color:#fff; font-size:11px; font-weight:800; border-radius:10px; background:linear-gradient(135deg,#2563eb,#1d4ed8); box-shadow:0 4px 16px rgba(37,99,235,0.3); border:none; cursor:pointer;">
-                            <svg style="width:12px;height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                            Nova Versão
-                        </button>
-                    `}
-                    <button id="btn-imprimir-lista" style="display:flex; align-items:center; gap:6px; padding:8px 16px; color:rgba(255,255,255,0.7); font-size:11px; font-weight:800; border-radius:10px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); cursor:pointer;">
-                        <svg style="width:12px;height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        <button id="btn-finalizar-lista" class="ds-btn ds-btn-sm">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                            Finalizar
+                        </button>` : `
+                        <button id="btn-duplicar-lista" class="ds-btn ds-btn-sm">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                            Nova versão
+                        </button>`}
+                    <button id="btn-imprimir-lista" class="ds-btn ds-btn-sm">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                         Imprimir
                     </button>
-                    <button id="btn-exportar-excel" style="display:flex; align-items:center; gap:6px; padding:8px 16px; color:rgba(255,255,255,0.7); font-size:11px; font-weight:800; border-radius:10px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); cursor:pointer;">
-                        <svg style="width:12px;height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
-                        Excel
+                    <button id="btn-exportar-excel" class="ds-btn ds-btn-sm ds-btn-primary">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+                        Enviar ao designer
                     </button>
                 </div>
             </div>
 
             ${!finalizada ? `
-            <!-- Adicionar produto -->
-            <div style="padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.06);">
-                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:end;">
-                    <div style="flex:1; min-width:180px; position:relative; display:flex; flex-direction:column; gap:4px;">
-                        <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">EAN / Código / Nome</label>
-                        <input id="lista-input-busca" type="text" placeholder="Digite ou bipe o produto..."
-                            style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none;"
-                            autocomplete="off"
-                            onfocus="this.style.borderColor='rgba(181,21,21,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
-                        <div id="lista-sugestoes" style="position:absolute; top:100%; left:0; right:0; z-index:50;"></div>
+            <!-- Adicionar produtos -->
+            <div style="padding:14px 18px; border-bottom:1px solid var(--border); background:var(--surface-2); position:relative; z-index:5">
+                <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap">
+                    <div class="ds-field" style="flex:1; min-width:240px; position:relative">
+                        <label class="ds-label" for="lista-input-busca">Produto — código, EAN, nome ou marca</label>
+                        <input id="lista-input-busca" type="text" class="ds-input" placeholder="Digite ou bipe o produto..." autocomplete="off">
+                        <div id="lista-sugestoes" class="ds-sugestoes"></div>
                     </div>
-                    <div style="width:110px; display:flex; flex-direction:column; gap:4px;">
-                        <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Preço (R$)</label>
-                        <input id="lista-input-preco" type="number" step="0.01"
-                            style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none;"
-                            onfocus="this.style.borderColor='rgba(181,21,21,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
+                    <div class="ds-field" style="width:110px">
+                        <label class="ds-label" for="lista-input-preco">Preço (R$)</label>
+                        <input id="lista-input-preco" type="number" step="0.01" class="ds-input" placeholder="0,00">
                     </div>
-                    <button id="btn-add-item-lista" style="padding:10px 16px; color:#fff; font-size:13px; font-weight:700; border-radius:10px; background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3); border:none; cursor:pointer; display:flex; align-items:center; gap:6px;">
-                        <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    <button id="btn-add-item-lista" class="ds-btn ds-btn-primary" style="height:36px">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         Adicionar
                     </button>
                 </div>
-            </div>
-            ` : ''}
+
+                <!-- Marcação de família -->
+                <div style="display:flex; align-items:center; gap:12px; margin-top:12px; flex-wrap:wrap">
+                    <label class="ds-switch" for="lista-marcar-familia">
+                        <input type="checkbox" id="lista-marcar-familia">
+                        <span class="ds-switch-track"><span class="ds-switch-thumb"></span></span>
+                        <span class="ds-switch-label">
+                            Marcar como <strong>Família</strong>
+                        </span>
+                    </label>
+                    <span id="hint-familia" style="font-size:11.5px; color:var(--text-3)"></span>
+                </div>
+            </div>` : ''}
 
             <!-- Itens -->
-            <div id="itens-lista" class="dash-table-wrap" style="overflow-x:auto;"></div>
+            <div id="itens-lista"></div>
         </div>
 
-        <!-- Diff com versão anterior -->
         <div id="area-diff"></div>
     `
 
-    if (!finalizada) vincularEventosItemLista(lista)
     document.getElementById('btn-imprimir-lista')?.addEventListener('click', () => imprimirLista(lista))
     document.getElementById('btn-exportar-excel')?.addEventListener('click', () => exportarListaExcel(lista))
 
-
     if (!finalizada) {
         document.getElementById('btn-finalizar-lista')?.addEventListener('click', async () => {
-            if (!confirm('Finalizar esta lista? Ela ficará somente leitura.')) return
-            await fetch(API+`/listas/${lista.id}/finalizar`, { method:'POST', headers:authHeaders() })
+            const itens = await carregarItensDaLista(lista.id)
+            if (!itens.length) { toast('Adicione produtos antes de finalizar', 'aviso'); return }
+            if (!confirm(`Finalizar a lista com ${itens.length} item(ns)? Ela ficará somente leitura.`)) return
+            await fetch(API + `/listas/${lista.id}/finalizar`, { method: 'POST', headers: authHeaders() })
+            toast('Lista finalizada', 'ok')
             lista.finalizada = true
             await atualizarHistorico()
             abrirLista({ ...lista, finalizada: true })
         })
+
+        document.getElementById('lista-marcar-familia')?.addEventListener('change', atualizarHintFamilia)
+
+        vincularEventosItemLista(lista)
     } else {
         document.getElementById('btn-duplicar-lista')?.addEventListener('click', () => abrirModalDuplicar(lista))
     }
 
     await carregarItensLista(lista.id, finalizada)
 
-    // Mostra diff se tem pai
     if (lista.pai_id) await mostrarDiff(lista.pai_id, lista.id)
 }
 
-// ── MODAL DUPLICAR ────────────────────────────────────
-function abrirModalDuplicar(lista) {
-    const area = document.getElementById('area-lista-ativa')
-    const modal = document.createElement('div')
-    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);'
-    modal.innerHTML = `
-        <div style="background:rgba(20,20,35,0.95); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:24px; width:400px; box-shadow:0 20px 60px rgba(0,0,0,0.5); backdrop-filter:blur(12px);">
-            <h3 style="font-size:15px; font-weight:700; color:rgba(255,255,255,0.85); margin-bottom:12px;">Nova Versão da Lista</h3>
-            <p style="font-size:12px; color:rgba(255,255,255,0.4); margin-bottom:16px;">Baseada em: <strong style="color:rgba(255,255,255,0.7);">${lista.nome}</strong></p>
-            <div style="display:flex;flex-direction:column;gap:10px;">
-                <input id="dup-nome" type="text" placeholder="Nome da nova versão" value="${lista.nome} (atualizada)"
-                    style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none;"
-                    onfocus="this.style.borderColor='rgba(181,21,21,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
-                <input id="dup-data" type="date"
-                    style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none;"
-                    value="${new Date().toISOString().split('T')[0]}"
-                    onfocus="this.style.borderColor='rgba(181,21,21,0.5)'" onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
-            </div>
-            <div style="display:flex;gap:8px;margin-top:16px;">
-                <button id="dup-btn-criar" style="flex:1;padding:10px;background:linear-gradient(135deg,#b51515,#8a0f0f);box-shadow:0 4px 16px rgba(181,21,21,0.3);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-size:13px;">
-                    Criar Nova Versão
-                </button>
-                <button id="dup-btn-cancelar" style="flex:1;padding:10px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.6);border-radius:10px;font-weight:700;cursor:pointer;font-size:13px;">
-                    Cancelar
-                </button>
-            </div>
-        </div>
-    `
-    document.body.appendChild(modal)
-    document.getElementById('dup-nome').focus()
+/** Texto de ajuda da marcação de família */
+function atualizarHintFamilia() {
+    const hint = document.getElementById('hint-familia')
+    if (!hint) return
 
-    document.getElementById('dup-btn-cancelar').onclick = () => document.body.removeChild(modal)
-    document.getElementById('dup-btn-criar').onclick = async () => {
-        const nome = document.getElementById('dup-nome').value.trim()
-        const data = document.getElementById('dup-data').value
-        if (!nome) return
-        const res  = await fetch(API+`/listas/${lista.id}/duplicar`, {
-            method:'POST', headers:authHeaders(),
-            body: JSON.stringify({ nome, data_oferta: data || null })
-        })
-        const nova = await res.json()
-        document.body.removeChild(modal)
-        await atualizarHistorico()
-        abrirLista({ ...nova, finalizada: false, pai_id: lista.id })
+    const marcar = document.getElementById('lista-marcar-familia')?.checked
+
+    if (!marcar) {
+        hint.innerHTML = 'O item entra normalmente, sem etiqueta de família.'
+        return
     }
+    if (!selecaoProduto) {
+        hint.innerHTML = 'Escolha um produto para ver a qual família ele pertence.'
+        return
+    }
+    if (!selecaoProduto.familia) {
+        hint.innerHTML = '<span style="color:var(--warn)">Este produto não tem família cadastrada — não será marcado.</span>'
+        return
+    }
+    const qtd = selecaoProduto.familia_qtd
+    hint.innerHTML = `Família <strong style="color:var(--text-2)">${selecaoProduto.familia}</strong>`
+        + (qtd ? ` · ${qtd} produto(s) nesta família` : '')
+        + ' — o item recebe a etiqueta FAMÍLIA.'
 }
 
-// ── DIFF ──────────────────────────────────────────────
-async function mostrarDiff(paiId, filhoId) {
-    const el = document.getElementById('area-diff')
-    if (!el) return
-
-    const [resPai, resFilho] = await Promise.all([
-        fetch(API+`/listas/${paiId}/itens`, { headers:authHeaders() }),
-        fetch(API+`/listas/${filhoId}/itens`, { headers:authHeaders() })
-    ])
-    const itensPai    = await resPai.json()
-    const itensFilho  = await resFilho.json()
-
-    const descsPai    = new Set(itensPai.map(i => i.descricao.toUpperCase()))
-    const descsFilho  = new Set(itensFilho.map(i => i.descricao.toUpperCase()))
-
-    const adicionados = itensFilho.filter(i => !descsPai.has(i.descricao.toUpperCase()))
-    const removidos   = itensPai.filter(i => !descsFilho.has(i.descricao.toUpperCase()))
-    const mantidos    = itensFilho.filter(i => descsPai.has(i.descricao.toUpperCase()))
-
-    if (!adicionados.length && !removidos.length) {
-        el.innerHTML = ''; return
-    }
-
-    el.innerHTML = `
-        <div class="dash-glass dash-animate" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px; overflow:hidden; margin-top:16px;">
-            <div style="padding:12px 20px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:12px;">
-                <span style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Alterações em relação à versão anterior</span>
-                ${adicionados.length ? `<span style="font-size:10px; font-weight:800; padding:2px 8px; border-radius:999px; background:rgba(22,163,74,0.15); color:#4ade80;">+${adicionados.length} adicionado(s)</span>` : ''}
-                ${removidos.length   ? `<span style="font-size:10px; font-weight:800; padding:2px 8px; border-radius:999px; background:rgba(220,38,38,0.15); color:#f87171;">-${removidos.length} removido(s)</span>` : ''}
-            </div>
-            <table class="dash-table" style="width:100%;">
-                <tbody>
-                    ${adicionados.map(i => `
-                        <tr style="background:rgba(22,163,74,0.05); border-bottom:1px solid rgba(22,163,74,0.1);">
-                            <td style="padding:12px 20px; width:24px;">
-                                <svg style="width:16px;height:16px; color:#4ade80;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                            </td>
-                            <td style="padding:12px 0; font-weight:700; color:#4ade80;">${i.descricao}</td>
-                            <td style="padding:12px 20px; text-align:right; font-weight:700; color:#4ade80;">R$ ${parseFloat(i.preco).toFixed(2).replace('.',',')}</td>
-                        </tr>
-                    `).join('')}
-                    ${mantidos.map(i => `
-                        <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
-                            <td style="padding:12px 20px; width:24px;">
-                                <svg style="width:14px;height:14px; color:rgba(255,255,255,0.15);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                            </td>
-                            <td style="padding:12px 0; color:rgba(255,255,255,0.6);">${i.descricao}</td>
-                            <td style="padding:12px 20px; text-align:right; color:rgba(255,255,255,0.4);">R$ ${parseFloat(i.preco).toFixed(2).replace('.',',')}</td>
-                        </tr>
-                    `).join('')}
-                    ${removidos.map(i => `
-                        <tr style="background:rgba(220,38,38,0.05); border-bottom:1px solid rgba(220,38,38,0.1);">
-                            <td style="padding:12px 20px; width:24px;">
-                                <svg style="width:16px;height:16px; color:#f87171;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                            </td>
-                            <td style="padding:12px 0; font-weight:700; text-decoration:line-through; color:#f87171;">${i.descricao}</td>
-                            <td style="padding:12px 20px; text-align:right; font-weight:700; text-decoration:line-through; color:#f87171;">R$ ${parseFloat(i.preco).toFixed(2).replace('.',',')}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        </div>
-    `
+// ── ITENS ───────────────────────────────────────────────
+async function carregarItensDaLista(listaId) {
+    try {
+        const res = await fetch(API + `/listas/${listaId}/itens`, { headers: authHeaders() })
+        const itens = await res.json()
+        return Array.isArray(itens) ? itens : []
+    } catch { return [] }
 }
 
-// ── CARREGAR ITENS ────────────────────────────────────
 async function carregarItensLista(listaId, somenteLeitura = false) {
     const el = document.getElementById('itens-lista')
     if (!el) return
-    const res   = await fetch(API+`/listas/${listaId}/itens`, { headers:authHeaders() })
-    const itens = await res.json()
+    const itens = await carregarItensDaLista(listaId)
+
+    // cabeçalho com resumo
+    const sub = document.getElementById('lista-subtitulo')
+    if (sub) {
+        const total = itens.reduce((s, i) => s + Number(i.preco || 0), 0)
+        const familias = new Set(itens.map(i => i.familia).filter(Boolean)).size
+        const deFamilia = itens.filter(i => i.inclusao === 'familia').length
+        sub.textContent = `${itens.length} item(ns) · R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+            + (familias ? ` · ${familias} família(s)` : '')
+            + (deFamilia ? ` · ${deFamilia} vindos de família` : '')
+    }
 
     if (!itens.length) {
-        el.innerHTML = `<p style="text-align:center; color:rgba(255,255,255,0.3); font-size:13px; padding:32px 0;">Nenhum produto na lista ainda.</p>`
+        el.innerHTML = `<div class="ds-empty" style="padding:52px 20px">
+            <svg width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.4" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <div class="ds-empty-title">Nenhum produto na lista</div>
+            <div class="ds-empty-text">Busque acima e adicione os produtos do panfleto.</div>
+        </div>`
         return
     }
 
-    const total = itens.reduce((s, i) => s + parseFloat(i.preco || 0), 0)
+    const total = itens.reduce((s, i) => s + Number(i.preco || 0), 0)
 
     el.innerHTML = `
-        <table class="dash-table" style="width:100%;">
+        <div style="overflow-x:auto">
+        <table class="ds-table-prod" style="min-width:620px">
             <thead>
-                <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
-                    <th style="padding:12px 20px; text-align:left; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3); width:32px;">#</th>
-                    <th style="padding:12px 20px; text-align:left; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Descrição</th>
-                    <th style="padding:12px 20px; text-align:left; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Código</th>
-                    <th style="padding:12px 20px; text-align:right; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Preço</th>
-                    ${!somenteLeitura ? '<th style="padding:12px 20px; width:32px;"></th>' : ''}
+                <tr>
+                    <th style="width:38px;">#</th>
+                    <th>Descrição</th>
+                    <th style="width:92px;">Código</th>
+                    <th style="width:118px;">EAN</th>
+                    <th style="width:120px;">Família</th>
+                    <th style="width:92px; text-align:right;">Preço</th>
+                    ${somenteLeitura ? '' : '<th style="width:72px;"></th>'}
                 </tr>
             </thead>
             <tbody>
                 ${itens.map((item, i) => `
-                    <tr style="border-bottom:1px solid rgba(255,255,255,0.04); transition:background 0.15s;" data-item-id="${item.id}"
-                        onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
-                        <td style="padding:14px 20px; color:rgba(255,255,255,0.3); font-size:11px;">${i + 1}</td>
-                        <td style="padding:14px 20px; font-weight:700; color:rgba(255,255,255,0.85); ${!somenteLeitura ? 'cursor:pointer;' : ''}" class="${!somenteLeitura ? 'item-desc' : ''}" data-field="descricao"
-                            ${!somenteLeitura ? 'onmouseover="this.style.color=\'#f87171\'" onmouseout="this.style.color=\'rgba(255,255,255,0.85)\'"' : ''}>${item.descricao}</td>
-                        <td style="padding:14px 20px; font-family:monospace; color:rgba(255,255,255,0.3); font-size:11px;">${item.codigo || '—'}</td>
-                        <td style="padding:14px 20px; text-align:right; font-weight:700; color:rgba(255,255,255,0.85); ${!somenteLeitura ? 'cursor:pointer;' : ''}" class="${!somenteLeitura ? 'item-preco' : ''}" data-field="preco"
-                            ${!somenteLeitura ? 'onmouseover="this.style.color=\'#f87171\'" onmouseout="this.style.color=\'rgba(255,255,255,0.85)\'"' : ''}>
-                            R$ ${parseFloat(item.preco).toFixed(2).replace('.', ',')}
+                    <tr data-item-id="${item.id}">
+                        <td class="muted" style="font-size:11px;">${i + 1}</td>
+                        <td>
+                            <div class="d3-prod-name" style="font-weight:600; cursor:${somenteLeitura ? 'default' : 'pointer'};" ${somenteLeitura ? '' : 'data-field="descricao"'}">${item.descricao}</div>
+                            ${item.inclusao === 'familia'
+                                ? '<span class="ds-badge" style="margin-top:4px; background:var(--brand-soft); color:var(--brand-text)">FAMÍLIA</span>'
+                                : (item.marca ? `<div class="muted" style="font-size:10.5px; margin-top:2px;">${item.marca}</div>` : '')}
                         </td>
-                        ${!somenteLeitura ? `
-                        <td style="padding:14px 20px; text-align:center;">
-                            <button class="btn-remover-item" style="background:none; border:none; cursor:pointer; padding:4px; color:rgba(255,255,255,0.15); transition:color 0.15s;"
-                                data-id="${item.id}"
-                                onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='rgba(255,255,255,0.15)'">
-                                <svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        <td class="mono muted">${item.codigo || '—'}</td>
+                        <td class="mono muted">${item.ean || '—'}</td>
+                        <td class="muted" style="font-size:11.5px; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${item.familia || ''}">${item.familia || '—'}</td>
+                        <td class="preco" style="cursor:${somenteLeitura ? 'default' : 'pointer'};" ${somenteLeitura ? '' : 'data-field="preco"'}>
+                            ${Number(item.preco || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, style: 'currency', currency: 'BRL' })}
+                        </td>
+                        ${somenteLeitura ? '' : `
+                        <td style="text-align:right; white-space:nowrap">
+                            <button class="ds-icon-btn btn-remover-item" data-id="${item.id}" title="Remover da lista">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                             </button>
-                        </td>` : ''}
-                    </tr>
-                `).join('')}
+                        </td>`}
+                    </tr>`).join('')}
             </tbody>
             <tfoot>
-                <tr style="border-top:1px solid rgba(255,255,255,0.06);">
-                    <td colspan="${somenteLeitura ? 3 : 4}" style="padding:12px 20px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">
-                        Total — ${itens.length} produto(s)
+                <tr style="background:var(--surface-2)">
+                    <td colspan="${somenteLeitura ? 5 : 6}" style="padding:12px 14px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-3)">
+                        Total — ${itens.length} item(ns)
                     </td>
-                    <td style="padding:12px 20px; text-align:right; font-weight:800; color:rgba(255,255,255,0.85); font-size:15px;">R$ ${total.toFixed(2).replace('.', ',')}</td>
-                    ${!somenteLeitura ? '<td></td>' : ''}
+                    <td class="preco" style="padding:12px 14px; text-align:right; font-weight:800; font-size:15px; color:var(--text-1)">
+                        R$ ${total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </td>
+                    ${somenteLeitura ? '' : '<td></td>'}
                 </tr>
             </tfoot>
         </table>
-    `
+        </div>`
 
     if (!somenteLeitura) {
-        // Edição inline
+        // edição inline
         el.querySelectorAll('[data-field]').forEach(span => {
             span.onclick = () => {
-                const tr     = span.closest('tr')
+                const tr = span.closest('tr')
                 const itemId = parseInt(tr.getAttribute('data-item-id'))
-                const field  = span.getAttribute('data-field')
-                const input  = document.createElement('input')
-                let val = span.textContent.trim().replace('R$','').replace(',','.').trim()
-                input.value = val; input.type = field === 'preco' ? 'number' : 'text'; input.step = '0.01'
-                input.style.cssText = 'width:100%;border:1px solid #b51515;border-radius:6px;padding:4px 8px;font-size:13px;background:rgba(255,255,255,0.04);color:#fafafa;outline:none;'
-                span.replaceWith(input); input.focus(); input.select()
+                const field = span.getAttribute('data-field')
+                const item = itens.find(i => i.id === itemId)
+                if (!item) return
+
+                const input = document.createElement('input')
+                const valor = field === 'preco'
+                    ? Number(item.preco || 0).toFixed(2)
+                    : item.descricao
+                input.value = valor
+                input.type = field === 'preco' ? 'number' : 'text'
+                input.step = '0.01'
+                input.className = 'ds-input'
+                input.style.height = '30px'
+                input.style.fontSize = '13px'
+                span.replaceWith(input)
+                input.focus()
+                input.select()
+
                 const salvar = async () => {
-                    const v = input.value.trim(); if (!v) { carregarItensLista(listaId); return }
-                    const item = itens.find(i => i.id === itemId)
-                    await fetch(API+`/listas/${listaId}/itens/${itemId}`, {
-                        method:'PUT', headers:authHeaders(),
-                        body: JSON.stringify({ descricao: field==='descricao'?v:item.descricao, preco: field==='preco'?parseFloat(v):item.preco })
+                    const v = input.value.trim()
+                    if (!v) { await carregarItensLista(listaId); return }
+                    await fetch(API + `/listas/${listaId}/itens/${itemId}`, {
+                        method: 'PUT', headers: authHeaders(),
+                        body: JSON.stringify({
+                            descricao: field === 'descricao' ? v : item.descricao,
+                            preco: field === 'preco' ? parseFloat(v) : item.preco
+                        })
                     })
                     await carregarItensLista(listaId)
                     if (listaAtiva?.pai_id) await mostrarDiff(listaAtiva.pai_id, listaId)
                 }
                 input.onblur = salvar
-                input.onkeydown = (e) => { if (e.key==='Enter') salvar(); if (e.key==='Escape') carregarItensLista(listaId) }
+                input.onkeydown = (e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); salvar() }
+                    if (e.key === 'Escape') { input.replaceWith(span); span.style.color = '' }
+                }
             }
         })
 
+        // remover
         el.querySelectorAll('.btn-remover-item').forEach(btn => {
             btn.onclick = async () => {
-                await fetch(API+`/listas/${listaId}/itens/${btn.getAttribute('data-id')}`, { method:'DELETE', headers:authHeaders() })
+                await fetch(API + `/listas/${listaId}/itens/${btn.getAttribute('data-id')}`, { method: 'DELETE', headers: authHeaders() })
                 await carregarItensLista(listaId)
                 if (listaAtiva?.pai_id) await mostrarDiff(listaAtiva.pai_id, listaId)
             }
@@ -477,7 +531,9 @@ async function carregarItensLista(listaId, somenteLeitura = false) {
     }
 }
 
-// ── ADICIONAR ITEM ────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// BUSCA E ADIÇÃO
+// ═══════════════════════════════════════════════════════════════
 function vincularEventosItemLista(lista) {
     const inputBusca = document.getElementById('lista-input-busca')
     const inputPreco = document.getElementById('lista-input-preco')
@@ -489,129 +545,318 @@ function vincularEventosItemLista(lista) {
         clearTimeout(debounce)
         sugestaoIndex = -1
         sugestoesAtuais = []
+        // limpa a seleção anterior — evita arrastrar código/EAN do produto errado
+        selecaoProduto = null
+        atualizarHintFamilia()
         debounce = setTimeout(async () => {
             await mostrarSugestoesLista(inputBusca.value.trim())
-            sugestoesAtuais = document.querySelectorAll('.sugestao-lista')
-            if (sugestoesAtuais.length) { sugestaoIndex = 0; sugestoesAtuais[0].style.background = 'rgba(181,21,21,0.25)' }
-        }, 250)
+            sugestoesAtuais = Array.from(document.querySelectorAll('.ds-sugestao'))
+            if (sugestoesAtuais.length) {
+                sugestaoIndex = 0
+                sugerirAtiva()
+            }
+        }, 220)
     }
+
     inputBusca.onkeydown = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault()
             if (sugestaoIndex >= 0 && sugestoesAtuais[sugestaoIndex]) {
                 sugestoesAtuais[sugestaoIndex].click()
             } else {
-                inputPreco.focus(); inputPreco.select()
+                inputPreco.focus()
+                inputPreco.select()
             }
         }
         if (e.key === 'Escape') {
             document.getElementById('lista-sugestoes').innerHTML = ''
-            sugestoesAtuais = []; sugestaoIndex = -1
+            sugestoesAtuais = []
+            sugestaoIndex = -1
         }
         if (e.key === 'ArrowDown') {
             e.preventDefault()
             if (!sugestoesAtuais.length) return
-            sugestoesAtuais[sugestaoIndex].style.background = ''
             sugestaoIndex = (sugestaoIndex + 1) % sugestoesAtuais.length
-            sugestoesAtuais[sugestaoIndex].style.background = 'rgba(181,21,21,0.25)'
+            sugerirAtiva()
         }
         if (e.key === 'ArrowUp') {
             e.preventDefault()
             if (!sugestoesAtuais.length) return
-            sugestoesAtuais[sugestaoIndex].style.background = ''
             sugestaoIndex = (sugestaoIndex - 1 + sugestoesAtuais.length) % sugestoesAtuais.length
-            sugestoesAtuais[sugestaoIndex].style.background = 'rgba(181,21,21,0.25)'
+            sugerirAtiva()
         }
     }
-    inputPreco.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); adicionarItemLista(lista.id) } }
+
+    inputPreco.onkeydown = (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); adicionarItemLista(lista.id) }
+    }
     document.getElementById('btn-add-item-lista').onclick = () => adicionarItemLista(lista.id)
+}
+
+function sugerirAtiva() {
+    sugestoesAtuais.forEach((s, i) => {
+        s.classList.toggle('is-ativa', i === sugestaoIndex)
+    })
+    if (sugestoesAtuais[sugestaoIndex]) {
+        sugestoesAtuais[sugestaoIndex].scrollIntoView({ block: 'nearest' })
+    }
 }
 
 async function mostrarSugestoesLista(termo) {
     const el = document.getElementById('lista-sugestoes')
     if (!el) return
     if (!termo || termo.length < 2) { el.innerHTML = ''; sugestoesAtuais = []; return }
-    const q = termo.toUpperCase()
 
-    let resultados = bancoProdutosListas.filter(p =>
-        p.descricao?.toUpperCase().includes(q) || String(p.codigo).includes(q) || String(p.ean).includes(q)
-    ).slice(0, 7)
-
-    if (resultados.length < 7) {
-        try {
-            const res = await fetch(API+`/produtos/busca?q=${encodeURIComponent(termo)}`, { headers: authHeaders() })
-            if (res.ok) {
-                const apiRes = await res.json()
-                const descs = new Set(resultados.map(r => r.descricao?.toUpperCase()))
-                for (const p of apiRes) {
-                    if (!descs.has(p.descricao?.toUpperCase())) {
-                        resultados.push(p)
-                        if (resultados.length >= 7) break
-                    }
-                }
-            }
-        } catch {}
-    }
+    let resultados = []
+    try {
+        const res = await fetch(API + `/produtos/busca?q=${encodeURIComponent(termo)}`, { headers: authHeaders() })
+        if (res.ok) {
+            const r = await res.json()
+            if (Array.isArray(r)) resultados = r
+        }
+    } catch { /* offline: segue sem sugestão */ }
 
     if (!resultados.length) { el.innerHTML = ''; return }
-    el.innerHTML = `
-        <div style="background:rgba(20,20,35,0.95);border:1px solid rgba(255,255,255,0.08);border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,0.4);overflow:hidden;backdrop-filter:blur(12px);">
-            ${resultados.map((p, i) => `
-                <div class="sugestao-lista" data-index="${i}"
-                    style="padding:10px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.04);">
-                    <p style="font-size:13px;color:rgba(255,255,255,0.85);font-weight:600;">${p.descricao}</p>
-                    <p style="font-size:11px;color:rgba(255,255,255,0.3);">${p.codigo}${p.ean ? ' · ' + p.ean : ''}${p.preco_venda ? ' · R$ ' + Number(p.preco_venda).toFixed(2).replace('.',',') : ''}</p>
-                </div>
-            `).join('')}
-        </div>
-    `
-    el.querySelectorAll('.sugestao-lista').forEach(item => {
-        item.onmouseover = () => item.style.background = 'rgba(181,21,21,0.1)'
-        item.onmouseout  = () => item.style.background = ''
+
+    el.innerHTML = resultados.map((p, i) => {
+        const fam = p.familia
+            ? `<span class="ds-badge" style="background:var(--brand-soft); color:var(--brand-text); margin-left:6px">${p.familia}</span>`
+            : ''
+        const preco = p.preco_venda != null
+            ? 'R$ ' + Number(p.preco_venda).toFixed(2).replace('.', ',')
+            : ''
+        return `
+        <div class="ds-sugestao" data-index="${i}">
+            <div class="ds-sugestao-nome">${p.descricao || ''}${fam}</div>
+            <div class="ds-sugestao-meta">
+                ${p.codigo || ''}${p.ean ? ' · ' + p.ean : ''}${preco ? ' · ' + preco : ''}${p.marca ? ' · ' + p.marca : ''}
+            </div>
+        </div>`
+    }).join('')
+
+    el.querySelectorAll('.ds-sugestao').forEach(item => {
+        item.onmouseover = () => item.classList.add('is-ativa')
+        item.onmouseout = () => item.classList.remove('is-ativa')
         item.onclick = () => {
-            const i = parseInt(item.getAttribute('data-index'))
-            const p = resultados[i]
-            document.getElementById('lista-input-busca').value = p.descricao
-            document.getElementById('lista-input-preco').value = p.preco_venda || ''
-            el.innerHTML = ''
-            el.dataset.codigo = p.codigo; el.dataset.ean = p.ean || ''
-            sugestoesAtuais = []; sugestaoIndex = -1
-            document.getElementById('lista-input-preco').focus()
-            document.getElementById('lista-input-preco').select()
+            const p = resultados[parseInt(item.getAttribute('data-index'))]
+            selecionarProduto(p)
         }
     })
+}
+
+function selecionarProduto(p) {
+    selecaoProduto = p
+    const inputBusca = document.getElementById('lista-input-busca')
+    const inputPreco = document.getElementById('lista-input-preco')
+    const el = document.getElementById('lista-sugestoes')
+
+    inputBusca.value = p.descricao || ''
+    inputPreco.value = p.preco_venda != null ? Number(p.preco_venda).toFixed(2) : ''
+    if (el) el.innerHTML = ''
+    sugestoesAtuais = []
+    sugestaoIndex = -1
+
+    atualizarHintFamilia()
+    inputPreco.focus()
+    inputPreco.select()
 }
 
 async function adicionarItemLista(listaId) {
     const inputBusca = document.getElementById('lista-input-busca')
     const inputPreco = document.getElementById('lista-input-preco')
-    const sugestoes  = document.getElementById('lista-sugestoes')
-    const descricao  = inputBusca.value.trim()
-    const preco      = parseFloat(inputPreco.value) || 0
+    const descricao = inputBusca.value.trim()
+
     if (!descricao) { inputBusca.focus(); return }
-    await fetch(API+`/listas/${listaId}/itens`, {
-        method:'POST', headers:authHeaders(),
-        body: JSON.stringify({ descricao, preco, codigo: sugestoes.dataset.codigo||null, ean: sugestoes.dataset.ean||null })
+
+    const preco = inputPreco.value !== '' ? Number(inputPreco.value) : (selecaoProduto?.preco_venda ?? 0)
+
+    // ── marcado como família? o item recebe a etiqueta ──
+    const marcarFamilia = !!document.getElementById('lista-marcar-familia')?.checked
+    const familia = marcarFamilia ? (selecaoProduto?.familia || null) : null
+
+    if (marcarFamilia && !familia) {
+        toast('Este produto não tem família cadastrada — incluído sem etiqueta', 'aviso')
+    }
+
+    const res = await fetch(API + `/listas/${listaId}/itens`, {
+        method: 'POST', headers: authHeaders(),
+        body: JSON.stringify({
+            descricao,
+            preco,
+            codigo: selecaoProduto?.codigo || null,
+            ean: selecaoProduto?.ean || null,
+            familia: familia,
+            marca: selecaoProduto?.marca || null,
+            departamento: selecaoProduto?.descricao_departamento || null,
+            inclusao: familia ? 'familia' : 'individual'
+        })
     })
-    inputBusca.value = ''; inputPreco.value = ''; sugestoes.innerHTML = ''
-    delete sugestoes.dataset.codigo; delete sugestoes.dataset.ean
-    inputBusca.focus()
+    if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        toast(d.error || 'Erro ao adicionar o produto', 'erro')
+        return
+    }
+
+    if (familia) {
+        toast(`Item marcado como família "${familia}"`, 'ok')
+    }
+
+    limparCamposAdicao()
     await carregarItensLista(listaId)
     if (listaAtiva?.pai_id) await mostrarDiff(listaAtiva.pai_id, listaId)
 }
 
-// ── IMPRIMIR ──────────────────────────────────────────
+function limparCamposAdicao() {
+    const inputBusca = document.getElementById('lista-input-busca')
+    const inputPreco = document.getElementById('lista-input-preco')
+    const el = document.getElementById('lista-sugestoes')
+    const switchFamilia = document.getElementById('lista-marcar-familia')
+    if (inputBusca) { inputBusca.value = ''; inputBusca.focus() }
+    if (inputPreco) inputPreco.value = ''
+    if (el) el.innerHTML = ''
+    if (switchFamilia) switchFamilia.checked = false
+    selecaoProduto = null
+    sugestoesAtuais = []
+    sugestaoIndex = -1
+    atualizarHintFamilia()
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DIFF COM A VERSÃO ANTERIOR
+// ═══════════════════════════════════════════════════════════════
+async function mostrarDiff(paiId, filhoId) {
+    const el = document.getElementById('area-diff')
+    if (!el) return
+
+    const [resPai, resFilho] = await Promise.all([
+        fetch(API + `/listas/${paiId}/itens`, { headers: authHeaders() }),
+        fetch(API + `/listas/${filhoId}/itens`, { headers: authHeaders() })
+    ])
+    const itensPai = await resPai.json()
+    const itensFilho = await resFilho.json()
+    if (!Array.isArray(itensPai) || !Array.isArray(itensFilho)) return
+
+    const descsPai = new Set(itensPai.map(i => String(i.descricao).toUpperCase()))
+    const descsFilho = new Set(itensFilho.map(i => String(i.descricao).toUpperCase()))
+
+    const adicionados = itensFilho.filter(i => !descsPai.has(String(i.descricao).toUpperCase()))
+    const removidos = itensPai.filter(i => !descsFilho.has(String(i.descricao).toUpperCase()))
+    const mantidos = itensFilho.filter(i => descsPai.has(String(i.descricao).toUpperCase()))
+
+    if (!adicionados.length && !removidos.length) { el.innerHTML = ''; return }
+
+    const linha = (i, tipo) => `
+        <tr style="background:${tipo === 'adicionado' ? 'var(--ok-soft)' : tipo === 'removido' ? 'var(--danger-soft)' : 'transparent'};">
+            <td style="padding:10px 14px; width:34px; text-align:center; color:${tipo === 'adicionado' ? 'var(--ok)' : tipo === 'removido' ? 'var(--danger)' : 'var(--text-3)'}">
+                ${tipo === 'adicionado' ? '+' : tipo === 'removido' ? '−' : '='}
+            </td>
+            <td style="padding:10px 14px; font-weight:${tipo === 'mantido' ? '400' : '700'}; color:${tipo === 'removido' ? 'var(--danger)' : 'var(--text-1)'};${tipo === 'removido' ? 'text-decoration:line-through' : ''}">${i.descricao}</td>
+            <td class="mono muted" style="padding:10px 14px; font-size:11px;">${i.codigo || '—'}</td>
+            <td style="padding:10px 14px; text-align:right; font-weight:600; color:var(--text-2)">
+                R$ ${Number(i.preco || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </td>
+        </tr>`
+
+    el.innerHTML = `
+        <div class="ds-card" style="overflow:hidden; margin-top:14px">
+            <div class="ds-card-head">
+                <div class="ds-card-title">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 8l7-5 7 5"/><path d="M5 16l7 5 7-5"/></svg>
+                    Alterações em relação à versão anterior
+                </div>
+                <div style="display:flex; gap:6px">
+                    ${adicionados.length ? `<span class="ds-chip ds-chip-ok">+${adicionados.length}</span>` : ''}
+                    ${removidos.length ? `<span class="ds-chip ds-chip-danger">−${removidos.length}</span>` : ''}
+                    <span class="ds-chip">=${mantidos.length}</span>
+                </div>
+            </div>
+            <table class="ds-table-prod">
+                <tbody>
+                    ${adicionados.map(i => linha(i, 'adicionado')).join('')}
+                    ${mantidos.map(i => linha(i, 'mantido')).join('')}
+                    ${removidos.map(i => linha(i, 'removido')).join('')}
+                </tbody>
+            </table>
+        </div>`
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DUPLICAR (NOVA VERSÃO)
+// ═══════════════════════════════════════════════════════════════
+function abrirModalDuplicar(lista) {
+    const modal = document.createElement('div')
+    modal.className = 'ds-modal-overlay'
+    modal.innerHTML = `
+        <div class="ds-modal" style="width:440px">
+            <div class="ds-modal-head">
+                <h3>Nova versão da lista</h3>
+                <button class="ds-icon-btn" data-fechar>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="ds-modal-body">
+                <p class="ds-field-hint">Baseada em: <strong style="color:var(--text-1)">${lista.nome}</strong></p>
+                <div class="ds-field">
+                    <label class="ds-label" for="dup-nome">Nome da nova versão</label>
+                    <input id="dup-nome" type="text" class="ds-input">
+                </div>
+                <div class="ds-field">
+                    <label class="ds-label" for="dup-data">Data da oferta</label>
+                    <input id="dup-data" type="date" class="ds-input">
+                </div>
+            </div>
+            <div class="ds-modal-foot">
+                <button class="ds-btn" data-fechar style="flex:1">Cancelar</button>
+                <button class="ds-btn ds-btn-primary" id="dup-criar" style="flex:1">Criar nova versão</button>
+            </div>
+        </div>`
+    document.body.appendChild(modal)
+
+    const hoje = new Date()
+    const offset = hoje.getTimezoneOffset()
+    modal.querySelector('#dup-data').value = new Date(hoje.getTime() - offset * 60000).toISOString().slice(0, 10)
+    modal.querySelector('#dup-nome').value = lista.nome + ' (nova)'
+
+    const fechar = () => modal.remove()
+    modal.querySelectorAll('[data-fechar]').forEach(b => b.onclick = fechar)
+    modal.onclick = e => { if (e.target === modal) fechar() }
+
+    modal.querySelector('#dup-criar').onclick = async () => {
+        const nome = modal.querySelector('#dup-nome').value.trim()
+        const data = modal.querySelector('#dup-data').value
+        if (!nome) { toast('Informe o nome da nova versão', 'aviso'); return }
+        const res = await fetch(API + `/listas/${lista.id}/duplicar`, {
+            method: 'POST', headers: authHeaders(),
+            body: JSON.stringify({ nome, data_oferta: data || null })
+        })
+        if (!res.ok) { toast('Erro ao criar a versão', 'erro'); return }
+        const nova = await res.json()
+        fechar()
+        toast('Nova versão criada', 'ok')
+        await atualizarHistorico()
+        abrirLista({ ...nova, finalizada: false, pai_id: lista.id })
+    }
+    modal.querySelector('#dup-nome').focus()
+    modal.querySelector('#dup-nome').select()
+}
+
+// ═══════════════════════════════════════════════════════════════
+// IMPRIMIR
+// ═══════════════════════════════════════════════════════════════
 async function imprimirLista(lista) {
-    const res   = await fetch(API+`/listas/${lista.id}/itens`, { headers:authHeaders() })
-    const itens = await res.json()
-    if (!itens.length) { alert('A lista está vazia.'); return }
-    const total = itens.reduce((s, i) => s + parseFloat(i.preco || 0), 0)
-    const dt    = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' })
-    const win   = window.open('', '_blank')
+    const itens = await carregarItensDaLista(lista.id)
+    if (!itens.length) { toast('A lista está vazia', 'aviso'); return }
+
+    const total = itens.reduce((s, i) => s + Number(i.preco || 0), 0)
+    const dt = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+
+    const win = window.open('', '_blank')
+    if (!win) { toast('Permita os pop-ups para imprimir', 'aviso'); return }
+
     win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${lista.nome}</title>
         <style>
             * { font-family:'Segoe UI',sans-serif; margin:0; padding:0; box-sizing:border-box; }
-            body { padding:20px; font-size:13px; }
+            body { padding:20px; font-size:13px; color:#111827; }
             .header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:16px; border-bottom:2px solid #b51515; padding-bottom:10px; }
             h2 { font-size:18px; color:#b51515; }
             p.sub { font-size:11px; color:#666; margin-top:2px; }
@@ -621,6 +866,7 @@ async function imprimirLista(lista) {
             table { width:100%; border-collapse:collapse; }
             th { background:#b51515; color:#fff; font-weight:600; text-align:left; padding:8px 10px; font-size:11px; text-transform:uppercase; }
             td { padding:7px 10px; border-bottom:1px solid #f0f0f0; }
+            td.fam { font-size:10px; color:#888; }
             tfoot td { background:#f3f4f6; font-weight:700; border-top:2px solid #e5e7eb; }
             tr:nth-child(even) td { background:#f9fafb; }
             @page { size:A4; margin:15mm; }
@@ -633,37 +879,40 @@ async function imprimirLista(lista) {
             <p class="sub">Supermercado Avanzi</p>
         </div>
         <table>
-            <thead><tr><th>#</th><th>Descrição</th><th>Código</th><th style="text-align:right;">Preço</th></tr></thead>
-            <tbody>${itens.map((item,i) => `
-                <tr><td>${i+1}</td><td><strong>${item.descricao}</strong></td><td>${item.codigo||'—'}</td>
-                <td style="text-align:right;font-weight:600;">R$ ${parseFloat(item.preco).toFixed(2).replace('.',',')}</td></tr>
+            <thead><tr><th>#</th><th>Descrição</th><th>Código</th><th>EAN</th><th>Preço</th></tr></thead>
+            <tbody>${itens.map((item, i) => `
+                <tr><td>${i + 1}</td><td><strong>${item.descricao}</strong>${item.familia ? `<div class="fam">${item.familia}</div>` : ''}</td><td>${item.codigo || '—'}</td><td>${item.ean || '—'}</td>
+                <td style="text-align:right;font-weight:600;">R$ ${Number(item.preco || 0).toFixed(2).replace('.', ',')}</td></tr>
             `).join('')}</tbody>
-            <tfoot><tr><td colspan="3">Total</td><td style="text-align:right;">R$ ${total.toFixed(2).replace('.',',')}</td></tr></tfoot>
+            <tfoot><tr><td colspan="4">Total</td><td style="text-align:right;">R$ ${total.toFixed(2).replace('.', ',')}</td></tr></tfoot>
         </table>
         <script>window.onload = () => { window.print(); window.close(); }<\/script>
         </body></html>`)
     win.document.close()
 }
 
-// ── EXPORTAR EXCEL ────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// EXPORTAR EXCEL (vai para o designer)
+// ═══════════════════════════════════════════════════════════════
 async function exportarListaExcel(lista) {
-    const msgEl = document.getElementById('cp-msg') || { textContent: '', style: {} }
     try {
-        const res = await fetch(API+`/listas/${lista.id}/exportar-xlsx`, {
-            headers: authHeaders()
-        })
-        if (!res.ok) { alert('Erro ao gerar Excel.'); return }
-
+        const res = await fetch(API + `/listas/${lista.id}/exportar-xlsx`, { headers: authHeaders() })
+        if (!res.ok) {
+            const d = await res.json().catch(() => ({}))
+            toast(d.error || 'Erro ao gerar o Excel', 'erro')
+            return
+        }
         const blob = await res.blob()
-        const url  = URL.createObjectURL(blob)
+        const url = URL.createObjectURL(blob)
         const link = document.createElement('a')
-        const nome = lista.nome.replace(/[^a-zA-Z0-9À-ÿ ]/g, '').trim()
+        const nome = String(lista.nome).replace(/[^a-zA-Z0-9À-ÿ ]/g, '').trim() || 'ofertas'
         link.download = `${nome}.xlsx`
         link.href = url
         link.click()
         URL.revokeObjectURL(url)
+        toast('Excel gerado — envie para o designer', 'ok')
     } catch (e) {
         console.error(e)
-        alert('Erro ao exportar Excel.')
+        toast('Erro ao exportar o Excel', 'erro')
     }
 }

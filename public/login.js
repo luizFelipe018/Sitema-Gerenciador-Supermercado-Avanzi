@@ -1,25 +1,74 @@
-﻿async function fazerLogin() {
-    const usuario = document.getElementById('usuario').value
+﻿// Sessão de 4 horas: se ainda houver token válido, entra direto (sem pedir senha de novo ao reabrir)
+function sessaoValida() {
+    const token = localStorage.getItem('token')
+    if (!token) return false
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        const now = Math.floor(Date.now() / 1000)
+        if (payload.exp && now >= payload.exp) {
+            localStorage.removeItem('token')
+            localStorage.removeItem('tokenExp')
+            return false
+        }
+        if (payload.iat && now - payload.iat > 4 * 60 * 60) {
+            localStorage.removeItem('token')
+            localStorage.removeItem('tokenExp')
+            return false
+        }
+        return true
+    } catch {
+        return !!token
+    }
+}
+
+if (sessaoValida()) {
+    window.location.href = window.location.protocol === 'file:' ? 'home.html' : (localStorage.getItem('serverUrl') || window.location.origin) + '/home.html'
+}
+
+async function fazerLogin() {
+    const usuario = document.getElementById('usuario').value.trim()
     const senha = document.getElementById('senha').value
+    const botao = document.getElementById('btn-login')
+    const erro = document.getElementById('erro')
 
-    const response = await fetch(API+'/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ usuario, senha })
-    })
+    if (!usuario || !senha) {
+        erro.innerText = 'Informe usuário e senha.'
+        return
+    }
 
-    const data = await response.json()
+    botao.classList.add('loading')
+    botao.disabled = true
+    erro.innerText = ''
 
-    if (response.ok) {
-        localStorage.setItem('token', data.token)
-        localStorage.setItem('usuarioNome', data.user.nome)
-        localStorage.setItem('usuario', data.user.usuario)
-        localStorage.setItem('usuarioCargo', data.user.cargo || 'atendente')
-        window.location.href = window.location.protocol === 'file:' ? 'home.html' : API + '/home.html'
-    } else {
-        document.getElementById('erro').innerText = data.error
+    try {
+        const response = await fetch(API+'/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ usuario, senha })
+        })
+
+        const data = await response.json()
+
+        if (response.ok) {
+            localStorage.setItem('token', data.token)
+            if (data.expiresAt) localStorage.setItem('tokenExp', String(data.expiresAt))
+            localStorage.setItem('usuarioNome', data.user.nome)
+            localStorage.setItem('usuario', data.user.usuario)
+            localStorage.setItem('usuarioCargo', data.user.cargo || 'atendente')
+            window.location.href = window.location.protocol === 'file:' ? 'home.html' : API + '/home.html'
+        } else {
+            erro.innerText = data.error
+            botao.classList.remove('loading')
+            botao.disabled = false
+            document.getElementById('senha').value = ''
+            document.getElementById('senha').focus()
+        }
+    } catch (e) {
+        erro.innerText = 'Não foi possível conectar ao servidor.'
+        botao.classList.remove('loading')
+        botao.disabled = false
     }
 }
 
@@ -31,25 +80,47 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') fazerLogin()
 })
 
-// ── Auto-detect server (Electron: tenta localhost, se falhar usa 192.168.2.55) ──
+// ── Auto-detect server (Electron: tenta localhost, depois o IP da rede local) ──
 ;(async function autoDetectServer() {
-    const savedUrl = localStorage.getItem('serverUrl')
-    if (savedUrl) return
     if (window.location.protocol !== 'file:') return
     const erro = document.getElementById('erro')
+    const ok = async (url) => {
+        if (!url) return false
+        try {
+            const controller = new AbortController()
+            const t = setTimeout(() => controller.abort(), 1500)
+            await fetch(url.replace(/\/+$/, '') + '/', { method: 'HEAD', signal: controller.signal })
+            clearTimeout(t)
+            return true
+        } catch {
+            return false
+        }
+    }
+    const savedUrl = localStorage.getItem('serverUrl')
+    // Se já há um endereço salvo, valida ele (IP antigo salvo não pode travar o login)
+    if (savedUrl) {
+        if (await ok(savedUrl)) return
+        localStorage.removeItem('serverUrl')
+        erro.innerText = 'Endereço salvo indisponível, buscando servidor...'
+        erro.style.color = '#facc15'
+    }
     erro.innerText = 'Detectando servidor...'
     erro.style.color = '#facc15'
-    try {
-        const controller = new AbortController()
-        const t = setTimeout(() => controller.abort(), 1000)
-        await fetch('http://localhost:3000/', { method: 'HEAD', signal: controller.signal })
-        clearTimeout(t)
+    if (await ok('http://localhost:3000')) {
         erro.innerText = ''
-    } catch {
-        erro.innerText = 'Servidor local não encontrado, tentando 192.168.2.55...'
-        localStorage.setItem('serverUrl', 'http://192.168.2.55:3000')
-        setTimeout(() => location.reload(), 1500)
+        return
     }
+    if (await ok('http://192.168.3.26:3000')) {
+        localStorage.setItem('serverUrl', 'http://192.168.3.26:3000')
+        erro.innerText = 'Servidor encontrado na rede local, conectando...'
+        erro.style.color = '#4ade80'
+        setTimeout(() => location.reload(), 1200)
+        return
+    }
+    erro.innerText = 'Servidor não encontrado. Verifique se ele está rodando e, se necessário, configure o endereço.'
+    erro.style.color = '#f87171'
+    const area = document.getElementById('server-config-area')
+    if (area) area.style.display = 'block'
 })()
 
 // ── Server config ──

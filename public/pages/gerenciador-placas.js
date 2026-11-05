@@ -119,7 +119,7 @@
                 <td style="padding:10px 16px; color:rgba(255,255,255,0.3); font-size:11px; font-family:monospace;">${p.ean || '—'}</td>
                 <td style="padding:10px 16px; text-align:right; font-weight:600; color:rgba(255,255,255,0.85); font-size:13px;">${p.preco != null ? 'R$ ' + parseFloat(p.preco).toFixed(2).replace('.', ',') : '—'}</td>
                 <td style="padding:10px 16px; text-align:center;">
-                    <span style="padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600; background:${p.tipo_placa === 'branca' ? 'rgba(255,255,255,0.08)' : p.tipo_placa === 'amarela' ? 'rgba(255,200,50,0.15)' : 'rgba(91,154,255,0.15)'}; color:${p.tipo_placa === 'branca' ? 'rgba(255,255,255,0.6)' : p.tipo_placa === 'amarela' ? '#f5d742' : '#5b9aff'};">${p.tipo_placa}</span>
+                    <span style="padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600; background:${p.tipo_placa === 'grande4' ? 'rgba(225,29,72,0.15)' : p.tipo_placa === 'a4' ? 'rgba(245,158,11,0.15)' : p.tipo_placa === 'grande' ? 'rgba(91,154,255,0.15)' : 'rgba(148,163,184,0.15)'}; color:${p.tipo_placa === 'grande4' ? '#f87171' : p.tipo_placa === 'a4' ? '#f59e0b' : p.tipo_placa === 'grande' ? '#5b9aff' : '#94a3b8'};">${({ grande4: 'Grande 4', a4: 'Placa A4', grande: 'Grande' })[p.tipo_placa] || p.tipo_placa}</span>
                 </td>
                 <td style="padding:10px 16px; text-align:center;">
                     <span style="padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600; background:${p.impressa ? 'rgba(22,163,74,0.15)' : 'rgba(255,200,50,0.15)'}; color:${p.impressa ? '#22c55e' : '#f5d742'};">${p.impressa ? '✅ Impressa' : '⏳ Pendente'}</span>

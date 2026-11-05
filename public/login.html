@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" id="meta-csp"
-    content="default-src 'self' http://localhost:3000 http://192.168.2.55:3000; script-src 'self' https://cdn.tailwindcss.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; img-src 'self' https://superavanzi.com.br blob: data: https://images.openfoodfacts.org https://static.openfoodfacts.org; connect-src 'self' http://localhost:3000 http://192.168.2.55:3000; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com;">
+    content="default-src 'self' http://localhost:3000 http://192.168.3.26:3000; script-src 'self' https://cdn.tailwindcss.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; img-src 'self' https://superavanzi.com.br blob: data: https://images.openfoodfacts.org https://static.openfoodfacts.org; connect-src 'self' http://localhost:3000 http://192.168.3.26:3000; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com;">
     <title>Supermercado Avanzi</title>
     <meta name="theme-color" content="#b51515">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,16 +13,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <script>
-        window.TAILWIND_CONFIG = { disableDevWarning: true }
-    </script>
+    <script>window.TAILWIND_CONFIG = { disableDevWarning: true }</script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: { extend: { colors: { red: { avanzi: '#b51515', dark: '#8a0f0f' } } } }
         }
     </script>
+    <link rel="stylesheet" href="css/output.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #b51515;
@@ -415,6 +414,8 @@
             .card-header h1 { font-size: 1rem !important; }
         }
     </style>
+    <!-- Design system v2 — carregado por último para sobrepor o CSS legado -->
+    <link rel="stylesheet" href="design.css">
 </head>
 <body>
 
@@ -483,7 +484,7 @@
                 <div id="server-config-area" style="display:none; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
                     <div class="input-group">
                         <label for="input-server-url">Servidor (IP:Porta)</label>
-                        <input id="input-server-url" type="text" placeholder="http://192.168.2.55:3000" class="input-field" />
+                        <input id="input-server-url" type="text" placeholder="http://192.168.3.26:3000" class="input-field" />
                         <div class="input-glow"></div>
                     </div>
                     <div style="display:flex; gap:8px; margin-top:8px;">

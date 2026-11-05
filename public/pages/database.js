@@ -5,7 +5,7 @@ function carregarDatabase() {
     setActive('btn-database')
     setConteudo(`
         <style>
-            .db-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:10px; }
+            .db-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:22px; }
             @media (max-width:500px) { .db-grid { grid-template-columns:1fr 1fr; } }
             .db-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
             .db-wrap table { min-width:600px; width:100%; }
@@ -16,7 +16,7 @@ function carregarDatabase() {
         </style>
         <div id="db-wrapper">
             <div class="dash-glass dash-animate" style="padding:20px; margin-bottom:20px;">
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
                     <svg width="18" height="18" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
                     <span style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Database Manager</span>
                 </div>
@@ -24,7 +24,7 @@ function carregarDatabase() {
             </div>
             <div id="db-detail" style="display:none;">
                 <div class="dash-glass dash-animate" style="padding:20px; margin-bottom:20px;">
-                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                    <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
                         <button id="db-voltar" style="padding:6px 12px; border:1px solid rgba(255,255,255,0.08); border-radius:8px; font-size:11px; font-weight:600; color:rgba(255,255,255,0.4); cursor:pointer; background:transparent; transition:all 0.2s; display:flex; align-items:center; gap:4px;"
                             onmouseenter="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.7)'"
                             onmouseleave="this.style.background='transparent';this.style.color='rgba(255,255,255,0.4)'">
@@ -33,7 +33,7 @@ function carregarDatabase() {
                         </button>
                         <span id="db-table-name" style="font-size:13px; font-weight:700; color:rgba(255,255,255,0.85);"></span>
                     </div>
-                    <div style="display:flex; gap:10px; margin-bottom:16px;">
+                    <div style="display:flex; gap:12px; margin-bottom:20px;">
                         <button id="db-tab-estrutura" class="db-tab" style="padding:6px 14px; border:1px solid rgba(181,21,21,0.3); border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; background:rgba(181,21,21,0.1); color:#b51515;">Estrutura</button>
                         <button id="db-tab-dados" class="db-tab" style="padding:6px 14px; border:1px solid rgba(255,255,255,0.08); border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; background:transparent; color:rgba(255,255,255,0.4);">Dados</button>
                     </div>

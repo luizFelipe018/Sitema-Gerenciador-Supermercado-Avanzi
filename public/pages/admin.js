@@ -7,95 +7,91 @@ function carregarAdmin() {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
 
             <!-- Cadastrar usuário -->
-            <div class="dash-glass dash-animate" style="padding:20px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px;">
-                <div style="padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.06);">
-                    <h3 style="font-weight:600; color:rgba(255,255,255,0.85);">Cadastrar Usuário</h3>
+            <div class="dash-glass dash-animate cd">
+                <div class="ch">
+                    <h3 class="h3">Cadastrar Usuário</h3>
                 </div>
-                <div style="padding:20px; display:flex; flex-direction:column; gap:12px;">
-                    <input id="admin-nome" type="text" placeholder="Nome completo"
-                        style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa;" />
-                    <input id="admin-usuario" type="text" placeholder="Usuário (login)"
-                        style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa;" />
-                    <input id="admin-senha" type="password" placeholder="Senha"
-                        style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa;" />
-                    <select id="admin-cargo" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa;">
-                        <option value="atendente" style="background:#1a1a2e;">Atendente</option>
-                        <option value="gerente" style="background:#1a1a2e;">Gerente</option>
-                        <option value="administrador" style="background:#1a1a2e;">Administrador</option>
+                <div class="cb fcc12">
+                    <input id="admin-nome" type="text" placeholder="Nome completo" class="inp" />
+                    <input id="admin-usuario" type="text" placeholder="Usuário (login)" class="inp" />
+                    <input id="admin-senha" type="password" placeholder="Senha" class="inp" />
+                    <select id="admin-cargo" class="sel">
+                        <option value="atendente">Atendente</option>
+                        <option value="gerente">Gerente</option>
+                        <option value="administrador">Administrador</option>
                     </select>
-                    <p id="admin-erro" style="font-size:12px; color:#f87171; min-height:16px;"></p>
-                    <p id="admin-ok" style="font-size:12px; color:#4ade80; min-height:16px;"></p>
-                    <button id="admin-salvar" style="background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3); color:#fff; font-size:13px; font-weight:600; padding:10px 20px; border-radius:10px; border:none; cursor:pointer;">
+                    <p id="admin-erro" class="er"></p>
+                    <p id="admin-ok" class="ok"></p>
+                    <button id="admin-salvar" class="btn-p">
                         Cadastrar
                     </button>
                 </div>
             </div>
 
             <!-- Info do sistema -->
-            <div class="dash-glass dash-animate" style="padding:20px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px;">
-                <div style="padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.06);">
-                    <h3 style="font-weight:600; color:rgba(255,255,255,0.85);">Informações do Sistema</h3>
+            <div class="dash-glass dash-animate cd">
+                <div class="ch">
+                    <h3 class="h3">Informações do Sistema</h3>
                 </div>
-                <div style="padding:20px; display:flex; flex-direction:column; gap:8px; font-size:13px; color:rgba(255,255,255,0.4);">
+                <div class="cb fcc8 tm">
                     <p>
                         <svg style="width:14px; height:14px; vertical-align:middle; margin-right:4px; fill:rgba(255,255,255,0.3);" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-                        Usuário logado: <span style="font-weight:600; color:rgba(255,255,255,0.85);">${getUsuario()}</span>
+                        Usuário logado: <span class="tb">${getUsuario()}</span>
                     </p>
                     <p>
                         <svg style="width:14px; height:14px; vertical-align:middle; margin-right:4px; fill:rgba(255,255,255,0.3);" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
-                        Perfil: <span style="font-weight:600; color:rgba(255,255,255,0.85);">${cargoUsuario === 'administrador' ? 'Administrador' : cargoUsuario === 'gerente' ? 'Gerente' : 'Atendente'}</span>
+                        Perfil: <span class="tb">${cargoUsuario === 'administrador' ? 'Administrador' : cargoUsuario === 'gerente' ? 'Gerente' : 'Atendente'}</span>
                     </p>
                     <p>
                         <svg style="width:14px; height:14px; vertical-align:middle; margin-right:4px; fill:rgba(255,255,255,0.3);" viewBox="0 0 24 24"><path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/></svg>
-                        Banco: <span style="font-weight:600; color:rgba(255,255,255,0.85);">supermercado</span>
+                        Banco: <span class="tb">supermercado</span>
                     </p>
                     <p>
                         <svg style="width:14px; height:14px; vertical-align:middle; margin-right:4px; fill:rgba(255,255,255,0.3);" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-                        Servidor: <span style="font-weight:600; color:rgba(255,255,255,0.85);">localhost:3000</span>
+                        Servidor: <span class="tb">localhost:3000</span>
                     </p>
                 </div>
             </div>
         </div>
 
         <!-- Gerenciar Usuários -->
-        <div class="dash-glass dash-animate" style="padding:20px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px; margin-bottom:20px;">
-            <div style="padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between;">
-                <h3 style="font-weight:600; color:rgba(255,255,255,0.85);">Gerenciar Usuários</h3>
-                <button id="btn-recargar-usuarios" style="background:linear-gradient(135deg,#16a34a,#0f7b37); box-shadow:0 4px 16px rgba(22,163,74,0.3); color:#fff; font-size:12px; font-weight:600; padding:6px 16px; border-radius:8px; border:none; cursor:pointer;">
+        <div class="dash-glass dash-animate cd" style="margin-bottom:20px;">
+            <div class="ch">
+                <h3 class="h3">Gerenciar Usuários</h3>
+                <button id="btn-recargar-usuarios" class="btn-gr">
                     <svg style="width:12px; height:12px; vertical-align:middle; margin-right:4px; fill:currentColor;" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
                     Atualizar
                 </button>
             </div>
-            <div style="padding:20px;">
+            <div class="cb">
                 <div id="lista-usuarios"></div>
             </div>
         </div>
 
         <!-- Configurações do sistema -->
-        <div class="dash-glass dash-animate" style="padding:20px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px; margin-bottom:20px;">
-            <div style="padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.06);">
-                <h3 style="font-weight:600; color:rgba(255,255,255,0.85);">
+        <div class="dash-glass dash-animate cd" style="margin-bottom:20px;">
+            <div class="ch">
+                <h3 class="h3">
                     <svg style="width:16px; height:16px; vertical-align:middle; margin-right:6px; fill:rgba(255,255,255,0.4);" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
                     Configurações
                 </h3>
             </div>
-            <div style="padding:20px; display:flex; flex-direction:column; gap:16px;">
+            <div class="cb fcc" style="gap:16px;">
 
                 <!-- Pasta de imagens -->
-                <div style="display:flex; flex-direction:column; gap:8px;">
-                    <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">
+                <div class="fcc8">
+                    <label class="lb">
                         <svg style="width:12px; height:12px; vertical-align:middle; margin-right:4px; fill:rgba(255,255,255,0.3);" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
                         Pasta de Imagens
                     </label>
-                    <p style="font-size:12px; color:rgba(255,255,255,0.4);">Caminho da pasta onde ficam as imagens dos produtos. Altere aqui ao trocar de máquina.</p>
-                    <div style="display:flex; gap:8px;">
-                        <input id="cfg-pasta-imagens" type="text" placeholder="Ex: E:\Banco de Imagens"
-                            style="flex:1; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; font-family:monospace;" />
-                        <button id="cfg-btn-salvar-pasta" style="background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3); color:#fff; font-size:13px; font-weight:600; padding:10px 20px; border-radius:10px; border:none; cursor:pointer;">
+                    <p class="ts">Caminho da pasta onde ficam as imagens dos produtos. Altere aqui ao trocar de máquina.</p>
+                    <div class="frc8">
+                        <input id="cfg-pasta-imagens" type="text" placeholder="Ex: E:\Banco de Imagens" class="inp-flex" />
+                        <button id="cfg-btn-salvar-pasta" class="btn-p">
                             Salvar
                         </button>
                     </div>
-                    <p id="cfg-pasta-msg" style="font-size:12px; min-height:16px;"></p>
+                    <p id="cfg-pasta-msg" class="tsm"></p>
                 </div>
 
                 <!-- Pasta de imagens dos pratos -->
@@ -105,51 +101,49 @@ function carregarAdmin() {
                         Pasta de Imagens dos Pratos
                     </label>
                     <p style="font-size:12px; color:rgba(255,255,255,0.4);">Pasta com as fotos dos pratos para o cardápio do restaurante.</p>
-                    <div style="display:flex; gap:8px;">
-                        <input id="cfg-pasta-pratos" type="text" placeholder="Ex: E:\Imagens\Pratos"
-                            style="flex:1; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; font-family:monospace;" />
-                        <button id="cfg-btn-salvar-pratos" style="background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3); color:#fff; font-size:13px; font-weight:600; padding:10px 20px; border-radius:10px; border:none; cursor:pointer;">
+                    <div class="frc8">
+                        <input id="cfg-pasta-pratos" type="text" placeholder="Ex: E:\Imagens\Pratos" class="inp-flex" />
+                        <button id="cfg-btn-salvar-pratos" class="btn-p">
                             Salvar
                         </button>
                     </div>
-                    <p id="cfg-pratos-msg" style="font-size:12px; min-height:16px;"></p>
+                    <p id="cfg-pratos-msg" class="tsm"></p>
                 </div>
 
             </div>
         </div>
 
         <!-- Produtos incompletos -->
-        <div class="dash-glass dash-animate" style="padding:20px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px; margin-bottom:20px;">
-            <div style="padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-                <h3 style="font-weight:600; color:rgba(255,255,255,0.85);">Produtos com Informações Faltando</h3>
-                <div style="display:flex; gap:8px;">
-                    <button id="btn-verificar-incompletos" style="background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3); color:#fff; font-size:12px; font-weight:600; padding:6px 16px; border-radius:8px; border:none; cursor:pointer;">
+        <div class="dash-glass dash-animate cd" style="margin-bottom:20px;">
+            <div class="ch" style="flex-wrap:wrap;gap:8px;">
+                <h3 class="h3">Produtos com Informações Faltando</h3>
+                <div class="frc8">
+                    <button id="btn-verificar-incompletos" class="btn-p" style="font-size:12px;padding:6px 16px;border-radius:8px;">
                         <svg style="width:12px; height:12px; vertical-align:middle; margin-right:4px; fill:currentColor;" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
                         Verificar
                     </button>
-                    <button id="btn-revisao-por-marca" style="background:linear-gradient(135deg,#16a34a,#0f7b37); box-shadow:0 4px 16px rgba(22,163,74,0.3); color:#fff; font-size:12px; font-weight:600; padding:6px 16px; border-radius:8px; border:none; cursor:pointer;">
+                    <button id="btn-revisao-por-marca" class="btn-gr">
                         <svg style="width:12px; height:12px; vertical-align:middle; margin-right:4px; fill:currentColor;" viewBox="0 0 24 24"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16zM16 17H5V7h11l3.55 5L16 17z"/></svg>
                         Revisar por Marca
                     </button>
                 </div>
             </div>
-            <div id="incompletos-wrapper" style="padding:20px;">
-                <p style="font-size:13px; color:rgba(255,255,255,0.4);">Clique em "Verificar" para analisar o banco.</p>
+            <div class="cb">
+                <p class="tm">Clique em "Verificar" para analisar o banco.</p>
             </div>
         </div>
 
         <!-- Edição de produtos -->
-        <div class="dash-glass dash-animate" style="padding:20px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px;">
-            <div style="padding:16px 20px; border-bottom:1px solid rgba(255,255,255,0.06);">
-                <h3 style="font-weight:600; color:rgba(255,255,255,0.85);">Editar Produto</h3>
+        <div class="dash-glass dash-animate cd">
+            <div class="ch">
+                <h3 class="h3">Editar Produto</h3>
             </div>
-            <div style="padding:20px;">
+            <div class="cb">
 
                 <!-- Busca -->
-                <div style="display:flex; gap:12px; margin-bottom:20px;">
-                    <input id="prod-busca" type="text" placeholder="Digite o código, EAN ou parte do nome..."
-                        style="flex:1; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa;" />
-                    <button id="prod-btn-buscar" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.85); font-size:13px; font-weight:600; padding:10px 20px; border-radius:10px; cursor:pointer;">
+                <div class="frc" style="margin-bottom:20px;">
+                    <input id="prod-busca" type="text" placeholder="Digite o código, EAN ou parte do nome..." class="inp" style="flex:1;" />
+                    <button id="prod-btn-buscar" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.85);font-size:13px;font-weight:600;padding:10px 20px;border-radius:10px;cursor:pointer;">
                         <svg style="width:14px; height:14px; vertical-align:middle; margin-right:4px; fill:currentColor;" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
                         Buscar
                     </button>
@@ -161,59 +155,59 @@ function carregarAdmin() {
                 <!-- Formulário de edição (oculto até selecionar) -->
                 <div id="prod-form" style="display:none;">
                     <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:20px;">
-                        <p style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3); margin-bottom:16px;">
-                            Editando: <span id="prod-editando" style="color:rgba(255,255,255,0.85); text-transform:none; font-weight:600;"></span>
+                        <p class="lb" style="margin-bottom:16px;">
+                            Editando: <span id="prod-editando" class="tb" style="text-transform:none;"></span>
                         </p>
                         <div style="display:flex; gap:12px; margin-bottom:16px; align-items:center;">
-                            <button id="prod-btn-salvar" style="background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3); color:#fff; font-size:13px; font-weight:600; padding:10px 24px; border-radius:10px; border:none; cursor:pointer;">
+                            <button id="prod-btn-salvar" class="btn-p" style="padding:10px 24px;">
                                 <svg style="width:14px; height:14px; vertical-align:middle; margin-right:4px; fill:currentColor;" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
                                 Salvar Alterações
                             </button>
-                            <button id="prod-btn-cancelar" style="border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.6); font-size:13px; font-weight:600; padding:10px 16px; border-radius:10px; cursor:pointer;">
+                            <button id="prod-btn-cancelar" class="btn-s">
                                 Cancelar
                             </button>
-                            <p id="prod-msg" style="font-size:12px; min-height:16px; margin-left:8px;"></p>
+                            <p id="prod-msg" class="tsm" style="margin-left:8px;"></p>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div style="display:flex; flex-direction:column; gap:4px;">
-                                <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Descrição</label>
-                                <input id="pe-descricao" type="text" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa;" />
+                            <div class="fcc">
+                                <label class="lb">Descrição</label>
+                                <input id="pe-descricao" type="text" class="inp" />
                             </div>
-                            <div style="display:flex; flex-direction:column; gap:4px;">
-                                <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Marca</label>
-                                <input id="pe-marca" type="text" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa;" />
+                            <div class="fcc">
+                                <label class="lb">Marca</label>
+                                <input id="pe-marca" type="text" class="inp" />
                             </div>
-                            <div style="display:flex; flex-direction:column; gap:4px;">
-                                <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">EAN</label>
-                                <input id="pe-ean" type="text" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa;" />
+                            <div class="fcc">
+                                <label class="lb">EAN</label>
+                                <input id="pe-ean" type="text" class="inp" />
                             </div>
-                            <div style="display:flex; flex-direction:column; gap:4px;">
-                                <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Preço de Venda</label>
-                                <input id="pe-preco" type="number" step="0.01" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa;" />
+                            <div class="fcc">
+                                <label class="lb">Preço de Venda</label>
+                                <input id="pe-preco" type="number" step="0.01" class="inp" />
                             </div>
-                            <div style="display:flex; flex-direction:column; gap:4px;">
-                                <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Departamento</label>
-                                <input id="pe-departamento" type="text" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa;" />
+                            <div class="fcc">
+                                <label class="lb">Departamento</label>
+                                <input id="pe-departamento" type="text" class="inp" />
                             </div>
-                            <div style="display:flex; flex-direction:column; gap:4px;">
-                                <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Descrição Departamento</label>
-                                <input id="pe-descricao-dep" type="text" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa;" />
+                            <div class="fcc">
+                                <label class="lb">Descrição Departamento</label>
+                                <input id="pe-descricao-dep" type="text" class="inp" />
                             </div>
-                            <div style="display:flex; flex-direction:column; gap:4px;">
-                                <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Seção</label>
-                                <input id="pe-secao" type="text" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa;" />
+                            <div class="fcc">
+                                <label class="lb">Seção</label>
+                                <input id="pe-secao" type="text" class="inp" />
                             </div>
-                            <div style="display:flex; flex-direction:column; gap:4px;">
-                                <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Grupo</label>
-                                <input id="pe-grupo" type="text" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa;" />
+                            <div class="fcc">
+                                <label class="lb">Grupo</label>
+                                <input id="pe-grupo" type="text" class="inp" />
                             </div>
-                            <div style="display:flex; flex-direction:column; gap:4px;">
-                                <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Quantidade KG/L</label>
-                                <input id="pe-qtd-kgl" type="number" step="0.001" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa;" />
+                            <div class="fcc">
+                                <label class="lb">Quantidade KG/L</label>
+                                <input id="pe-qtd-kgl" type="number" step="0.001" class="inp" />
                             </div>
-                            <div style="display:flex; flex-direction:column; gap:4px;">
-                                <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Unidade (KG/LT/UN)</label>
-                                <input id="pe-kglt" type="text" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa;" />
+                            <div class="fcc">
+                                <label class="lb">Unidade (KG/LT/UN)</label>
+                                <input id="pe-kglt" type="text" class="inp" />
                             </div>
                         </div>
 
@@ -302,19 +296,19 @@ async function buscarProdutoAdmin() {
     if (!termo) return
 
     const resultadosEl = document.getElementById('prod-resultados')
-    resultadosEl.innerHTML = `<p style="font-size:13px; color:rgba(255,255,255,0.4);">Buscando...</p>`
+    resultadosEl.innerHTML = `<p class="tm">Buscando...</p>`
     document.getElementById('prod-form').style.display = 'none'
 
     try {
         const res  = await fetch(API+`/produtos?busca=${encodeURIComponent(termo)}&page=1&limit=50`, { headers: authHeaders() })
         const json = await res.json()
         const data = json.data || []
-        if (!Array.isArray(data)) { resultadosEl.innerHTML = `<p style="font-size:13px; color:#f87171;">Erro ao buscar.</p>`; return }
+        if (!Array.isArray(data)) { resultadosEl.innerHTML = `<p class="tm" style="color:#f87171;">Erro ao buscar.</p>`; return }
 
         const resultados = data.slice(0, 20)
 
         if (!resultados.length) {
-            resultadosEl.innerHTML = `<p style="font-size:13px; color:rgba(255,255,255,0.4);">Nenhum produto encontrado.</p>`
+            resultadosEl.innerHTML = `<p class="tm">Nenhum produto encontrado.</p>`
             return
         }
 
@@ -350,7 +344,7 @@ async function buscarProdutoAdmin() {
             })
         })
 
-    } catch { resultadosEl.innerHTML = `<p style="font-size:13px; color:#f87171;">Erro ao conectar com o servidor.</p>` }
+    } catch { resultadosEl.innerHTML = `<p class="tm" style="color:#f87171;">Erro ao conectar com o servidor.</p>` }
 }
 
 // ── FORMULÁRIO DE EDIÇÃO ──────────────────────────────
@@ -1008,61 +1002,81 @@ async function carregarListaUsuarios() {
     const lista = document.getElementById('lista-usuarios')
     if (!lista) return
 
-    lista.innerHTML = `<p style="font-size:13px; color:rgba(255,255,255,0.4);">Carregando...</p>`
+    lista.innerHTML = `<div class="ds-empty" style="padding:32px"><div class="ds-empty-text">Carregando…</div></div>`
 
     try {
         const res = await fetch(API+'/usuarios', { headers: authHeaders() })
         const usuarios = await res.json()
 
         if (!Array.isArray(usuarios)) {
-            lista.innerHTML = `<p style="font-size:13px; color:#f87171;">Erro ao carregar.</p>`
+            lista.innerHTML = `<div class="ds-empty" style="padding:32px"><div class="ds-empty-title" style="color:var(--danger)">Erro ao carregar</div></div>`
             return
         }
 
         if (usuarios.length === 0) {
-            lista.innerHTML = `<p style="font-size:13px; color:rgba(255,255,255,0.4);">Nenhum usuário cadastrado.</p>`
+            lista.innerHTML = `<div class="ds-empty" style="padding:32px"><div class="ds-empty-text">Nenhum usuário cadastrado.</div></div>`
             return
         }
 
         const usuarioLogado = getUsuario()
+        const ehAdmin = isAdmin()
 
         lista.innerHTML = `
-            <div class="dash-table-wrap">
-                <table class="dash-table">
-                    <thead><tr>
+            <div style="overflow-x:auto">
+            <table class="ds-table-prod">
+                <thead>
+                    <tr>
                         <th>Nome</th>
-                        <th>Usuário</th>
-                        <th>Cargo</th>
-                        <th style="text-align:center;">Ações</th>
-                    </tr></thead>
-                    <tbody>
-                        ${usuarios.map(u => {
-                            const badgeBg = u.cargo === 'administrador' ? 'rgba(239,68,68,0.15)' : u.cargo === 'gerente' ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.06)'
-                            const badgeColor = u.cargo === 'administrador' ? '#f87171' : u.cargo === 'gerente' ? '#fbbf24' : 'rgba(255,255,255,0.6)'
-                            const isLogado = u.usuario === usuarioLogado
-                            return `
-                                <tr>
-                                    <td style="color:rgba(255,255,255,0.85); font-weight:500;">${u.nome}</td>
-                                    <td style="color:rgba(255,255,255,0.4); font-family:monospace; font-size:11px;">${u.usuario}</td>
-                                    <td>
-                                        <select class="cargo-select"
-                                            data-id="${u.id}" data-cargo-atual="${u.cargo}"
-                                            style="background:${badgeBg}; color:${badgeColor}; font-size:11px; font-weight:600; padding:4px 8px; border-radius:9999px; border:none; cursor:pointer;">
-                                            <option value="atendente" style="background:#1a1a2e;" ${u.cargo === 'atendente' ? 'selected' : ''}>Atendente</option>
-                                            <option value="gerente" style="background:#1a1a2e;" ${u.cargo === 'gerente' ? 'selected' : ''}>Gerente</option>
-                                            <option value="administrador" style="background:#1a1a2e;" ${u.cargo === 'administrador' ? 'selected' : ''}>Administrador</option>
-                                        </select>
-                                    </td>
-                                    <td style="text-align:center;">
-                                        ${!isLogado ? `<button class="btn-excluir-usuario" style="background:rgba(239,68,68,0.15); color:#f87171; font-size:11px; font-weight:600; padding:4px 12px; border-radius:6px; border:none; cursor:pointer;" data-id="${u.id}" data-nome="${u.nome}">Excluir</button>` : '<span style="font-size:11px; color:rgba(255,255,255,0.3);">(você)</span>'}
-                                    </td>
-                                </tr>
-                            `
-                        }).join('')}
-                    </tbody>
-                </table>
-            </div>
-        `
+                        <th style="width:120px;">Usuário</th>
+                        <th style="width:140px;">Cargo</th>
+                        <th style="width:100px;">Status</th>
+                        <th style="width:150px;">Último acesso</th>
+                        <th style="width:210px; text-align:right;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${usuarios.map(u => {
+                        const isLogado = u.usuario === usuarioLogado
+                        const ativo = Number(u.ativo) === 1
+                        const cargo = u.cargo || 'atendente'
+                        const badgeBg = cargo === 'administrador' ? 'var(--danger-soft)' : cargo === 'gerente' ? 'var(--warn-soft)' : 'var(--surface-3)'
+                        const badgeColor = cargo === 'administrador' ? 'var(--danger)' : cargo === 'gerente' ? 'var(--warn)' : 'var(--text-2)'
+                        return `
+                        <tr style="${ativo ? '' : 'opacity:.55'}">
+                            <td class="strong">${adminEsc(u.nome)}</td>
+                            <td class="mono muted">${adminEsc(u.usuario)}</td>
+                            <td>
+                                <select class="cargo-select" data-id="${u.id}" data-cargo-atual="${cargo}"
+                                    style="background:${badgeBg}; color:${badgeColor}; font-size:11px; font-weight:600; padding:4px 8px; border-radius:9999px; border:none; cursor:pointer; max-width:130px;">
+                                    <option value="atendente" style="background:#141418;" ${cargo === 'atendente' ? 'selected' : ''}>Atendente</option>
+                                    <option value="gerente" style="background:#141418;" ${cargo === 'gerente' ? 'selected' : ''}>Gerente</option>
+                                    <option value="administrador" style="background:#141418;" ${cargo === 'administrador' ? 'selected' : ''}>Administrador</option>
+                                </select>
+                            </td>
+                            <td>
+                                <span class="ds-badge" style="background:${ativo ? 'var(--ok-soft)' : 'var(--surface-3)'}; color:${ativo ? 'var(--ok)' : 'var(--text-3)'}">
+                                    ${ativo ? 'Ativo' : 'Inativo'}
+                                </span>
+                            </td>
+                            <td class="muted" style="font-size:11.5px; white-space:nowrap">
+                                ${u.ultimo_login ? adminDataHora(u.ultimo_login) : '<span style="opacity:.6">nunca</span>'}
+                            </td>
+                            <td style="text-align:right; white-space:nowrap">
+                                ${ehAdmin && !isLogado ? `
+                                    <button class="btn-ativar-usuario" data-id="${u.id}" data-ativo="${ativo ? 0 : 1}"
+                                        style="background:${ativo ? 'var(--warn-soft)' : 'var(--ok-soft)'}; color:${ativo ? 'var(--warn)' : 'var(--ok)'}; font-size:11px; font-weight:600; padding:4px 10px; border-radius:6px; border:none; cursor:pointer; margin-right:4px;">
+                                        ${ativo ? 'Desativar' : 'Ativar'}
+                                    </button>
+                                    <button class="btn-excluir-usuario" data-id="${u.id}" data-nome="${adminEsc(u.nome)}"
+                                        style="background:var(--danger-soft); color:var(--danger); font-size:11px; font-weight:600; padding:4px 10px; border-radius:6px; border:none; cursor:pointer;">
+                                        Excluir
+                                    </button>` : (isLogado ? '<span style="font-size:11px; color:var(--text-3)">(você)</span>' : '')}
+                            </td>
+                        </tr>`
+                    }).join('')}
+                </tbody>
+            </table>
+            </div>`
 
         // Evento: mudar cargo
         lista.querySelectorAll('.cargo-select').forEach(select => {
@@ -1081,8 +1095,8 @@ async function carregarListaUsuarios() {
                     })
                     if (res.ok) {
                         e.target.dataset.cargoAtual = novoCargo
-                        const bg = novoCargo === 'administrador' ? 'rgba(239,68,68,0.15)' : novoCargo === 'gerente' ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.06)'
-                        const color = novoCargo === 'administrador' ? '#f87171' : novoCargo === 'gerente' ? '#fbbf24' : 'rgba(255,255,255,0.6)'
+                        const bg = novoCargo === 'administrador' ? 'var(--danger-soft)' : novoCargo === 'gerente' ? 'var(--warn-soft)' : 'var(--surface-3)'
+                        const color = novoCargo === 'administrador' ? 'var(--danger)' : novoCargo === 'gerente' ? 'var(--warn)' : 'var(--text-2)'
                         e.target.style.background = bg
                         e.target.style.color = color
                         alert('Cargo atualizado!')
@@ -1092,6 +1106,30 @@ async function carregarListaUsuarios() {
                         e.target.value = e.target.dataset.cargoAtual
                     }
                 } catch { alert('Erro ao conectar.'); e.target.value = e.target.dataset.cargoAtual }
+            })
+        })
+
+        // Evento: ativar/desativar usuário
+        lista.querySelectorAll('.btn-ativar-usuario').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = e.target.dataset.id
+                const ativo = e.target.dataset.ativo === '1'
+                if (!confirm(ativo
+                    ? 'Desativar este usuário? Ele não conseguirá mais entrar no sistema.'
+                    : 'Ativar este usuário? Ele voltará a conseguir entrar no sistema.')) return
+                try {
+                    const res = await fetch(API+`/usuarios/${id}/ativo`, {
+                        method: 'PUT',
+                        headers: authHeaders(),
+                        body: JSON.stringify({ ativo: !ativo })
+                    })
+                    const data = await res.json()
+                    if (res.ok) {
+                        carregarListaUsuarios()
+                    } else {
+                        alert(data.error || 'Erro ao alterar status.')
+                    }
+                } catch { alert('Erro ao conectar.') }
             })
         })
 
@@ -1116,6 +1154,21 @@ async function carregarListaUsuarios() {
         })
 
     } catch {
-        lista.innerHTML = `<p style="font-size:13px; color:#f87171;">Erro ao conectar.</p>`
+        lista.innerHTML = `<div class="ds-empty" style="padding:32px"><div class="ds-empty-title" style="color:var(--danger)">Erro ao conectar</div></div>`
     }
+}
+
+/** Escapa HTML (nomes de usuário vêm do banco) */
+function adminEsc(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]))
+}
+
+/** Formata data/hora do banco */
+function adminDataHora(valor) {
+    if (!valor) return '—'
+    const d = new Date(String(valor).replace(' ', 'T'))
+    if (isNaN(d.getTime())) return String(valor)
+    return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' })
 }

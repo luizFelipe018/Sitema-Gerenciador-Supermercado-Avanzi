@@ -1,0 +1,2482 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="avanzi-dark">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self' https://images.openfoodfacts.org https://static.openfoodfacts.org http://localhost:3000 http://192.168.2.55:3000; script-src 'self' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com; img-src 'self' https://superavanzi.com.br blob: data: http://localhost:3000 http://192.168.2.55:3000 https://images.openfoodfacts.org https://static.openfoodfacts.org http://*.openfoodfacts.org https://*.openfoodfacts.com; connect-src 'self' http://localhost:3000 http://192.168.2.55:3000 https://images.openfoodfacts.org https://static.openfoodfacts.org https://world.openfoodfacts.org https://brasilapi.com.br https://easyqrcode.app.br; worker-src 'self' blob:;">
+    <title>ERP Avanzi</title>
+    <meta name="theme-color" content="#b51515">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Avanzi ERP">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <script>
+        window.TAILWIND_CONFIG = { disableDevWarning: true }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { red: { avanzi: '#b51515', dark: '#8a0f0f' } } } }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4/dist/full.min.css" rel="stylesheet">
+    <style>
+:root {
+            --primary: #b51515;
+            --primary-dark: #8a0f0f;
+            --primary-light: #d42020;
+            --primary-glow: rgba(181, 21, 21, 0.4);
+            --sidebar-bg: #0a0a0a;
+            --sidebar-hover: #141414;
+            --sidebar-active: #b51515;
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --bg-main: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%);
+            --bg-card: #141414;
+            --bg-header: rgba(255, 255, 255, 0.03);
+            --bg-content: #121212;
+            --bg-input: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        /* ══════════════════════════════════════════════════
+           DAISYUI CUSTOM THEMES
+           ══════════════════════════════════════════════════ */
+        [data-theme="avanzi-dark"] {
+            --p: 0 79% 40%;
+            --pf: 0 79% 33%;
+            --pc: 0 0% 100%;
+            --s: 0 0% 13%;
+            --sf: 0 0% 10%;
+            --sc: 0 0% 100%;
+            --a: 0 0% 18%;
+            --af: 0 0% 14%;
+            --ac: 0 0% 100%;
+            --n: 0 0% 20%;
+            --nf: 0 0% 16%;
+            --nc: 0 0% 100%;
+            --b1: 0 0% 7%;
+            --b2: 0 0% 10%;
+            --b3: 0 0% 13%;
+            --bc: 0 0% 82%;
+            --in: 0 0% 15%;
+            --inc: 0 0% 95%;
+            --su: 142 71% 45%;
+            --suc: 0 0% 100%;
+            --wa: 48 96% 53%;
+            --wac: 0 0% 0%;
+            --er: 0 84% 60%;
+            --erc: 0 0% 100%;
+        }
+
+        [data-theme="avanzi-light"] {
+            --p: 0 79% 40%;
+            --pf: 0 79% 33%;
+            --pc: 0 0% 100%;
+            --s: 0 0% 85%;
+            --sf: 0 0% 80%;
+            --sc: 0 0% 15%;
+            --a: 0 0% 82%;
+            --af: 0 0% 78%;
+            --ac: 0 0% 15%;
+            --n: 0 0% 45%;
+            --nf: 0 0% 40%;
+            --nc: 0 0% 100%;
+            --b1: 0 0% 100%;
+            --b2: 0 0% 96%;
+            --b3: 0 0% 92%;
+            --bc: 0 0% 20%;
+            --in: 0 0% 96%;
+            --inc: 0 0% 15%;
+            --su: 142 71% 45%;
+            --suc: 0 0% 100%;
+            --wa: 48 96% 53%;
+            --wac: 0 0% 0%;
+            --er: 0 84% 60%;
+            --erc: 0 0% 100%;
+        }
+
+        /* LIGHT THEME */
+        body.theme-light {
+            --primary: #b51515;
+            --primary-dark: #a11212;
+            --primary-glow: rgba(181, 21, 21, 0.25);
+            --sidebar-bg: #f8f9fa;
+            --sidebar-hover: #f1f3f5;
+            --sidebar-active: #b51515;
+            --glass: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.08);
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+            --text-muted: #9ca3af;
+            --bg-main: #f3f4f6 !important;
+            --bg-card: #ffffff;
+            --bg-header: rgba(255, 255, 255, 0.9);
+            --bg-content: #f3f4f6 !important;
+            --bg-input: #ffffff;
+            --border-color: #e5e7eb;
+            background: #f3f4f6 !important;
+        }
+
+        * { 
+            box-sizing: border-box; 
+        }
+
+        /* Transição suave para elementos do tema */
+        .glass, .sidebar, .sidebar-btn, .submenu-btn, .submenu3-btn, .card-3d, .modal-box, .input-modern, #page-title, #data-atual {
+            transition: all 0.3s ease;
+        }
+
+        /* DaisyUI shims — compatibilidade com tema existente */
+        body.theme-light .btn-ghost { color: #374151 !important; }
+        body.theme-light .btn-outline.btn-success { color: #16a34a !important; border-color: #16a34a !important; }
+        body.theme-light .btn-outline.btn-warning { color: #ca8a04 !important; border-color: #ca8a04 !important; }
+        body.theme-light .btn-outline.btn-info { color: #2563eb !important; border-color: #2563eb !important; }
+        .table-zebra tbody tr:hover { background: color-mix(in srgb, var(--bc) 8%, transparent) !important; }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Header textos - padrão escuro */
+        #page-title { color: #fff; }
+        #data-atual { color: rgba(255,255,255,0.4); }
+
+        /* Header textos - tema claro */
+        body.theme-light #page-title { color: #111827; }
+        body.theme-light #data-atual { color: #9ca3af; }
+
+        /* Botões do header - padrão escuro */
+        #btn-global-search { color: rgba(255,255,255,0.5); }
+        #btn-theme-toggle { color: rgba(255,255,255,0.5); }
+
+        /* Botões do header - tema claro */
+        body.theme-light #btn-global-search { color: #4b5563; }
+        body.theme-light #btn-theme-toggle { color: #4b5563; }
+
+        /* Área de conteúdo principal */
+        #conteudo {
+            background: #121212;
+        }
+
+        body.theme-light #conteudo {
+            background: #f3f4f6;
+        }
+
+        /* Cards e containers internos - FORÇAR tema escuro (padrão) */
+        #conteudo .bg-white,
+        #conteudo [class*="bg-white"],
+        .bg-white {
+            background: #1a1a1a !important;
+            border-color: rgba(255,255,255,0.08) !important;
+        }
+
+        /* Elementos com fundo branco que devem ser escuros */
+        #conteudo > div:first-child {
+            background: #1a1a1a !important;
+        }
+
+        /* Tabelas no conteúdo */
+        #conteudo table {
+            background: #1a1a1a !important;
+        }
+
+        #conteudo thead th {
+            background: #252525 !important;
+            color: #a1a1aa !important;
+            border-bottom-color: rgba(255,255,255,0.08) !important;
+        }
+
+        #conteudo tbody td {
+            color: #e5e5e5 !important;
+            border-bottom-color: rgba(255,255,255,0.06) !important;
+        }
+
+        #conteudo tbody tr:hover {
+            background: #252525 !important;
+        }
+
+        /* Inputs dentro do conteúdo */
+        #conteudo input,
+        #conteudo textarea,
+        #conteudo select {
+            background: #252525 !important;
+            border-color: rgba(255,255,255,0.1) !important;
+            color: #fafafa !important;
+        }
+
+        #conteudo input::placeholder,
+        #conteudo textarea::placeholder {
+            color: #71717a !important;
+        }
+
+        /* Títulos e textos */
+        #conteudo h1, #conteudo h2, #conteudo h3, #conteudo h4 {
+            color: #fafafa !important;
+        }
+
+        #conteudo p, #conteudo span {
+            color: #a1a1aa !important;
+        }
+
+        /* Tema claro - Sobrescrever elementos dentro do conteúdo */
+        body.theme-light #conteudo .bg-white,
+        body.theme-light #conteudo [class*="bg-white"],
+        body.theme-light #conteudo [class*="rounded"] {
+            background: #ffffff !important;
+            border-color: #e5e7eb !important;
+        }
+
+        body.theme-light #conteudo .border {
+            border-color: #e5e7eb !important;
+        }
+
+        body.theme-light #conteudo table {
+            background: #ffffff !important;
+        }
+
+        body.theme-light #conteudo thead th {
+            background: #f3f4f6 !important;
+            color: #374151 !important;
+            border-bottom-color: #e5e7eb !important;
+        }
+
+        body.theme-light #conteudo tbody td {
+            color: #1f2937 !important;
+            border-bottom-color: #f3f4f6 !important;
+        }
+
+        body.theme-light #conteudo tbody tr {
+            background: #ffffff !important;
+        }
+
+        body.theme-light #conteudo tbody tr:hover {
+            background: #f9fafb !important;
+        }
+
+        body.theme-light #conteudo input,
+        body.theme-light #conteudo textarea,
+        body.theme-light #conteudo select {
+            background: #ffffff !important;
+            border-color: #d1d5db !important;
+            color: #111827 !important;
+        }
+
+        body.theme-light #conteudo input:focus,
+        body.theme-light #conteudo textarea:focus {
+            border-color: #b51515 !important;
+            box-shadow: 0 0 0 3px rgba(181,21,21,0.1) !important;
+        }
+
+        body.theme-light #conteudo input::placeholder,
+        body.theme-light #conteudo textarea::placeholder {
+            color: #9ca3af !important;
+        }
+
+        body.theme-light #conteudo h1, 
+        body.theme-light #conteudo h2, 
+        body.theme-light #conteudo h3, 
+        body.theme-light #conteudo h4 {
+            color: #111827 !important;
+        }
+
+        body.theme-light #conteudo p, 
+        body.theme-light #conteudo span,
+        body.theme-light #conteudo label {
+            color: #374151 !important;
+        }
+
+        /* Elementos específicos de status/badges */
+        body.theme-light .bg-green-50 { background: #f0fdf4 !important; }
+        body.theme-light .bg-yellow-50 { background: #fefce8 !important; }
+        body.theme-light .bg-red-50 { background: #fef2f2 !important; }
+        body.theme-light .bg-blue-50 { background: #eff6ff !important; }
+
+        /* Containers com cores de texto específicas */
+        body.theme-light .text-green-600 { color: #16a34a !important; }
+        body.theme-light .text-red-600 { color: #dc2626 !important; }
+        body.theme-light .text-red-500 { color: #ef4444 !important; }
+        body.theme-light .text-yellow-600 { color: #ca8a04 !important; }
+        body.theme-light .text-yellow-500 { color: #eab308 !important; }
+        body.theme-light .text-blue-600 { color: #2563eb !important; }
+
+        body.theme-light .text-gray-900,
+        body.theme-light .text-gray-800,
+        body.theme-light .text-gray-700,
+        body.theme-light .text-gray-600 {
+            color: #111827 !important;
+        }
+
+        body.theme-light .text-gray-500 {
+            color: #374151 !important;
+        }
+
+        body.theme-light .text-gray-400 {
+            color: #6b7280 !important;
+        }
+
+        body.theme-light .text-gray-300 {
+            color: #9ca3af !important;
+        }
+
+        body.theme-light .text-gray-200 {
+            color: #d1d5db !important;
+        }
+
+        /* Cores negativas - textos que podem estar errado */
+        body.theme-light .text-\#111,
+        body.theme-light .text-black {
+            color: #111827 !important;
+        }
+
+        body.theme-light [style*="color: #fff"],
+        body.theme-light [style*="color:#fff"],
+        body.theme-light [style*="color: white"],
+        body.theme-light [style*="color:white"],
+        body.theme-light [style*="color: #fafafa"],
+        body.theme-light [style*="color:#fafafa"],
+        body.theme-light [style*="color: #e5e5e5"] {
+            color: #374151 !important;
+        }
+
+        body.theme-light .border-gray-100,
+        body.theme-light .border-gray-200 {
+            border-color: #e5e7eb !important;
+        }
+
+        /* Tabelas */
+        body.theme-light table {
+            background: #ffffff !important;
+        }
+
+        body.theme-light th {
+            background: #f9fafb !important;
+            color: #374151 !important;
+        }
+
+        body.theme-light td {
+            color: #1f2937 !important;
+            border-bottom: 1px solid #e5e7eb !important;
+        }
+
+        body.theme-light tr:hover {
+            background: #f9fafb !important;
+        }
+
+        /* Buttons e elementos interativos */
+        body.theme-light button {
+            color: #374151 !important;
+        }
+
+        body.theme-light button[class*="bg-"] {
+            color: #ffffff !important;
+        }
+
+        /* FORÇAR cor de fundo principal do conteúdo */
+        body.theme-light main,
+        body.theme-light #main-content {
+            background: #f3f4f6 !important;
+        }
+
+        /* Garantir que o main tenha fundo claro */
+        body.theme-light > div:last-child {
+            background: #f3f4f6 !important;
+}
+
+        /* Placas no modo escuro - texto sempre preto (apenas nas placas) */
+        #container-placas .placa,
+        #container-placas .folha,
+        #container-placas-am .placa-amarela,
+        #container-placas-am .folha-amarela,
+        #container-placas-g .placa-grande,
+        #container-placas-g .folha-grande {
+            background: #fff !important;
+            color: #000 !important;
+        }
+
+#container-placas .placa h1,
+        #container-placas .placa span,
+        #container-placas .placa div,
+        #container-placas-am .placa-amarela h1,
+        #container-placas-am .placa-amarela span,
+        #container-placas-am .placa-amarela div,
+        #container-placas-g .placa-grande h1,
+        #container-placas-g .placa-grande span,
+        #container-placas-g .placa-grande div {
+            color: #000 !important;
+        }
+
+        /* Placas amarelas com fundo amarelo */
+        #container-placas-am .folha-amarela {
+            background: #ffe400 !important;
+        }
+
+        #container-placas-am .placa-amarela {
+            background: #ffe400 !important;
+            color: #000 !important;
+        }
+
+        #container-placas-am .placa-amarela h1,
+        #container-placas-am .placa-amarela span,
+        #container-placas-am .placa-amarela div {
+            color: #000 !important;
+        }
+
+        body.theme-light .placa {
+            background: #fff !important;
+            color: #000 !important;
+        }
+
+        body.theme-light .placa h1,
+        body.theme-light .placa span,
+        body.theme-light .placa div {
+            color: #000 !important;
+        }
+
+        body.theme-light .placa-amarela {
+            background: #ffe400 !important;
+            color: #000 !important;
+        }
+
+        body.theme-light .placa-amarela h1,
+        body.theme-light .placa-amarela span,
+        body.theme-light .placa-amarela div {
+            color: #000 !important;
+        }
+
+        /* Placas amarelas com fundo amarelo */
+        #container-placas-am .folha-amarela {
+            background: #ffe400 !important;
+        }
+
+        #container-placas-am .placa-amarela {
+            background: #ffe400 !important;
+            color: #000 !important;
+        }
+
+        #container-placas-am .placa-amarela h1,
+        #container-placas-am .placa-amarela span {
+            color: #000 !important;
+        }
+
+        body.theme-light #container-placas,
+        body.theme-light #container-placas-am,
+        body.theme-light #container-placas-g {
+            background: transparent !important;
+        }
+
+        body.theme-light .folha {
+            background: #fff !important;
+        }
+
+        body.theme-light .folha-amarela {
+            background: #ffe400 !important;
+        }
+
+        body.theme-light .placa {
+            background: #fff !important;
+            color: #000 !important;
+        }
+
+        body.theme-light .placa h1,
+        body.theme-light .placa span {
+            color: #000 !important;
+        }
+
+        body.theme-light .placa-amarela {
+            background: #ffe400 !important;
+            color: #000 !important;
+        }
+
+        body.theme-light .placa-amarela h1,
+        body.theme-light .placa-amarela span {
+            color: #000 !important;
+        }
+
+        /* Inputs em geral */
+        body.theme-light input,
+        body.theme-light textarea,
+        body.theme-light select {
+            background: #ffffff !important;
+            border-color: #e5e7eb !important;
+            color: #111827 !important;
+        }
+
+        body.theme-light input::placeholder,
+        body.theme-light textarea::placeholder {
+            color: #9ca3af !important;
+        }
+
+        /* Badges e status */
+        body.theme-light .bg-green-100,
+        body.theme-light .bg-yellow-100,
+        body.theme-light .bg-red-100,
+        body.theme-light .bg-gray-100 {
+            background-color: #f3f4f6 !important;
+        }
+
+        /* Avatars e ícones de usuário */
+        body.theme-light #user-avatar,
+        body.theme-light #user-avatar-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark)) !important;
+            color: #fff !important;
+        }
+
+        /* Sidebar user footer */
+        body.theme-light .text-white\/50 {
+            color: #6b7280 !important;
+        }
+
+        body.theme-light .text-white\/30 {
+            color: #9ca3af !important;
+        }
+
+        /* Ícone de logout */
+        body.theme-light #btn-logout {
+            color: #6b7280 !important;
+        }
+
+        body.theme-light #btn-logout:hover {
+            color: #ef4444 !important;
+            background: rgba(239, 68, 68, 0.1) !important;
+        }
+
+        /* Tema claro - elementos específicos */
+        body.theme-light #main-header {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        body.theme-light #page-title {
+            color: #111827;
+        }
+
+        body.theme-light #data-atual {
+            color: #9ca3af;
+        }
+
+        body.theme-light .sidebar-btn {
+            color: #4b5563;
+        }
+
+        body.theme-light .sidebar-btn:hover {
+            background: rgba(0, 0, 0, 0.04);
+            color: #111827;
+        }
+
+        body.theme-light .sidebar-btn.active {
+            color: #fff;
+        }
+
+        body.theme-light .submenu-btn {
+            color: #6b7280;
+        }
+
+        body.theme-light .submenu-btn:hover {
+            background: rgba(0, 0, 0, 0.04);
+            color: #111827;
+        }
+
+        body.theme-light .submenu3-btn {
+            color: #9ca3af;
+        }
+
+        body.theme-light .submenu3-btn:hover {
+            background: rgba(0, 0, 0, 0.03);
+            color: #374151;
+        }
+
+        body.theme-light .cat-title {
+            color: #d1d5db;
+        }
+
+        body.theme-light .kbd {
+            background: rgba(0, 0, 0, 0.06);
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #6b7280;
+        }
+
+        body.theme-light .text-white\/40 {
+            color: rgba(0, 0, 0, 0.4);
+        }
+
+        body.theme-light .text-white\/50 {
+            color: rgba(0, 0, 0, 0.5);
+        }
+
+        body.theme-light .text-white\/30 {
+            color: rgba(0, 0, 0, 0.3);
+        }
+
+body.theme-light .hover\:bg-white\/10:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Sidebar no tema claro */
+        body.theme-light .sidebar {
+            background: #f8fafc !important;
+            border-color: #e2e8f0 !important;
+        }
+
+        body.theme-light .sidebar-btn {
+            color: #475569 !important;
+        }
+
+        body.theme-light .sidebar-btn:hover {
+            background: #f1f5f9 !important;
+            color: #0f172a !important;
+        }
+
+        body.theme-light .sidebar-btn.active {
+            background: #b51515 !important;
+            color: #ffffff !important;
+        }
+
+        body.theme-light .submenu-btn {
+            color: #64748b !important;
+        }
+
+        body.theme-light .submenu-btn:hover {
+            background: #f1f5f9 !important;
+            color: #0f172a !important;
+        }
+
+        body.theme-light .submenu-btn.active {
+            background: rgba(181,21,21,0.15) !important;
+            color: #b51515 !important;
+        }
+
+        body.theme-light .submenu3-btn {
+            color: #94a3b8 !important;
+        }
+
+        body.theme-light .submenu3-btn:hover {
+            background: #f1f5f9 !important;
+            color: #374151 !important;
+        }
+
+        body.theme-light .submenu3-btn.active {
+            background: rgba(181,21,21,0.1) !important;
+            color: #b51515 !important;
+        }
+
+        body.theme-light .cat-title {
+            color: #64748b !important;
+        }
+
+        body.theme-light .kbd {
+            background: #f1f5f9 !important;
+            color: #64748b !important;
+            border-color: #e2e8f0 !important;
+        }
+
+        /* Footer da sidebar */
+        body.theme-light #nomeUsuario {
+            color: #64748b !important;
+        }
+
+        body.theme-light #btn-logout {
+            color: #94a3b8 !important;
+        }
+
+        body.theme-light #btn-logout:hover {
+            color: #dc2626 !important;
+            background: #fef2f2 !important;
+        }
+
+        /* Elementos com estilo inline - FORÇAR cores claras */
+        body.theme-light [style*="background: #fff"],
+        body.theme-light [style*="background:#fff"],
+        body.theme-light [style*="background: white"],
+        body.theme-light [style*="background:white"] {
+            background: #ffffff !important;
+        }
+
+        /* Corrigir elementos com estilos inline escuros - FORÇAR BRANCO */
+        body.theme-light [style*="background: #1a1a1a"],
+        body.theme-light [style*="background:#1a1a1a"],
+        body.theme-light [style*="background: #252525"],
+        body.theme-light [style*="background:#252525"],
+        body.theme-light [style*="background: #121212"],
+        body.theme-light [style*="background:#121212"],
+        body.theme-light [style*="background: #000"],
+        body.theme-light [style*="background:#000"] {
+            background: #ffffff !important;
+        }
+
+        /* FORÇAR cor de fundo para qualquer elemento dentro do conteúdo no tema claro */
+        body.theme-light #conteudo > * {
+            background-color: #ffffff !important;
+        }
+
+        /* Containers específicos */
+        body.theme-light .rounded-xl,
+        body.theme-light .rounded-lg,
+        body.theme-light .rounded-md,
+        body.theme-light .rounded {
+            background-color: #ffffff !important;
+        }
+
+        /* Wrappers e containers */
+        body.theme-light .shadow-sm,
+        body.theme-light .shadow,
+        body.theme-light .shadow-lg {
+            background-color: #ffffff !important;
+        }
+
+        body.theme-light .modal-box {
+            background: linear-gradient(145deg, #ffffff, #f9fafb);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        body.theme-light .modal-header,
+        body.theme-light .modal-footer {
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        body.theme-light .modal-header h3,
+        body.theme-light .text-white {
+            color: #111827 !important;
+        }
+
+        body.theme-light .text-white\/40,
+        body.theme-light .text-white\/30 {
+            color: #6b7280 !important;
+        }
+
+        body.theme-light .table-modern thead th {
+            background: #f9fafb;
+            color: #6b7280;
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        body.theme-light .table-modern tbody td {
+            color: #374151;
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+
+        body.theme-light .table-modern tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%);
+            min-height: 100vh;
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* GLASSMORPHISM & 3D EFFECTS                         */
+        /* ═══════════════════════════════════════════════════ */
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+        }
+
+        body.theme-light .glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .glass-strong {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .card-3d {
+            background: linear-gradient(145deg, #1a1a1a, #141414);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.3),
+                0 2px 4px -2px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-3d:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 
+                0 20px 25px -5px rgba(0, 0, 0, 0.4),
+                0 8px 10px -6px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            border-color: rgba(181, 21, 21, 0.3);
+        }
+
+        .btn-3d {
+            background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
+            color: white;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            box-shadow: 
+                0 4px 14px -3px var(--primary-glow),
+                0 2px 4px -2px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-3d:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 25px -5px var(--primary-glow),
+                0 4px 6px -4px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-3d:hover::before {
+            left: 100%;
+        }
+
+        .btn-3d:active {
+            transform: translateY(0);
+        }
+
+/* ═══════════════════════════════════════════════════ */
+        /* CARD 3D                                           */
+        /* ═══════════════════════════════════════════════════ */
+        
+        .card-3d {
+            background: linear-gradient(145deg, #1a1a1a, #141414);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.3),
+                0 2px 4px -2px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.theme-light .card-3d {
+            background: linear-gradient(145deg, #ffffff, #f9fafb);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.05),
+                0 2px 4px -2px rgba(0, 0, 0, 0.03),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .card-3d:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 
+                0 20px 25px -5px rgba(0, 0, 0, 0.4),
+                0 8px 10px -6px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            border-color: rgba(181, 21, 21, 0.3);
+        }
+
+        body.theme-light .card-3d:hover {
+            box-shadow: 
+                0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                0 8px 10px -6px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            border-color: rgba(181, 21, 21, 0.3);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* SIDEBAR STYLES                                     */
+        /* ═══════════════════════════════════════════════════ */
+        
+        .sidebar {
+            background: rgba(15, 15, 15, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        body.theme-light .sidebar {
+            background: rgba(248, 250, 252, 0.85);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .sidebar-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 11px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 10px;
+            opacity: 0;
+            background: linear-gradient(135deg, rgba(181,21,21,0.12) 0%, transparent 60%);
+            transition: opacity 0.25s ease;
+        }
+
+        .sidebar-btn:hover {
+            color: var(--text-primary);
+            transform: translateX(4px) scale(1.01);
+        }
+
+        .sidebar-btn:hover::before {
+            opacity: 1;
+        }
+
+        .sidebar-btn:active {
+            transform: translateX(4px) scale(0.98);
+        }
+
+        .sidebar-btn.active {
+            color: #fff;
+            background: linear-gradient(135deg, rgba(181,21,21,0.2) 0%, rgba(181,21,21,0.05) 80%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        .sidebar-btn.active::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 60%;
+            background: var(--primary);
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .sidebar-btn .icon { 
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.25s ease;
+        }
+
+        .sidebar-btn:hover .icon {
+            transform: scale(1.1);
+        }
+
+        .sidebar-btn.active .icon {
+            transform: scale(1.05);
+        }
+
+        .sidebar-btn .icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .sidebar-btn .icon svg path,
+        .sidebar-btn .icon svg circle,
+        .sidebar-btn .icon svg rect {
+            transition: all 0.25s ease;
+        }
+
+        .sidebar-btn:hover .icon svg {
+            filter: drop-shadow(0 0 6px rgba(181,21,21,0.3));
+        }
+
+        .sidebar-btn .arrow { 
+            margin-left: auto; 
+            font-size: 8px; 
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); 
+            opacity: 0.35; 
+            color: currentColor;
+        }
+
+        .sidebar-btn.open .arrow { 
+            transform: rotate(90deg); 
+            opacity: 1; 
+        }
+
+        .kbd {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 5px;
+            padding: 2px 6px;
+            font-size: 10px;
+            color: var(--text-muted);
+            font-family: inherit;
+            letter-spacing: 0.02em;
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* SUBMENUS                                           */
+        /* ═══════════════════════════════════════════════════ */
+        
+        .submenu { 
+            display: none;
+            flex-direction: column;
+            padding-left: 8px;
+            margin: 2px 0 2px 4px;
+            border-left: 1px solid rgba(255,255,255,0.06);
+        }
+        .submenu.open { 
+            display: flex;
+            animation: submenuIn 0.25s ease both;
+        }
+
+        .submenu > * {
+            animation: submenuItem 0.3s ease both;
+        }
+
+        .submenu > *:nth-child(1) { animation-delay: 0.02s; }
+        .submenu > *:nth-child(2) { animation-delay: 0.04s; }
+        .submenu > *:nth-child(3) { animation-delay: 0.06s; }
+        .submenu > *:nth-child(4) { animation-delay: 0.08s; }
+        .submenu > *:nth-child(5) { animation-delay: 0.10s; }
+
+        .submenu2 { 
+            display: none;
+            flex-direction: column;
+            padding-left: 8px;
+            margin: 2px 0 2px 4px;
+            border-left: 1px solid rgba(255,255,255,0.06);
+        }
+        .submenu2.open { 
+            display: flex;
+            animation: submenuIn 0.25s ease both;
+        }
+
+        .submenu2 > * {
+            animation: submenuItem 0.3s ease both;
+        }
+        .submenu2 > *:nth-child(1) { animation-delay: 0.02s; }
+        .submenu2 > *:nth-child(2) { animation-delay: 0.04s; }
+        .submenu2 > *:nth-child(3) { animation-delay: 0.06s; }
+
+        @keyframes submenuIn {
+            from { opacity: 0; max-height: 0; }
+            to { opacity: 1; max-height: 500px; }
+        }
+
+        @keyframes submenuItem {
+            from { opacity: 0; transform: translateX(-8px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .submenu-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 9px 12px 9px 20px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .submenu-btn:hover {
+            background: rgba(255,255,255,0.04);
+            color: var(--text-secondary);
+            transform: translateX(3px);
+        }
+
+        body.theme-light .submenu-btn:hover {
+            background: rgba(0,0,0,0.04);
+        }
+
+        .submenu-btn.active { 
+            color: #fff; 
+            background: rgba(181,21,21,0.12);
+        }
+
+        .submenu-btn .dot { 
+            width: 5px; 
+            height: 5px; 
+            border-radius: 50%; 
+            background: currentColor; 
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .submenu-btn.active .dot {
+            box-shadow: 0 0 8px rgba(181,21,21,0.6);
+        }
+
+        .submenu-btn .arrow2 { 
+            margin-left: auto; 
+            font-size: 7px; 
+            opacity: 0.35;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            color: currentColor;
+        }
+
+        .submenu-btn.open2 .arrow2 { 
+            transform: rotate(90deg); 
+            opacity: 1; 
+        }
+
+        .submenu3-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 7px 12px 7px 28px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .submenu3-btn:hover { 
+            background: rgba(255,255,255,0.04);
+            color: var(--text-secondary);
+            transform: translateX(3px);
+        }
+
+        body.theme-light .submenu3-btn:hover {
+            background: rgba(0,0,0,0.03);
+        }
+
+        .submenu3-btn.active { 
+            color: #fff; 
+            background: rgba(181,21,21,0.10);
+        }
+
+        .submenu3-btn .dot { 
+            width: 4px; 
+            height: 4px; 
+            border-radius: 50%; 
+            background: currentColor; 
+            transition: all 0.3s ease;
+        }
+
+        .submenu3-btn.active .dot {
+            box-shadow: 0 0 6px rgba(181,21,21,0.5);
+        }
+
+        .cat-title {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            padding: 20px 16px 7px;
+            opacity: 0.5;
+            position: relative;
+        }
+
+        .cat-title::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 16px;
+            width: 20px;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 2px;
+            opacity: 0.5;
+        }
+
+        body.theme-light .cat-title::after {
+            opacity: 0.3;
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* ANIMATIONS                                          */
+        /* ═══════════════════════════════════════════════════ */
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in { 
+            animation: fadeIn 0.3s ease both; 
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px var(--primary-glow); }
+            50% { box-shadow: 0 0 40px var(--primary-glow), 0 0 60px rgba(181, 21, 21, 0.2); }
+        }
+
+        .animate-pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* INPUTS & FORMS                                     */
+        /* ═══════════════════════════════════════════════════ */
+        
+        .input-modern {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            font-size: 14px;
+            color: var(--text-primary);
+            transition: all 0.25s ease;
+            outline: none;
+        }
+
+        body.theme-light .input-modern {
+            background: #ffffff;
+            border-color: #e5e7eb;
+            color: #111827;
+        }
+
+        .input-modern::placeholder {
+            color: var(--text-muted);
+        }
+
+        body.theme-light .input-modern::placeholder {
+            color: #9ca3af;
+        }
+
+        .input-modern:focus {
+            background: rgba(255,255,255,0.05);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow), 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        body.theme-light .input-modern:focus {
+            background: #ffffff;
+            box-shadow: 0 0 0 4px var(--primary-glow), 0 4px 20px rgba(181,21,21,0.15);
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* TABLES                                             */
+        /* ═══════════════════════════════════════════════════ */
+        
+        .table-modern {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .table-modern thead th {
+            padding: 14px 18px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .table-modern tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .table-modern tbody tr:hover { 
+            background: var(--glass); 
+        }
+
+        .table-modern tbody td {
+            padding: 16px 18px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* MODALS                                             */
+        /* ═══════════════════════════════════════════════════ */
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: none;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-box {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(145deg, #1a1a1a, #141414);
+            border-radius: 20px;
+            z-index: 10000;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.5), 0 0 40px var(--primary-glow);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-body { padding: 24px; }
+        
+        .modal-footer {
+            padding: 16px 24px 20px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* CONTEXT MENU                                       */
+        /* ═══════════════════════════════════════════════════ */
+        
+        .context-menu {
+            position: fixed;
+            background: linear-gradient(145deg, #1f1f1f, #171717);
+            padding: 6px;
+            display: none;
+            cursor: pointer;
+            z-index: 9999;
+            border-radius: 14px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px var(--glass-border);
+            animation: fadeIn 0.15s ease;
+        }
+
+        .context-menu-item {
+            padding: 12px 18px;
+            font-size: 13px;
+            color: #f87171;
+            font-weight: 500;
+            border-radius: 10px;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .context-menu-item:hover { 
+            background: rgba(248, 113, 113, 0.1); 
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* PLACA STYLES                                       */
+        /* ═══════════════════════════════════════════════════ */
+        
+        .folha {
+            width: 209mm; height: 296mm; display: flex; flex-wrap: wrap;
+            padding: 5mm 0 0 7px; background: #fff; align-content: flex-start;
+            margin: 0 auto 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .placa {
+            width: 103mm; height: 19.9%; border: 1px solid #000;
+            display: flex; flex-direction: column; justify-content: space-between;
+            align-items: center; text-align: center; padding: 5px;
+            box-sizing: border-box; overflow: hidden;
+        }
+        .placa, .placa h1, .placa input { font-family: 'Segoe UI', sans-serif !important; font-weight: bold !important; }
+        .placa h1 { width: 100%; margin: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .placa input { width: 90%; text-align: center; font-size: 16px; border: 2px solid var(--primary); }
+
+        .folha-amarela {
+            width: 209mm; height: 296mm; display: flex; flex-wrap: wrap;
+            padding: 5mm 0 0 7px; background: #ffe400; align-content: flex-start;
+            margin: 0 auto 20px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .placa-amarela {
+            width: 103mm; height: 24.3%; border: 1px solid #000;
+            display: flex; flex-direction: column; justify-content: space-between;
+            align-items: center; text-align: center; padding: 5px;
+            box-sizing: border-box; overflow: hidden;
+        }
+        .placa-amarela, .placa-amarela h1, .placa-amarela input { font-family: 'Segoe UI', sans-serif !important; font-weight: bold !important; }
+        .placa-amarela h1 { width: 100%; margin: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .placa-amarela input { width: 90%; text-align: center; font-size: 16px; border: 2px solid var(--primary); background: #ffe400; }
+
+        .folha-grande {
+            width: 209mm; height: 296mm; display: flex; flex-direction: column;
+            background: #fff; margin: 0 auto 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .placa-grande {
+            width: 100%; flex: 1;
+            border: 1px solid #000;
+            display: flex; flex-direction: column;
+            box-sizing: border-box; overflow: hidden;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* RESPONSIVE / MOBILE                                 */
+        /* ═══════════════════════════════════════════════════ */
+
+        .sidebar-toggle-btn { display: none; }
+        .sidebar-overlay { display: none; }
+
+        @media (max-width: 1024px) {
+            .sidebar-toggle-btn { display: flex !important; }
+
+            .sidebar {
+                position: fixed !important;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                z-index: 30 !important;
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                width: 280px;
+                max-width: 85vw;
+            }
+
+            .sidebar.open-mobile {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.6);
+                backdrop-filter: blur(6px);
+                -webkit-backdrop-filter: blur(6px);
+                z-index: 25;
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            #main-content {
+                width: 100%;
+            }
+
+            #conteudo {
+                padding: 1rem !important;
+            }
+
+            #main-header {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+
+            #main-header .kbd { display: none; }
+
+            .header-title { font-size: 1rem !important; }
+            .header-subtitle { font-size: 0.65rem !important; }
+
+            #btn-global-search span { display: none; }
+            #btn-global-search { padding: 0.5rem !important; }
+        }
+
+        @media (max-width: 640px) {
+            #conteudo {
+                padding: 0.75rem !important;
+            }
+
+            .dash-stat-value { font-size: 1.5rem !important; }
+
+            .dash-table-wrap { overflow-x: auto; }
+            .dash-table, .table-modern { min-width: 600px; }
+
+            #main-header {
+                padding: 0.75rem 0.75rem !important;
+            }
+
+            #main-header .gap-4 { gap: 0.5rem !important; }
+        }
+
+        /* Table horizontal scroll on mobile */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .table-responsive .dash-table,
+        .table-responsive .table-modern {
+            min-width: 600px;
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* PAGE-SPECIFIC RESPONSIVE                            */
+        /* ═══════════════════════════════════════════════════ */
+
+        /* Dashboard: stack grids on mobile */
+        @media (max-width: 768px) {
+            .dash-grid-3 {
+                grid-template-columns: 1fr !important;
+            }
+            .dash-grid-2 {
+                grid-template-columns: 1fr !important;
+            }
+            .dash-grid-cards {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dash-grid-cards {
+                grid-template-columns: 1fr 1fr !important;
+            }
+        }
+
+        /* Force all fixed-width inputs inside #conteudo to be fluid on mobile */
+        @media (max-width: 640px) {
+            #conteudo input[type="text"],
+            #conteudo input[type="number"],
+            #conteudo input[type="date"],
+            #conteudo select {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Fix LP inputs specifically */
+            #lp-ean, #lp-preco { width: 100% !important; }
+
+            /* Placas inputs */
+            #ean-input, #preco-input, #qtd-input { width: 100% !important; }
+
+            /* Relatório inputs */
+            #rel-desc, #rel-preco { width: 100% !important; }
+
+            /* Produtos search */
+            #busca { width: 100% !important; }
+
+            /* Contador de página */
+            #contador-pagina { min-width: auto !important; }
+        }
+
+        /* LP modal busca table responsive */
+        @media (max-width: 640px) {
+            #lp-tabela-busca { min-width: 400px; }
+            #lp-tabela-busca th,
+            #lp-tabela-busca td {
+                padding: 8px 10px !important;
+                font-size: 11px !important;
+            }
+        }
+
+        /* Summary details responsive */
+        @media (max-width: 640px) {
+            details[style*="border-radius"] summary + div {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+            details[style*="border-radius"] summary + div > div {
+                width: 100% !important;
+            }
+        }
+
+        /* Product table on mobile - scroll horizontally */
+        @media (max-width: 768px) {
+            #conteudo table.w-full.text-sm {
+                min-width: 700px;
+            }
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* ════════════════════════════════════════════ */
+        /* DASHBOARD MODERNO                           */
+        /* ════════════════════════════════════════════ */
+
+        .dash-glass {
+            background: rgba(255,255,255,0.04) !important;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .dash-glass:hover {
+            transform: translateY(-2px) scale(1.01);
+            border-color: rgba(255,255,255,0.15);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        body.theme-light .dash-glass {
+            background: rgba(255,255,255,0.85) !important;
+            border-color: rgba(0,0,0,0.08);
+        }
+        body.theme-light .dash-glass:hover {
+            border-color: rgba(0,0,0,0.15);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+        }
+
+        .dash-card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+        .dash-glass:hover .dash-card-icon {
+            transform: scale(1.1) rotate(-3deg);
+        }
+
+        .dash-stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.03em;
+            transition: all 0.3s ease;
+        }
+
+        .dash-progress-track {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.06);
+            overflow: hidden;
+        }
+        body.theme-light .dash-progress-track {
+            background: rgba(0,0,0,0.06);
+        }
+        .dash-progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1.2s cubic-bezier(0.34,1.56,0.64,1);
+            position: relative;
+        }
+        .dash-progress-fill::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: dashShimmer 2s infinite;
+        }
+        @keyframes dashShimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .dash-alert-box {
+            padding: 12px 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        .dash-alert-box:hover {
+            transform: translateX(4px);
+        }
+
+        .dash-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .dash-table-wrap {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.3s ease;
+        }
+        body.theme-light .dash-table-wrap {
+            border-color: rgba(0,0,0,0.08);
+        }
+        .dash-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .dash-table thead th {
+            padding: 14px 20px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: rgba(255,255,255,0.35);
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        body.theme-light .dash-table thead th {
+            color: rgba(0,0,0,0.4);
+            background: rgba(0,0,0,0.02);
+            border-bottom-color: rgba(0,0,0,0.06);
+        }
+        .dash-table tbody tr {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        body.theme-light .dash-table tbody tr {
+            border-bottom-color: rgba(0,0,0,0.04);
+        }
+        .dash-table tbody tr:last-child {
+            border-bottom: none;
+        }
+        .dash-table tbody tr:hover {
+            background: rgba(181,21,21,0.06);
+        }
+        body.theme-light .dash-table tbody tr:hover {
+            background: rgba(181,21,21,0.04);
+        }
+        .dash-table td {
+            padding: 12px 20px;
+            font-size: 13px;
+        }
+        .dash-rank {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.4);
+        }
+        body.theme-light .dash-rank {
+            background: rgba(0,0,0,0.05);
+            color: rgba(0,0,0,0.3);
+        }
+        .dash-rank.top1 { background: rgba(234,179,8,0.2); color: #eab308; }
+        .dash-rank.top2 { background: rgba(148,163,184,0.2); color: #94a3b8; }
+        .dash-rank.top3 { background: rgba(180,83,9,0.2); color: #b45309; }
+
+        .dash-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: rgba(255,255,255,0.3);
+            margin-bottom: 16px;
+        }
+        body.theme-light .dash-section-title {
+            color: rgba(0,0,0,0.3);
+        }
+
+        /* Entrada com animação */
+        .dash-animate {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: dashFadeUp 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+        .dash-animate:nth-child(2) { animation-delay: 0.05s; }
+        .dash-animate:nth-child(3) { animation-delay: 0.1s; }
+        .dash-animate:nth-child(4) { animation-delay: 0.15s; }
+        .dash-animate:nth-child(5) { animation-delay: 0.2s; }
+        .dash-animate:nth-child(6) { animation-delay: 0.25s; }
+        .dash-animate:nth-child(7) { animation-delay: 0.3s; }
+        .dash-animate:nth-child(8) { animation-delay: 0.35s; }
+
+        @keyframes dashFadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Botão refresh */
+        .dash-refresh-btn {
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.08);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dash-refresh-btn:hover {
+            background: rgba(181,21,21,0.15);
+            color: #fafafa;
+            border-color: rgba(181,21,21,0.3);
+            transform: translateY(-1px);
+        }
+        .dash-refresh-btn svg {
+            transition: transform 0.6s ease;
+        }
+        .dash-refresh-btn:hover svg {
+            transform: rotate(180deg);
+        }
+        body.theme-light .dash-refresh-btn {
+            background: rgba(0,0,0,0.04);
+            color: rgba(0,0,0,0.4);
+            border-color: rgba(0,0,0,0.08);
+        }
+        body.theme-light .dash-refresh-btn:hover {
+            background: rgba(181,21,21,0.1);
+            color: #b51515;
+            border-color: rgba(181,21,21,0.2);
+        }
+
+        /* Chart containers */
+        .dash-chart-box {
+            padding: 20px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        body.theme-light .dash-chart-box {
+            background: rgba(255,255,255,0.8);
+            border-color: rgba(0,0,0,0.06);
+        }
+
+        /* ══════════════════════════════════════════════════
+           VISUAL ENHANCEMENTS — cores, luzes, animações
+           ══════════════════════════════════════════════════ */
+
+        /* ── Mesh animado no fundo ──────────────────────── */
+        #bg-decoration > div {
+            animation: bgFloat 25s ease-in-out infinite alternate;
+        }
+        #bg-decoration > div:first-child {
+            animation-duration: 25s;
+            background: radial-gradient(600px circle, rgba(181,21,21,0.08) 0%, transparent 70%) !important;
+        }
+        #bg-decoration > div:last-child {
+            animation-duration: 30s;
+            animation-delay: -5s;
+            background: radial-gradient(500px circle, rgba(181,21,21,0.05) 0%, transparent 70%) !important;
+        }
+        @keyframes bgFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-3%, 2%) scale(1.05); }
+            66% { transform: translate(2%, -2%) scale(0.95); }
+            100% { transform: translate(-1%, 3%) scale(1.02); }
+        }
+
+        /* ── overlay gradiente extra no fundo ──────────── */
+        #main-content::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(800px circle at 0% 0%, rgba(181,21,21,0.03) 0%, transparent 50%),
+                radial-gradient(600px circle at 100% 100%, rgba(255,200,50,0.02) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ── dash-glass turbinado ───────────────────────── */
+        .dash-glass {
+            position: relative;
+            isolation: isolate;
+        }
+        .dash-glass::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(181,21,21,0.15) 0%, rgba(255,255,255,0.05) 50%, rgba(181,21,21,0.05) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .dash-glass:hover::before {
+            opacity: 1;
+        }
+        .dash-glass:hover {
+            box-shadow:
+                0 8px 32px rgba(0,0,0,0.3),
+                0 0 0 1px rgba(181,21,21,0.1),
+                0 0 40px rgba(181,21,21,0.05);
+            border-color: rgba(181,21,21,0.2);
+        }
+        body.theme-light .dash-glass::before {
+            background: linear-gradient(135deg, rgba(181,21,21,0.12) 0%, rgba(0,0,0,0.03) 50%, transparent 100%);
+        }
+
+        /* ── sidebar glow aprimorado ────────────────────── */
+        .sidebar-btn.active {
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.08),
+                0 0 20px rgba(181,21,21,0.08);
+        }
+        .sidebar-btn.active .icon svg {
+            filter: drop-shadow(0 0 8px rgba(181,21,21,0.4));
+        }
+        .sidebar-btn::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, var(--primary), var(--primary-dark));
+            border-radius: 0 4px 4px 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+        .sidebar-btn.active::after {
+            opacity: 1;
+        }
+
+        /* ── gradiente animado em títulos de página ─────── */
+        .page-title-glow {
+            background: linear-gradient(135deg, #fafafa 0%, rgba(181,21,21,0.6) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        body.theme-light .page-title-glow {
+            background: linear-gradient(135deg, #1f2937 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ── cards com acento colorido ──────────────────── */
+        .card-accent-red {
+            border-left: 3px solid var(--primary) !important;
+            box-shadow: -2px 0 12px rgba(181,21,21,0.1);
+        }
+        .card-accent-yellow {
+            border-left: 3px solid #eab308 !important;
+            box-shadow: -2px 0 12px rgba(234,179,8,0.1);
+        }
+        .card-accent-green {
+            border-left: 3px solid #22c55e !important;
+            box-shadow: -2px 0 12px rgba(34,197,94,0.1);
+        }
+        .card-accent-blue {
+            border-left: 3px solid #3b82f6 !important;
+            box-shadow: -2px 0 12px rgba(59,130,246,0.1);
+        }
+
+        /* ── shimmer loading ─────────────────────────────── */
+        .shimmer {
+            background: linear-gradient(90deg,
+                rgba(255,255,255,0.02) 25%,
+                rgba(255,255,255,0.06) 50%,
+                rgba(255,255,255,0.02) 75%);
+            background-size: 200% 100%;
+            animation: shimmerMove 1.5s infinite;
+        }
+        @keyframes shimmerMove {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ── scrollbar estilizada ────────────────────────── */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.08);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(181,21,21,0.3); }
+        body.theme-light ::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.1);
+        }
+        body.theme-light ::-webkit-scrollbar-thumb:hover {
+            background: rgba(181,21,21,0.2);
+        }
+
+        /* ── animação de pulse no glow ───────────────────── */
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 8px rgba(181,21,21,0.2); }
+            50% { box-shadow: 0 0 20px rgba(181,21,21,0.4); }
+        }
+        .glow-pulse {
+            animation: glowPulse 3s ease-in-out infinite;
+        }
+
+        /* ── fade + slide up (reforço) ───────────────────── */
+        .fade-slide-up {
+            opacity: 0;
+            transform: translateY(16px);
+            animation: fadeSlideUp 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+        @keyframes fadeSlideUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SIDEBAR                                           -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <aside class="sidebar w-64 min-w-64 h-screen flex flex-col relative z-20">
+
+        <!-- Mobile close button -->
+        <button id="btn-sidebar-close" class="sidebar-toggle-btn absolute top-3 right-3 w-8 h-8 rounded-lg items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all z-10" style="display:none;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+
+        <!-- Logo com glow -->
+        <div class="p-5 border-b border-glass relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent pointer-events-none"></div>
+            <div class="relative flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-lg" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); box-shadow: 0 0 20px var(--primary-glow), 0 4px 15px rgba(0,0,0,0.3);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <div>
+                    <h1 class="text-white font-bold text-sm leading-tight">Supermercado<br>Avanzi</h1>
+                    <p class="text-white/30 text-xs mt-0.5">Sistema de Gestão</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nav -->
+        <nav class="flex-1 overflow-y-auto px-3 py-4 flex flex-col gap-0.5">
+
+            <!-- INÍCIO -->
+            <button id="btn-inicio" class="sidebar-btn active">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Início
+                <span class="arrow">▶</span>
+            </button>
+
+            <!-- CONSULTA -->
+            <div class="cat-title">Consulta</div>
+            <button id="btn-busca-rapida" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span> Busca Rápida
+                <kbd class="kbd ml-auto">Ctrl+Tab</kbd>
+            </button>
+            <button id="btn-produtos" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 002 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span> Produtos
+            </button>
+            <button id="btn-imagens" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span> Imagens
+            </button>
+
+            <!-- PLACAS -->
+            <div class="cat-title">Placas</div>
+            <button id="btn-placas-menu" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span> Gerar Placas
+                <span class="arrow">▶</span>
+            </button>
+            <div id="submenu-placas" class="submenu">
+                <button id="btn-modelos-menu" class="submenu-btn flex justify-between items-center w-full">
+                    <span class="flex items-center gap-2"><span class="dot"></span> Modelos</span>
+                    <span class="arrow2">▶</span>
+                </button>
+                <div id="submenu-modelos" class="submenu2">
+                    <button id="btn-placas" class="submenu3-btn"><span class="dot"></span> Branca</button>
+                    <button id="btn-placas-amarela" class="submenu3-btn"><span class="dot"></span> Amarela</button>
+                    <button id="btn-placas-grande" class="submenu3-btn"><span class="dot"></span> Grande</button>
+                </div>
+                <button id="btn-relatorio-placas" class="submenu-btn"><span class="dot"></span> Relatório</button>
+                <button id="btn-gerenciador-placas" class="submenu-btn"><span class="dot"></span> Histórico</button>
+                <button id="btn-estoque-placas" class="submenu-btn" style="border-top:1px solid rgba(255,255,255,0.04); margin-top:4px; padding-top:10px;"><span class="dot"></span> Estoque de Placas</button>
+            </div>
+
+            <!-- OFERTAS -->
+            <div class="cat-title">Ofertas</div>
+            <button id="btn-ofertas-menu" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span> Ofertas Diárias
+                <span class="arrow">▶</span>
+            </button>
+            <div id="submenu-ofertas" class="submenu">
+                <button id="btn-terca-pizza" class="submenu-btn"><span class="dot"></span> Terça da Pizza</button>
+                <button id="btn-cardapio" class="submenu-btn"><span class="dot"></span> Cardápio Restaurante</button>
+                <button id="btn-importar-cardapio" class="submenu-btn"><span class="dot"></span> Importar Cardápio</button>
+            </div>
+
+            <!-- RELATORIOS -->
+            <div class="cat-title">Relatórios</div>
+            <button id="btn-dashboard" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span> Dashboard
+            </button>
+            <button id="btn-dashboard-vendas" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> Vendas
+            </button>
+            <button id="btn-cotacao" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Cotação
+            </button>
+
+            <!-- UTILITARIOS -->
+            <div class="cat-title">Utilitários</div>
+            <button id="btn-atalhos" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span> Atalhos
+            </button>
+            <button id="btn-formatos" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/></svg></span> Formatos
+            </button>
+            <button id="btn-capitalize" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></span> Capitalize
+            </button>
+            <button id="btn-importar" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Importar
+            </button>
+            <button id="btn-textos" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span> Textos
+            </button>
+            <button id="btn-listas" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span> Listas
+            </button>
+            <button id="btn-criar-texto" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span> Criar Texto
+            </button>
+
+            <div class="cat-title">Ferramentas</div>
+            <button id="btn-novidades" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span> Novidades
+            </button>
+            <button id="btn-qrcode" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="8" y="8" width="8" height="8"/><line x1="3" y1="12" x2="8" y2="12"/><line x1="16" y1="12" x2="21" y2="12"/><line x1="12" y1="3" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="21"/></svg></span> QR Code
+            </button>
+            <button id="btn-feriados" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> Feriados
+            </button>
+            <button id="btn-calc-kglt" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><line x1="8" y1="2" x2="8" y2="8"/><line x1="16" y1="2" x2="16" y2="8"/><line x1="2" y1="8" x2="22" y2="8"/><line x1="8" y1="14" x2="8" y2="18"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="16" y1="14" x2="16" y2="18"/></svg></span> Calc KG/LT
+            </button>
+            <button id="btn-admin" class="sidebar-btn" style="display:none;">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span> Admin
+            </button>
+            <button id="btn-database" class="sidebar-btn">
+                <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></span> Database
+            </button>
+        </nav>
+
+        <!-- User footer -->
+        <div class="p-4 border-t border-glass relative">
+            <div class="absolute inset-0 bg-gradient-to-t from-red-500/3 to-transparent pointer-events-none"></div>
+            <div class="relative flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); box-shadow: 0 0 12px var(--primary-glow);">
+                    <span id="user-avatar">—</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p id="nomeUsuario" class="text-white/50 text-xs truncate"></p>
+                </div>
+                <button id="btn-logout" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200" title="Sair">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Sidebar Overlay (mobile) -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- MAIN CONTENT                                      -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <main id="main-content" class="flex-1 flex flex-col overflow-hidden relative z-10">
+
+        <!-- Background decoration -->
+        <div id="bg-decoration" class="absolute inset-0 pointer-events-none overflow-hidden">
+            <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-red-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-red-500/3 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+        </div>
+
+<!-- Header -->
+        <header id="main-header" class="glass border-b border-glass px-8 py-5 flex items-center justify-between relative z-10">
+            <div class="flex items-center gap-3">
+                <button id="btn-sidebar-toggle" class="sidebar-toggle-btn header-text w-10 h-10 rounded-xl items-center justify-center hover:bg-white/10 transition-all flex-shrink-0" title="Menu">
+                    <svg id="icon-hamburguer" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    <svg id="icon-close-menu" class="hidden" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+                <div>
+                    <h2 id="page-title" class="header-title text-xl font-bold">Dashboard</h2>
+                    <p id="data-atual" class="header-subtitle text-xs mt-1"></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="btn-global-search" class="header-text flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm hover:bg-white/10 transition-all glass">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    <span>Buscar...</span>
+                    <kbd class="kbd">Ctrl+Tab</kbd>
+                </button>
+                <button id="btn-theme-toggle" class="header-text w-10 h-10 rounded-xl flex items-center justify-center hover:bg-white/10 transition-all" title="Alternar tema">
+                    <svg id="icon-sol" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-white"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                    <svg id="icon-lua" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="hidden text-gray-600"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-lg glow-red" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);">
+                    <span id="user-avatar-header">—</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content area -->
+        <div id="conteudo" class="flex-1 overflow-y-auto p-8 fade-in relative z-10"></div>
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- CONTEXT MENU                                     -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div id="contextMenu" class="context-menu">
+        <div id="ctx-duplicar" class="context-menu-item">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            Duplicar Placa
+        </div>
+        <div id="ctx-excluir" class="context-menu-item">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+            Excluir Placa
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- POPUP BUSCA GLOBAL                                -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div id="popupBuscaGlobal" class="modal-overlay">
+        <div class="modal-box" style="width:680px; max-width:90vw;">
+            <div class="modal-header">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark));">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    </div>
+                    <h3 class="font-semibold text-white text-lg">Busca Rápida</h3>
+                </div>
+                <button onclick="fecharPopupBuscaGlobal()" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 20px 24px;">
+                <input type="text" id="input-busca-global" placeholder="Digite código, EAN ou descrição do produto..." class="input-modern" autofocus>
+            </div>
+            <div id="resultado-busca-global" class="px-6 pb-4" style="max-height:400px; overflow-y:auto;">
+                <div class="text-center text-white/30 py-12 text-sm">Digite para buscar...</div>
+            </div>
+            <div class="modal-footer flex items-center justify-between text-xs text-white/40">
+                <div class="flex items-center gap-4">
+                    <span>Pressione <kbd class="kbd">Enter</kbd> para selecionar</span>
+                    <span>Pressione <kbd class="kbd">ESC</kbd> para fechar</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- MODAIS                                            -->
+    <!-- ═══════════════════════════════════════════════════ -->
+
+    <!-- Modal Busca (Branca) -->
+    <div id="modal-busca" class="modal-overlay">
+        <div class="modal-box" style="width:600px;">
+            <div class="modal-header">
+                <h3 class="font-semibold text-white text-lg">Buscar Produto</h3>
+                <button id="fechar-busca" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 20px 24px;">
+                <input type="text" id="input-busca-nome" placeholder="Digite o nome e pressione ENTER" class="input-modern mb-4">
+                <div style="max-height:300px; overflow-y:auto;">
+                    <table id="tabela-busca" class="table-modern">
+                        <thead><tr><th>Código</th><th>Descrição</th><th style="text-align:right;">Preço</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Import (Branca) -->
+    <div id="modal-import" class="modal-overlay">
+        <div class="modal-box" style="width:560px;">
+            <div class="modal-header">
+                <h3 class="font-semibold text-white text-lg">Importação Rápida</h3>
+                <button id="fechar-import" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-white/40 text-xs mb-3">Cole as colunas do Excel (Descrição [TAB] Preço):</p>
+                <textarea id="import-texto" rows="7" placeholder="Ex: ARROZ TIO JOAO 5KG&#9;29,90" class="input-modern font-mono text-sm" style="resize:none;"></textarea>
+                <div id="log-erros" class="mt-4 p-4 rounded-xl text-sm" style="background:rgba(248,113,113,0.1); color:#f87171; display:none;">
+                    <strong>⚠️ Itens não encontrados:</strong>
+                    <ul id="lista-erros" class="mt-2 pl-4"></ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-processar-import" class="btn-3d w-full" style="background: linear-gradient(135deg, #16a34a, #15803d);">Gerar Placas</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Busca (Amarela) -->
+    <div id="modal-busca-am" class="modal-overlay">
+        <div class="modal-box" style="width:600px; border:2px solid #ca8a04;">
+            <div class="modal-header" style="border-color:#ca8a04;">
+                <h3 class="font-semibold text-white text-lg">Buscar Produto</h3>
+                <button id="fechar-busca-am" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 20px 24px;">
+                <input type="text" id="input-busca-nome-am" placeholder="Digite o nome e pressione ENTER" class="input-modern mb-4">
+                <div style="max-height:300px; overflow-y:auto;">
+                    <table id="tabela-busca-am" class="table-modern">
+                        <thead><tr><th>Código</th><th>Descrição</th><th style="text-align:right;">Preço</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Import (Amarela) -->
+    <div id="modal-import-am" class="modal-overlay">
+        <div class="modal-box" style="width:560px; border:2px solid #ca8a04;">
+            <div class="modal-header" style="border-color:#ca8a04;">
+                <h3 class="font-semibold text-white text-lg">Importação Rápida</h3>
+                <button id="fechar-import-am" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-white/40 text-xs mb-3">Cole as colunas do Excel (Descrição [TAB] Preço):</p>
+                <textarea id="import-texto-am" rows="7" placeholder="Ex: ARROZ TIO JOAO 5KG&#9;29,90" class="input-modern font-mono text-sm" style="resize:none;"></textarea>
+                <div id="log-erros-am" class="mt-4 p-4 rounded-xl text-sm" style="background:rgba(248,113,113,0.1); color:#f87171; display:none;">
+                    <strong>⚠️ Itens não encontrados:</strong>
+                    <ul id="lista-erros-am" class="mt-2 pl-4"></ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-processar-import-am" class="btn-3d w-full" style="background: linear-gradient(135deg, #ca8a04, #a16207);">Gerar Placas</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Busca (Grande) -->
+    <div id="modal-busca-g" class="modal-overlay">
+        <div class="modal-box" style="width:600px;">
+            <div class="modal-header">
+                <h3 class="font-semibold text-white text-lg">Buscar Produto</h3>
+                <button id="fechar-busca-g" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 20px 24px;">
+                <input type="text" id="input-busca-nome-g" placeholder="Digite o nome e pressione ENTER" class="input-modern mb-4">
+                <div style="max-height:300px; overflow-y:auto;">
+                    <table id="tabela-busca-g" class="table-modern">
+                        <thead><tr><th>Código</th><th>Descrição</th><th style="text-align:right;">Preço</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Import (Grande) -->
+    <div id="modal-import-g" class="modal-overlay">
+        <div class="modal-box" style="width:560px;">
+            <div class="modal-header">
+                <h3 class="font-semibold text-white text-lg">Importação Rápida</h3>
+                <button id="fechar-import-g" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-white/40 text-xs mb-3">Cole as colunas do Excel (Descrição [TAB] Preço):</p>
+                <textarea id="import-texto-g" rows="7" placeholder="Ex: ARROZ TIO JOAO 5KG&#9;29,90" class="input-modern font-mono text-sm" style="resize:none;"></textarea>
+                <div id="log-erros-g" class="mt-4 p-4 rounded-xl text-sm" style="background:rgba(248,113,113,0.1); color:#f87171; display:none;">
+                    <strong>⚠️ Itens não encontrados:</strong>
+                    <ul id="lista-erros-g" class="mt-2 pl-4"></ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-processar-import-g" class="btn-3d w-full" style="background: linear-gradient(135deg, #16a34a, #15803d);">Gerar Placas</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SCRIPTS                                           -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <script src="shared.js"></script>
+    <script src="pages/inicio.js"></script>
+    <script src="pages/produtos.js"></script>
+    <script src="pages/placas.js"></script>
+    <script src="pages/placas-amarela.js"></script>
+    <script src="pages/placas-grande.js"></script>
+    <script src="pages/relatorio-placas.js"></script>
+    <script src="pages/imagens.js"></script>
+    <script src="pages/terca-pizza.js"></script>
+    <script src="pages/cardapio.js"></script>
+    <script src="pages/listas.js"></script>
+    <script src="pages/textos.js"></script>
+    <script src="pages/importar.js"></script>
+    <script src="pages/capitalize.js"></script>
+    <script src="pages/formatos.js"></script>
+    <script src="pages/atalhos.js"></script>
+    <script src="pages/dashboard.js"></script>
+    <script src="pages/admin.js"></script>
+    <script src="pages/busca-rapida.js"></script>
+    <script src="pages/gerenciador-placas.js"></script>
+    <script src="pages/estoque-placas.js"></script>
+    <script src="pages/importar-cardapio.js"></script>
+    <script src="pages/feriados.js"></script>
+    <script src="pages/calc-kglt.js"></script>
+    <script src="pages/novidades.js"></script>
+    <script src="pages/criar-texto.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/easyqrcodejs@4.6.2/dist/easy.qrcode.min.js"></script>
+    <script src="pages/qrcode.js"></script>
+    <script src="pages/cotacao.js"></script>
+    <script src="pages/dashboard-vendas.js"></script>
+    <script src="pages/database.js"></script>
+    <script src="pwa.js"></script>
+    <script src="home.js"></script>
+</body>
+</html>

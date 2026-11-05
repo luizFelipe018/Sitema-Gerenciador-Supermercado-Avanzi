@@ -1,14 +1,26 @@
 var plaquesBancoGrande = []
 var plaquesSalvasGrande = []
 var paginaPlacasGrande = 0
-const plaquesPorPaginaGrande = 1
+const plaquesPorPaginaGrande = 2
 var placaClicadaGrande = null
+var placaClicadaElGrande = null
 var _salvandoGrande = false
 const CSS_FOLHA_G = `
-.folha-grande { display:flex; flex-direction:column; width:210mm; height:297mm; margin:0 auto 16px; background:#fff !important; box-sizing:border-box; box-shadow:0 2px 12px rgba(0,0,0,0.15); }
-.placa-grande { width:100%; height:100%; background:#fff !important; box-sizing:border-box; display:grid; place-items:end center; }
-@media print { @page { size: A4; margin: 0; } .folha-grande { box-shadow:none; margin:0; } .placa-grande { padding: 0 !important; } .pg-toggle-fracao { display:none !important; } }
+.folha-grande { position:relative; display:flex; flex-direction:row; width:297mm; height:210mm; margin:0 auto 16px; background:#fff !important; box-sizing:border-box; box-shadow:0 2px 12px rgba(0,0,0,0.15); gap:0; }
+.placa-grande { width:50%; height:100%; background:transparent !important; box-sizing:border-box; display:grid; place-items:end center; border:none; }
+/* Guia de corte: 1 linha preta vertical (1px) no meio da folha, dividindo as
+   2 placas Grande lado a lado para recorte. Nao altera o tamanho das placas
+   nem a quantidade de paginas. */
+.folha-grande::after { content:''; position:absolute; left:calc(50% - 0.5px); top:0; width:1px; height:100%; background:#000; z-index:5; pointer-events:none; }
+.placa-selecionada { outline:none !important; box-shadow:none !important; }
+@media print { @page { size: A4 landscape; margin: 0; } .folha-grande { box-shadow:none; margin:0; gap:0; } .placa-grande { padding: 0 !important; border:none; grid-template-rows:100%; overflow:hidden; } .placa-grande .placa-grande-conteudo { margin:0 auto !important; } .pg-rodape-wrapper { padding-bottom:14px; } .pg-toggle-fracao { display:none !important; } }
 `
+
+// Margem extra no topo (px no layout 561x794): desce o bloco de descricao
+// (texto 1/2/3) para abaixo do fim do banner SUPER OFERTA (~246px com o
+// desenho novo), deixando um respiro entre o cabecalho e a descricao.
+// 40px no layout ~ 10,6mm na placa Grande original.
+const MARGEM_TOPO_G = 40
 
 function carregarEstilos() {
     if (!document.getElementById('placas-main-style')) {
@@ -61,81 +73,55 @@ async function carregarPlacasGrande() {
 
             <div class="dash-glass dash-animate pg-card" style="padding:20px; margin-bottom:20px;">
                 <div class="pg-status" id="pg-status-banco" style="font-size:11px; color:rgba(255,255,255,0.3); margin-bottom:10px; padding:6px 10px; border-radius:6px; background:rgba(255,255,255,0.03);">Carregando produtos do banco...</div>
-                <div class="pg-input-row" style="display:flex; gap:12px; align-items:end; flex-wrap:wrap; margin-bottom:16px;">
-                    <div class="pg-field-group" style="display:flex; flex-direction:column; gap:4px;">
-                        <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Código / EAN</label>
-                        <input type="text" id="ean-input-g" autocomplete="off" autofocus
-                            style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; width:140px; transition:all 0.3s;"
-                            onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
-                            onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
+                <div class="frc mb16" style="align-items:end;">
+                    <div class="fcc">
+                        <label class="lb">Código / EAN</label>
+                        <input type="text" id="ean-input-g" autocomplete="off" autofocus class="inp inp-w140">
                     </div>
-                    <div class="pg-field-group" style="display:flex; flex-direction:column; gap:4px;">
-                        <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Preço (R$)</label>
-                        <input type="text" id="preco-input-g" inputmode="decimal"
-                            style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; width:120px; transition:all 0.3s;"
-                            onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
-                            onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
+                    <div class="fcc">
+                        <label class="lb">Preço (R$)</label>
+                        <input type="text" id="preco-input-g" inputmode="decimal" class="inp inp-w120">
                     </div>
-                    <div class="pg-field-group" style="display:flex; flex-direction:column; gap:4px;">
-                        <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Qtd</label>
-                        <input type="number" id="qtd-input-g" value="1" min="1"
-                            style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; width:70px; transition:all 0.3s; text-align:center;"
-                            onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
-                            onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
+                    <div class="fcc">
+                        <label class="lb">Qtd</label>
+                        <input type="number" id="qtd-input-g" value="1" min="1" class="inp inp-w70">
                     </div>
-                    <button id="btn-add-placa-g" style="padding:10px 20px; border:none; border-radius:10px; font-size:13px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); display:flex; align-items:center; gap:6px;"
-                        onmouseenter="this.style.transform='translateY(-2px) scale(1.03)';this.style.boxShadow='0 8px 24px rgba(181,21,21,0.4)'"
-                        onmouseleave="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(181,21,21,0.3)'"
-                        onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='translateY(-2px) scale(1.03)'">
+                    <button id="btn-add-placa-g" class="btn-p">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         Adicionar
                     </button>
-                    <button id="btn-abrir-busca-g" style="padding:10px 18px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; font-size:13px; font-weight:600; color:rgba(255,255,255,0.6); cursor:pointer; background:rgba(255,255,255,0.04); transition:all 0.3s; display:flex; align-items:center; gap:6px;"
-                        onmouseenter="this.style.background='rgba(255,255,255,0.08)';this.style.color='#fafafa'"
-                        onmouseleave="this.style.background='rgba(255,255,255,0.04)';this.style.color='rgba(255,255,255,0.6)'">
+                    <button id="btn-abrir-busca-g" class="btn-s">
                         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                         Buscar
                     </button>
-                    <button id="btn-abrir-import-g" style="padding:10px 18px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; font-size:13px; font-weight:600; color:rgba(255,255,255,0.6); cursor:pointer; background:rgba(255,255,255,0.04); transition:all 0.3s; display:flex; align-items:center; gap:6px;"
-                        onmouseenter="this.style.background='rgba(255,255,255,0.08)';this.style.color='#fafafa'"
-                        onmouseleave="this.style.background='rgba(255,255,255,0.04)';this.style.color='rgba(255,255,255,0.6)'">
+                    <button id="btn-abrir-import-g" class="btn-s">
                         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         Importar
                     </button>
                 </div>
-                <div class="pg-actions" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06);">
-                    <button id="btn-print-atual-g" style="padding:8px 16px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; font-size:12px; font-weight:600; color:rgba(255,255,255,0.6); cursor:pointer; background:rgba(255,255,255,0.04); transition:all 0.3s; display:flex; align-items:center; gap:6px;"
-                        onmouseenter="this.style.background='rgba(34,197,94,0.12)';this.style.borderColor='rgba(34,197,94,0.3)';this.style.color='#22c55e'"
-                        onmouseleave="this.style.background='rgba(255,255,255,0.04)';this.style.borderColor='rgba(255,255,255,0.08)';this.style.color='rgba(255,255,255,0.6)'">
+                <div class="bar pg-actions">
+                    <button id="btn-print-atual-g" class="btn-sm">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                         Pág. Atual
                     </button>
-                    <button id="btn-print-tudo-g" style="padding:8px 16px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; font-size:12px; font-weight:600; color:rgba(255,255,255,0.6); cursor:pointer; background:rgba(255,255,255,0.04); transition:all 0.3s; display:flex; align-items:center; gap:6px;"
-                        onmouseenter="this.style.background='rgba(34,197,94,0.12)';this.style.borderColor='rgba(34,197,94,0.3)';this.style.color='#22c55e'"
-                        onmouseleave="this.style.background='rgba(255,255,255,0.04)';this.style.borderColor='rgba(255,255,255,0.08)';this.style.color='rgba(255,255,255,0.6)'">
+                    <button id="btn-print-tudo-g" class="btn-sm">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                         Imprimir Tudo
                     </button>
 
-                    <div class="pg-pagination" style="display:flex; align-items:center; gap:6px; margin-left:8px;">
-                        <button id="btn-pag-ant-g" style="padding:8px 12px; border:1px solid rgba(255,255,255,0.08); border-radius:8px; font-size:12px; color:rgba(255,255,255,0.4); cursor:pointer; background:transparent; transition:all 0.3s; display:flex; align-items:center; gap:4px;"
-                            onmouseenter="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.7)'"
-                            onmouseleave="this.style.background='transparent';this.style.color='rgba(255,255,255,0.4)'">
+                    <div class="frc6" style="margin-left:8px;">
+                        <button id="btn-pag-ant-g" class="btn-g">
                             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
                             Ant.
                         </button>
-                        <span id="contador-pagina-g" style="font-size:12px; font-weight:600; color:rgba(255,255,255,0.35); min-width:100px; text-align:center;">Página 1 de 1</span>
-                        <button id="btn-pag-prox-g" style="padding:8px 12px; border:1px solid rgba(255,255,255,0.08); border-radius:8px; font-size:12px; color:rgba(255,255,255,0.4); cursor:pointer; background:transparent; transition:all 0.3s; display:flex; align-items:center; gap:4px;"
-                            onmouseenter="this.style.background='rgba(255,255,255,0.06)';this.style.color='rgba(255,255,255,0.7)'"
-                            onmouseleave="this.style.background='transparent';this.style.color='rgba(255,255,255,0.4)'">
+                        <span id="contador-pagina-g" class="pg">Página 1 de 1</span>
+                        <button id="btn-pag-prox-g" class="btn-g">
                             Próx.
                             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
                         </button>
                     </div>
 
-                    <button id="btn-limpar-g" style="padding:8px 16px; border:none; border-radius:10px; font-size:12px; font-weight:700; color:#ef4444; cursor:pointer; background:rgba(239,68,68,0.1); margin-left:auto; transition:all 0.3s; display:flex; align-items:center; gap:6px;"
-                        onmouseenter="this.style.background='rgba(239,68,68,0.2)';this.style.transform='scale(1.03)'"
-                        onmouseleave="this.style.background='rgba(239,68,68,0.1)';this.style.transform=''">
+                    <button id="btn-limpar-g" class="btn-d mla">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                         Limpar
                     </button>
@@ -168,24 +154,23 @@ async function carregarPlacasGrande() {
         atualizarStatusBanco(`✓ ${plaquesBancoGrande.length} produto(s) em memória`)
     }
 
-    try {
-        const res = await fetch(API+'/registros-placas?tipo=grande', { headers: authHeaders() })
-        const data = await res.json()
-        if (Array.isArray(data)) {
-            plaquesSalvasGrande = data.map(p => {
-                const prod = plaquesBancoGrande.find(x => String(x.codigo) === String(p.codigo) || (x.ean && p.ean && String(x.ean) === String(p.ean)))
-                const fs = p.config ? JSON.parse(p.config) : null
-                return {
-                    ...p,
-                    preco: Math.round(parseFloat(p.preco) * 100) / 100,
-                    quantidade_kg_l: parseFloat(p.quantidade_kg_l || 0),
-                    id_unico: Date.now() + Math.random(),
-                    marca: p.marca || prod?.marca || '',
-                    _fs: fs || undefined
-                }
-            })
+    const carregadas = await coreCarregarPlacas('grande', p => {
+        const prod = plaquesBancoGrande.find(x => String(x.codigo) === String(p.codigo) || (x.ean && p.ean && String(x.ean) === String(p.ean)))
+        return {
+            ...p,
+            preco: Math.round(parseFloat(p.preco) * 100) / 100,
+            quantidade_kg_l: parseFloat(p.quantidade_kg_l || 0),
+            id_unico: Date.now() + Math.random(),
+            marca: p.marca || prod?.marca || '',
+            _fs: coreParseConfig(p.config) || undefined
         }
-    } catch { console.error('Erro ao carregar placas grandes salvas') }
+    })
+    plaquesSalvasGrande = carregadas.placas
+    if (carregadas.origem === 'pendente' || carregadas.origem === 'cache-servidor-vazio') {
+        atualizarStatusBanco(`⚠ Exibindo ${plaquesSalvasGrande.length} placa(s) do armazenamento local — o servidor ainda não recebeu o último salvamento. Elas serão reenviadas ao salvar.`, '#facc15')
+    } else if (carregadas.origem === 'offline') {
+        atualizarStatusBanco(`⚠ Servidor fora do ar — exibindo ${plaquesSalvasGrande.length} placa(s) salvas neste computador.`, '#facc15')
+    }
 
     renderizarPlacasGrande()
     vincularEventosPlacasGrande()
@@ -243,8 +228,8 @@ function montarPlacaGrandeHTML(p) {
     const gapLinha3 = p._fs?.gap3 ?? Math.max(Math.round(linha3FontSize * 0.6), 4)
 
     return `
-        <div id="placa-grande-conteudo" class="placa-grande-conteudo" style="width:525px; height:544px; margin:0 auto 88px; position:relative; box-sizing:border-box; font-family:'Arial Black',Arial,sans-serif; font-weight:900;">
-            <div class="pg-texto-wrapper" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:2mm; line-height:1.7; padding-bottom:110px;">
+        <div id="placa-grande-conteudo" class="placa-grande-conteudo" style="width:561px; height:794px; margin:0 auto 88px; position:relative; box-sizing:border-box; font-family:'Arial Black',Arial,sans-serif; font-weight:900; background-image:url('assets/MODELOS PLACAS 2026.png'); background-size:100% 100%; background-position:center; background-repeat:no-repeat;">
+            <div class="pg-texto-wrapper" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:2mm; line-height:1.7; padding-bottom:110px; margin-top:${200 + MARGEM_TOPO_G}px;">
                 <div class="pg-linha1-wrapper" style="width:100%; text-align:center; margin-top:30px;">
                     <div class="pg-linha1" data-field="linha1" style="font-size:${linha1FontSize}px; font-weight:bold; text-transform:uppercase; white-space:nowrap; overflow:hidden; transform:scaleY(1.3);">${linha1}</div>
                 </div>
@@ -259,15 +244,15 @@ function montarPlacaGrandeHTML(p) {
             </div>
 
             <div class="pg-rodape-wrapper" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:1mm; position:absolute; bottom:0; left:0;">
-                <div class="pg-preco-wrapper" style="width:100%; display:flex; align-items:flex-end;${uniDisplay !== 'UN' ? " justify-content:space-between;" : " justify-content:center;"} transform:scaleY(1.3);">
+                <div class="pg-preco-wrapper" style="width:100%; display:flex; align-items:flex-end; justify-content:center; transform:scaleY(1.3);">
                     <span class="pg-preco-simbolo" style="font-size:20px; font-weight:bold; margin-right:2px; margin-bottom:20px; line-height:1;">R$</span>
-                    <span class="pg-preco-valor" style="font-size:${precoFontSize}px; font-weight:900; line-height:1;">${reaisExib},${centsExib}</span>
+                    <span class="pg-preco-valor" data-ajuste="preco" style="font-size:${precoFontSize}px; font-weight:900; line-height:1;">${reaisExib},${centsExib}</span>
                     ${fracionar
-                        ? `<span class="pg-preco-unidade" style="font-size:16px; font-weight:bold; display:flex; flex-direction:column; align-items:center; line-height:1.15; margin-bottom:16px; margin-left:0;">
+                        ? `<span class="pg-preco-unidade" style="font-size:16px; font-weight:bold; display:flex; flex-direction:column; align-items:center; line-height:1.15; margin-bottom:16px; margin-left:3px;">
                             <span>A CADA</span>
                             <span>100G</span>
                         </span>`
-                        : `<span class="pg-preco-unidade" data-field="unidade" style="font-size:20px; font-weight:bold;${uniDisplay !== 'UN' ? " margin-left:0;" : " margin-left:3px;"} margin-bottom:20px; line-height:1;">${uniDisplay}</span>`}
+                        : `<span class="pg-preco-unidade" data-field="unidade" style="font-size:20px; font-weight:bold; margin-left:3px; margin-bottom:20px; line-height:1;">${uniDisplay}</span>`}
                 </div>
                 <div class="pg-rodape-texto-wrapper" style="width:100%; text-align:center; padding-top:2px; margin-top:90px;">
                     <div class="pg-rodape-texto" data-field="rodape" style="font-size:14px; font-weight:bold; line-height:0.66; transform:scaleY(1.3);">${rodape}</div>
@@ -281,8 +266,43 @@ function montarPlacaGrandeHTML(p) {
     `
 }
 
-function renderizarPlacasGrande() {
-    const container = document.getElementById('container-placas-g')
+/** Destaca a placa selecionada (apenas na tela). */
+function marcarPlacaSelecionadaG(div, selecionada) {
+    if (!div) return
+    div.classList.toggle('placa-selecionada', !!selecionada)
+    document.querySelectorAll('.placa-selecionada').forEach(el => {
+        if (el !== div) el.classList.remove('placa-selecionada')
+    })
+}
+
+/**
+ * Salva a predefinição de texto (tamanhos/posições) da placa selecionada.
+ * Chamado pelo menu de contexto (junto de Duplicar e Excluir).
+ */
+async function onSalvarPredefGrande() {
+    const p = placaClicadaGrande
+    if (!p) { toast('Selecione uma placa primeiro', 'aviso'); return }
+    if (!p._fs || !Object.keys(p._fs).length) {
+        toast('Esta placa não tem ajustes para salvar', 'info')
+        return
+    }
+    await salvarPlacasGrande()
+    toast('Predefinição da placa salva', 'ok')
+}
+
+/** Usa a predefinição da placa como padrão das novas placas do modelo. */
+async function onSalvarPredefPadraoGrande() {
+    const p = placaClicadaGrande
+    if (!p) { toast('Selecione uma placa primeiro', 'aviso'); return }
+    if (!p._fs || !Object.keys(p._fs).length) {
+        toast('Esta placa não tem ajustes para salvar', 'info')
+        return
+    }
+    coreSalvarPresetPadrao('grande', JSON.parse(JSON.stringify(p._fs)))
+    toast('As novas placas já vão nascer com esta predefinição', 'ok')
+}
+
+function renderizarPlacasGrande() {    const container = document.getElementById('container-placas-g')
     if (!container) return
     container.innerHTML = ''
 
@@ -298,18 +318,26 @@ function renderizarPlacasGrande() {
     )
     if (!lista.length) {
         container.innerHTML = `
-            <div style="text-align:center; padding:60px 20px; border-radius:16px; border:1px dashed rgba(255,255,255,0.08);">
+            <div class="es">
                 <svg width="40" height="40" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:12px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-                <p style="color:rgba(255,255,255,0.2); font-size:13px;">Nenhuma placa grande adicionada</p>
-                <p style="color:rgba(255,255,255,0.1); font-size:11px; margin-top:4px;">Digite um código e preço acima para começar</p>
+                <p class="es-p">Nenhuma placa grande adicionada</p>
+                <p class="es-sub">Digite um código e preço acima para começar</p>
             </div>`
         return
     }
 
     lista.forEach(p => {
         const div = document.createElement('div')
-        div.style.cssText = 'background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.15); display:inline-flex;'
+        div.style.cssText = 'background:#fff; overflow:hidden; display:inline-flex; flex:1;'
         div.innerHTML = montarPlacaGrandeHTML(p)
+
+        // clique na placa (fora dos textos) seleciona a placa do menu de contexto
+        div.addEventListener('click', (e) => {
+            if (e.target.closest('[data-field]')) return
+            placaClicadaGrande = p
+            placaClicadaElGrande = div
+            marcarPlacaSelecionadaG(div, true)
+        })
 
         div.querySelectorAll('[data-field]').forEach(el => {
             el.style.cursor = 'pointer'
@@ -442,6 +470,11 @@ function renderizarPlacasGrande() {
             e.preventDefault()
             placaClicadaGrande = p
             const menu = document.getElementById('contextMenu')
+            // "Usar como padrão" só aparece se a placa tem ajustes salvos
+            const itemPadrao = document.getElementById('ctx-padrao-novas')
+            if (itemPadrao) {
+                itemPadrao.style.display = (p._fs && Object.keys(p._fs).length) ? 'flex' : 'none'
+            }
             menu.style.display = 'block'
             menu.style.top = e.clientY + 'px'
             menu.style.left = e.clientX + 'px'
@@ -463,17 +496,12 @@ function renderizarPlacasGrande() {
 }
 
 async function onExcluirPlacaGrande() {
-    const idx = plaquesSalvasGrande.indexOf(placaClicadaGrande)
-    if (idx === -1) return
-    plaquesSalvasGrande.splice(idx, 1)
+    coreExcluirPlaca({ salvas: plaquesSalvasGrande, clicada: placaClicadaGrande })
     await salvarERenderizarGrande()
 }
 
 async function onDuplicarPlacaGrande() {
-    const idx = plaquesSalvasGrande.indexOf(placaClicadaGrande)
-    if (idx === -1) return
-    const clone = { ...placaClicadaGrande, id_unico: Date.now() + Math.random() }
-    plaquesSalvasGrande.splice(idx + 1, 0, clone)
+    coreDuplicarPlaca({ salvas: plaquesSalvasGrande, clicada: placaClicadaGrande })
     await salvarERenderizarGrande()
 }
 
@@ -492,17 +520,31 @@ async function salvarPlacasGrande() {
             marca: p.marca || null,
             config: p._fs ? JSON.stringify(p._fs) : null
         }))
+        coreCacheSalvar('grande', placas)
         const res = await fetch(API+'/registros-placas', {
             method: 'POST',
             headers: { ...authHeaders(), 'Content-Type': 'application/json' },
             body: JSON.stringify({ tipo: 'grande', placas })
         })
         const data = await res.json()
+        if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status))
+        coreCachePendente('grande', false)
         if (data.logIds && data.logIds.length) {
             window._ultimasPlacasGeradas.push(...data.logIds)
         }
-    } catch (e) { console.error('Erro ao salvar placas grandes:', e) }
-    _salvandoGrande = false
+        // se havia aviso de copia local/offline, volta ao normal apos sincronizar
+        const stEl = document.getElementById('pg-status-banco')
+        if (stEl && /armazenamento local|Servidor fora do ar/i.test(stEl.innerText)) {
+            atualizarStatusBanco(`✓ ${plaquesSalvasGrande.length} placa(s) salva(s) no servidor`)
+        }
+    } catch (e) {
+        console.error('Erro ao salvar placas grandes:', e)
+        coreCachePendente('grande', true)
+        alert('Erro ao salvar no servidor: ' + e.message +
+            '\n\nSuas placas continuam salvas neste computador e serão reenviadas quando o servidor voltar.')
+    } finally {
+        _salvandoGrande = false
+    }
 }
 
 async function salvarERenderizarGrande() {
@@ -512,8 +554,7 @@ async function salvarERenderizarGrande() {
 
 async function mudarPaginaPlacasGrande(v) {
     await salvarPlacasGrande()
-    const total = Math.ceil(plaquesSalvasGrande.length / plaquesPorPaginaGrande)
-    paginaPlacasGrande = Math.max(0, Math.min(paginaPlacasGrande + v, total - 1))
+    paginaPlacasGrande = coreMudarPagina({ salvas: plaquesSalvasGrande, porPagina: plaquesPorPaginaGrande, pagina: paginaPlacasGrande }, v)
     renderizarPlacasGrande()
 }
 
@@ -589,7 +630,7 @@ async function adicionarPlacaGrande() {
         const qtdKgL = parseFloat(prod.quantidade_kg_l)
         const precoUn = qtdKgL > 0 ? (preco / qtdKgL).toFixed(2).replace('.', ',') : prod.preco_venda
         for (let i = 0; i < quantidade; i++) {
-            plaquesSalvasGrande.push({ ...prod, preco, preco_info: precoUn, id_unico: Date.now() + Math.random() })
+            plaquesSalvasGrande.push(coreAplicarPresetPadrao({ ...prod, preco, preco_info: precoUn, id_unico: Date.now() + Math.random() }, 'grande'))
         }
         await salvarERenderizarGrande()
         document.getElementById('ean-input-g').value = ''
@@ -602,10 +643,7 @@ async function adicionarPlacaGrande() {
 }
 
 function abrirBuscaNomeGrande() {
-    document.getElementById('modal-busca-g').style.display = 'block'
-    document.getElementById('input-busca-nome-g').value = ''
-    document.querySelector('#tabela-busca-g tbody').innerHTML = ''
-    document.getElementById('input-busca-nome-g').focus()
+    coreAbrirBuscaNome('-g')
 }
 
 async function onBuscaNomeKeydownGrande(e) {
@@ -649,14 +687,7 @@ async function onBuscaNomeKeydownGrande(e) {
 }
 
 function extrairKgLtG(desc) {
-    const m = desc.match(/(\d+[.,]?\d*)\s*(KG|G|L|ML)/)
-    if (!m) return 0
-    const val = parseFloat(m[1].replace(',', '.'))
-    if (isNaN(val) || val <= 0) return 0
-    const unid = m[2]
-    if (unid === 'KG' || unid === 'L') return val
-    if (unid === 'G' || unid === 'ML') return val / 1000
-    return 0
+    return coreExtrairKgLt(desc)
 }
 
 async function processarImportacaoGrande() {
@@ -675,8 +706,8 @@ async function processarImportacaoGrande() {
             const descProcurada = colunas[0].trim().toUpperCase()
             const precoNovo = parseFloat(colunas[1].replace('R$', '').replace(/\s/g, '').replace(',', '.').trim())
             if (!isNaN(precoNovo)) {
-                let prod = plaquesBancoGrande.find(p => p.descricao?.toUpperCase() === descProcurada) ||
-                           plaquesBancoGrande.find(p => p.descricao?.toUpperCase().includes(descProcurada))
+                let prod = placasBancoGrande.find(p => p.descricao?.toUpperCase() === descProcurada) ||
+                           placasBancoGrande.find(p => p.descricao?.toUpperCase().includes(descProcurada))
                 if (!prod) {
                     try {
                         const res = await fetch(API+'/produtos/busca?q='+encodeURIComponent(descProcurada), { headers: authHeaders() })
@@ -686,7 +717,7 @@ async function processarImportacaoGrande() {
                                 const res2 = await fetch(API+'/produtos/'+encodeURIComponent(lista[0].codigo), { headers: authHeaders() })
                                 if (res2.ok) {
                                     const p = await res2.json()
-                                    plaquesBancoGrande.push(p)
+                                    placasBancoGrande.push(p)
                                     prod = p
                                 }
                             }
@@ -697,14 +728,14 @@ async function processarImportacaoGrande() {
                     const qtdKgL = parseFloat(prod.quantidade_kg_l)
                     const precoUn = qtdKgL > 0 ? (precoNovo / qtdKgL).toFixed(2).replace('.', ',') : prod.preco_venda
                     for (let i = 0; i < qtdGlobal; i++) {
-                        plaquesSalvasGrande.push({ ...prod, preco: precoNovo, preco_info: precoUn, id_unico: Date.now() + Math.random() })
+                        placasSalvasGrande.push(coreAplicarPresetPadrao({ ...prod, preco: precoNovo, preco_info: precoUn, id_unico: Date.now() + Math.random() }, 'grande'))
                     }
                     contador++
                 } else {
                     const qtdKgL = extrairKgLtG(descProcurada)
                     const precoUn = qtdKgL > 0 ? (precoNovo / qtdKgL).toFixed(2).replace('.', ',') : precoNovo.toFixed(2).replace('.', ',')
                     for (let i = 0; i < qtdGlobal; i++) {
-                        plaquesSalvasGrande.push({ descricao: colunas[0].trim(), codigo: '', ean: '', preco: precoNovo, preco_info: precoUn, quantidade_kg_l: qtdKgL, id_unico: Date.now() + Math.random() })
+                        placasSalvasGrande.push(coreAplicarPresetPadrao({ descricao: colunas[0].trim(), codigo: '', ean: '', preco: precoNovo, preco_info: precoUn, quantidade_kg_l: qtdKgL, id_unico: Date.now() + Math.random() }, 'grande'))
                     }
                     contador++
                 }
@@ -713,10 +744,33 @@ async function processarImportacaoGrande() {
     }
 
     fecharModaisGrande()
-    alert(`${contador} placa(s) gerada(s).`)
+    alert(contador + ' placa(s) gerada(s).')
+    await salvarERenderizarGrande()
+    document.getElementById('import-texto-g').value = ''
+
+
+    fecharModaisGrande()
+    alert(contador + ' placa(s) gerada(s).')
+    await salvarERenderizarGrande()
+    document.getElementById('import-texto-g').value = ''
+
+    if (destino === 'grande4') {
+        if (document.getElementById('btn-placas-grande-4')) document.getElementById('btn-placas-grande-4').click()
+        else if (typeof carregarPlacasGrande4 === 'function') carregarPlacasGrande4()
+        if (typeof salvarERenderizarGrande4 === 'function') await salvarERenderizarGrande4()
+        document.getElementById('import-texto-g').value=''; return
+    }
+    if (destino === 'a4') {
+        if (document.getElementById('btn-placas-a4')) document.getElementById('btn-placas-a4').click()
+        else if (typeof carregarPlacasA4 === 'function') carregarPlacasA4()
+        if (typeof salvarERenderizarA4 === 'function') await salvarERenderizarA4()
+        document.getElementById('import-texto-g').value=''; return
+    }
+
     await salvarERenderizarGrande()
     document.getElementById('import-texto-g').value = ''
 }
+
 
 function fecharModaisGrande() {
     document.getElementById('modal-busca-g').style.display = 'none'

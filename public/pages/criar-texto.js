@@ -12,7 +12,7 @@ async function carregarCriarTexto() {
                 </h2>
             </div>
 
-            <div style="display:grid; grid-template-columns:1fr 2fr 1fr; gap:12px; margin-bottom:16px;">
+            <div style="display:grid; grid-template-columns:1fr 2fr 1fr; gap:20px; margin-bottom:24px;">
                 <div style="min-width:0;">
                     <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3); display:block; margin-bottom:6px;">Código / EAN</label>
                     <div style="display:flex; gap:6px;">

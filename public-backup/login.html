@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" id="meta-csp"
+    content="default-src 'self' http://localhost:3000 http://192.168.2.55:3000; script-src 'self' https://cdn.tailwindcss.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; img-src 'self' https://superavanzi.com.br blob: data: https://images.openfoodfacts.org https://static.openfoodfacts.org; connect-src 'self' http://localhost:3000 http://192.168.2.55:3000; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com;">
+    <title>Supermercado Avanzi</title>
+    <meta name="theme-color" content="#b51515">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Avanzi ERP">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <script>
+        window.TAILWIND_CONFIG = { disableDevWarning: true }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { red: { avanzi: '#b51515', dark: '#8a0f0f' } } } }
+        }
+    </script>
+    <style>
+        :root {
+            --primary: #b51515;
+            --primary-dark: #8a0f0f;
+            --primary-glow: rgba(181, 21, 21, 0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            overflow: hidden;
+            transition: background 0.5s ease;
+        }
+
+        body.theme-light { background: #f0f2f5; }
+
+        /* ── Animated Gradient Background ── */
+        .bg-gradient {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: radial-gradient(ellipse at 20% 50%, rgba(181,21,21,0.12) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 20%, rgba(181,21,21,0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 80%, rgba(181,21,21,0.06) 0%, transparent 50%);
+            animation: gradientShift 15s ease-in-out infinite alternate;
+        }
+
+        body.theme-light .bg-gradient {
+            background: radial-gradient(ellipse at 20% 50%, rgba(181,21,21,0.06) 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 20%, rgba(181,21,21,0.04) 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 80%, rgba(181,21,21,0.03) 0%, transparent 50%);
+        }
+
+        @keyframes gradientShift {
+            0% { transform: scale(1) rotate(0deg); }
+            100% { transform: scale(1.2) rotate(3deg); }
+        }
+
+        /* ── Canvas Particles ── */
+        #particles-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* ── Card 3D ── */
+        .card-3d-wrap {
+            perspective: 1000px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .card-3d {
+            transition: transform 0.1s ease-out;
+            transform-style: preserve-3d;
+        }
+
+        .card-glass {
+            position: relative;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 60px var(--primary-glow);
+            overflow: hidden;
+        }
+
+        body.theme-light .card-glass {
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.1), 0 0 40px var(--primary-glow);
+        }
+
+        .card-spotlight {
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            pointer-events: none;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .card-parallax {
+            transition: transform 0.15s cubic-bezier(0.03, 0.98, 0.52, 0.99);
+            will-change: transform;
+        }
+
+        /* ── Card header ── */
+        .card-header {
+            position: relative;
+            padding: 40px 32px 32px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .card-header::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
+
+        .card-header::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+        }
+
+        .card-header-content { position: relative; z-index: 1; }
+
+        .card-header .logo-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .card-header .logo-icon svg { width: 28px; height: 28px; color: #fff; }
+
+        /* ── Form ── */
+        .form-body {
+            padding: 28px 32px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-group {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        .input-group label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.4);
+            transition: color 0.3s ease;
+        }
+
+        body.theme-light .input-group label { color: rgba(0,0,0,0.4); }
+
+        .input-group:focus-within label { color: var(--primary); }
+
+        .input-field {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            font-size: 14px;
+            color: #fafafa;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        body.theme-light .input-field {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            color: #111827;
+        }
+
+        .input-field::placeholder { color: rgba(255,255,255,0.2); }
+        body.theme-light .input-field::placeholder { color: #adb5bd; }
+
+        .input-field:focus {
+            border-color: var(--primary);
+            background: rgba(255,255,255,0.06);
+            box-shadow: 0 0 0 3px rgba(181,21,21,0.15), 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        body.theme-light .input-field:focus {
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(181,21,21,0.1), 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        /* ── Input focus ring glow ── */
+        .input-glow {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .input-field:focus ~ .input-glow { width: 80%; }
+
+        /* ── Error ── */
+        #erro {
+            font-size: 13px;
+            font-weight: 500;
+            min-height: 20px;
+            color: #ef4444;
+            text-align: center;
+        }
+
+        body.theme-light #erro { color: #dc2626; }
+
+        /* ── Button ── */
+        .btn-login {
+            position: relative;
+            width: 100%;
+            padding: 15px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            cursor: pointer;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            box-shadow: 0 4px 20px rgba(181,21,21,0.3), 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            font-family: inherit;
+            letter-spacing: 0.02em;
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(181,21,21,0.4), 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .btn-login:hover::before { left: 100%; }
+
+        .btn-login:active { transform: translateY(0) scale(0.98); }
+
+        .btn-login.loading {
+            pointer-events: none;
+            opacity: 0.85;
+        }
+
+        .btn-login .btn-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-login .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        .btn-login.loading .btn-text { opacity: 0.6; }
+        .btn-login.loading .spinner { display: block; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Footer ── */
+        .card-footer {
+            padding: 0 32px 24px;
+            text-align: center;
+        }
+
+        .card-footer p {
+            font-size: 11px;
+            color: rgba(255,255,255,0.2);
+            letter-spacing: 0.05em;
+        }
+
+        body.theme-light .card-footer p { color: rgba(0,0,0,0.25); }
+
+        /* ── Theme toggle ── */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 50;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.06);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.8);
+            transform: scale(1.05);
+        }
+
+        body.theme-light .theme-toggle {
+            background: rgba(0,0,0,0.03);
+            border-color: rgba(0,0,0,0.06);
+            color: rgba(0,0,0,0.3);
+        }
+
+        body.theme-light .theme-toggle:hover {
+            background: rgba(0,0,0,0.06);
+            color: rgba(0,0,0,0.6);
+        }
+
+        /* ── Card entrance animation ── */
+        .card-entrance {
+            animation: cardEnter 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes cardEnter {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .card-entrance > * { animation: cardChild 0.6s ease both; }
+        .card-entrance > *:nth-child(1) { animation-delay: 0.1s; }
+        .card-entrance > *:nth-child(2) { animation-delay: 0.2s; }
+        .card-entrance > *:nth-child(3) { animation-delay: 0.3s; }
+        .card-entrance > *:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes cardChild {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ═══════════════════════════════════════════════════ */
+        /* RESPONSIVE LOGIN                                    */
+        /* ═══════════════════════════════════════════════════ */
+
+        @media (max-width: 640px) {
+            .card-header { padding: 28px 20px 24px !important; }
+            .card-header .logo-icon { width: 44px; height: 44px; }
+            .card-header .logo-icon svg { width: 22px; height: 22px; }
+            .card-header h1 { font-size: 1.1rem !important; }
+
+            .form-body { padding: 20px 20px 24px !important; gap: 16px !important; }
+            .input-field { padding: 12px 14px !important; font-size: 13px !important; }
+            .btn-login { padding: 13px 20px !important; font-size: 14px !important; }
+
+            .card-footer { padding: 0 20px 20px !important; }
+
+            .theme-toggle {
+                top: 12px !important;
+                right: 12px !important;
+                width: 36px !important;
+                height: 36px !important;
+            }
+
+            .card-3d-wrap .card-glass { border-radius: 16px !important; }
+        }
+
+        @media (max-width: 380px) {
+            .card-header { padding: 20px 16px 20px !important; }
+            .form-body { padding: 16px 16px 20px !important; }
+            .card-header h1 { font-size: 1rem !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Animated gradient background -->
+    <div class="bg-gradient"></div>
+
+    <!-- Canvas Particles -->
+    <canvas id="particles-canvas"></canvas>
+
+    <!-- Background decoration (theme-aware) -->
+    <div id="bg-decoration-login" class="fixed inset-0 pointer-events-none z-0">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/8 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-red-500/6 rounded-full blur-3xl animate-pulse" style="animation-delay: 1.5s;"></div>
+    </div>
+
+    <!-- Theme Toggle -->
+    <button id="btn-theme-toggle-login" class="theme-toggle" title="Alternar tema" style="top:20px; right:68px;">
+        <svg id="icon-sol-login" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <svg id="icon-lua-login" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="hidden"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+
+    <!-- Server Config button -->
+    <button id="btn-server-config-login" class="theme-toggle" title="Configurar servidor" style="top:20px; right:20px;">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+    </button>
+
+    <!-- Login Card -->
+    <div class="card-3d-wrap w-full max-w-sm mx-auto" style="min-height:100vh; display:flex; align-items:center; justify-content:center;">
+        <div id="login-card" class="card-3d card-entrance w-full card-glass">
+
+            <!-- Header -->
+            <div class="card-header card-parallax">
+                <div class="card-header-content">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    </div>
+                    <p class="text-white/60 text-xs font-semibold tracking-widest uppercase mb-1">Sistema de Gestão</p>
+                    <h1 class="text-white text-xl font-bold tracking-tight">Supermercado Avanzi</h1>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <form class="form-body card-parallax" id="login-form" autocomplete="off">
+                <div class="input-group">
+                    <label for="usuario">Usuário</label>
+                    <input id="usuario" type="text" placeholder="Digite seu usuário" class="input-field" autocomplete="off" />
+                    <div class="input-glow"></div>
+                </div>
+
+                <div class="input-group">
+                    <label for="senha">Senha</label>
+                    <input id="senha" type="password" placeholder="Digite sua senha" class="input-field" autocomplete="off" />
+                    <div class="input-glow"></div>
+                </div>
+
+                <p id="erro"></p>
+
+                <button id="btn-login" class="btn-login" type="button">
+                    <div class="btn-content">
+                        <span class="spinner"></span>
+                        <span class="btn-text">Entrar no Sistema</span>
+                    </div>
+                </button>
+
+                <!-- Server config (hidden by default) -->
+                <div id="server-config-area" style="display:none; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06);">
+                    <div class="input-group">
+                        <label for="input-server-url">Servidor (IP:Porta)</label>
+                        <input id="input-server-url" type="text" placeholder="http://192.168.2.55:3000" class="input-field" />
+                        <div class="input-glow"></div>
+                    </div>
+                    <div style="display:flex; gap:8px; margin-top:8px;">
+                        <button id="btn-save-server" type="button" style="flex:1; padding:10px; border:none; border-radius:10px; font-size:12px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#b51515,#8a0f0f);">Usar este IP</button>
+                        <button id="btn-localhost-server" type="button" style="flex:1; padding:10px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; font-size:12px; font-weight:600; color:rgba(255,255,255,0.6); cursor:pointer; background:transparent;">Usar Localhost</button>
+                    </div>
+                    <button id="btn-cancel-server" type="button" style="width:100%; margin-top:6px; padding:8px; border:none; border-radius:8px; font-size:11px; font-weight:500; color:rgba(255,255,255,0.3); cursor:pointer; background:transparent;">Cancelar</button>
+                </div>
+            </form>
+
+            <!-- Footer -->
+            <div class="card-footer card-parallax">
+                <p>ERP Avanzi v1.0</p>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script src="login.js"></script>
+    <script src="pwa.js"></script>
+    <script>
+        // ── Canvas Particle System ──
+        (function() {
+            const canvas = document.getElementById('particles-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            const COUNT = 90;
+            const CONNECTION_DIST = 130;
+            let mouse = null;
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Particle {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.vx = (Math.random() - 0.5) * 0.4;
+                    this.vy = (Math.random() - 0.5) * 0.4;
+                    this.r = Math.random() * 2.2 + 1.2;
+                    this.o = Math.random() * 0.35 + 0.15;
+                    this.pulse = Math.random() * Math.PI * 2;
+                    this.pulseSpeed = Math.random() * 0.02 + 0.01;
+                }
+                update() {
+                    if (mouse) {
+                        const dx = this.x - mouse.x;
+                        const dy = this.y - mouse.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 160 && dist > 0) {
+                            const force = (160 - dist) / 160 * 1.5;
+                            this.vx += (dx / dist) * force * 0.04;
+                            this.vy += (dy / dist) * force * 0.04;
+                        }
+                    }
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vx *= 0.97;
+                    this.vy *= 0.97;
+                    this.pulse += this.pulseSpeed;
+                    if (this.x < -20) this.x = canvas.width + 20;
+                    if (this.x > canvas.width + 20) this.x = -20;
+                    if (this.y < -20) this.y = canvas.height + 20;
+                    if (this.y > canvas.height + 20) this.y = -20;
+                }
+                draw() {
+                    const s = 0.8 + Math.sin(this.pulse) * 0.2;
+                    const radius = this.r * s;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, radius, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(181,21,21,' + this.o + ')';
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, radius * 2.5, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(181,21,21,' + (this.o * 0.15) + ')';
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < COUNT; i++) particles.push(new Particle());
+
+            function drawConnections() {
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < CONNECTION_DIST) {
+                            const o = (1 - dist / CONNECTION_DIST) * 0.12;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.strokeStyle = 'rgba(181,21,21,' + o + ')';
+                            ctx.lineWidth = 0.6;
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            function animateParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (const p of particles) { p.update(); p.draw(); }
+                drawConnections();
+                requestAnimationFrame(animateParticles);
+            }
+
+            let rafId = null;
+            window.addEventListener('mousemove', e => {
+                if (rafId) cancelAnimationFrame(rafId);
+                rafId = requestAnimationFrame(() => {
+                    mouse = { x: e.clientX, y: e.clientY };
+                });
+            });
+            window.addEventListener('mouseleave', () => { mouse = null; });
+
+            animateParticles();
+        })();
+
+        // ── Enhanced 3D Card Tilt + Spotlight + Parallax ──
+        (function() {
+            const card = document.getElementById('login-card');
+            if (!card) return;
+            const wrap = document.querySelector('.card-3d-wrap');
+            if (!wrap) return;
+
+            const header = card.querySelector('.card-header');
+            const formBody = card.querySelector('.form-body');
+            const footer = card.querySelector('.card-footer');
+
+            const spotlight = document.createElement('div');
+            spotlight.className = 'card-spotlight';
+            card.appendChild(spotlight);
+
+            wrap.addEventListener('mousemove', (e) => {
+                const rect = wrap.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width;
+                const y = (e.clientY - rect.top) / rect.height;
+
+                const rotX = (y - 0.5) * -14;
+                const rotY = (x - 0.5) * 14;
+
+                card.style.transform = 'rotateX(' + rotX + 'deg) rotateY(' + rotY + 'deg) translateZ(30px)';
+
+                if (header) header.style.transform = 'translateZ(40px)';
+                if (formBody) formBody.style.transform = 'translateZ(25px)';
+                if (footer) footer.style.transform = 'translateZ(12px)';
+
+                const sx = x * 100;
+                const sy = y * 100;
+                spotlight.style.cssText = 'position:absolute;inset:0;border-radius:20px;pointer-events:none;z-index:20;opacity:1;background:radial-gradient(circle at ' + sx + '% ' + sy + '%, rgba(255,255,255,0.08) 0%, transparent 60%);';
+
+                const shX = (x - 0.5) * 24;
+                const shY = (y - 0.5) * 24;
+                card.style.boxShadow = shX + 'px ' + shY + 'px 70px rgba(0,0,0,0.55), 0 0 50px var(--primary-glow)';
+            });
+
+            wrap.addEventListener('mouseleave', () => {
+                card.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0)';
+                if (header) header.style.transform = '';
+                if (formBody) formBody.style.transform = '';
+                if (footer) footer.style.transform = '';
+                spotlight.style.opacity = '0';
+                card.style.boxShadow = '';
+            });
+
+            // Reset box-shadow when not hovered
+            wrap.addEventListener('mouseenter', () => {
+                spotlight.style.opacity = '1';
+            });
+        })();
+
+        // ── Input focus glow enhancement ──
+        (function() {
+            document.querySelectorAll('.input-group').forEach(group => {
+                const input = group.querySelector('.input-field');
+                const label = group.querySelector('label');
+                if (!input) return;
+                input.addEventListener('focus', () => {
+                    group.style.transform = 'translateX(4px)';
+                });
+                input.addEventListener('blur', () => {
+                    group.style.transform = '';
+                });
+            });
+        })();
+
+        // ── Theme ──
+        function initTemaLogin() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            setThemeLogin(savedTheme);
+        }
+        function setThemeLogin(theme) {
+            if (theme === 'light') {
+                document.body.classList.add('theme-light');
+                document.getElementById('icon-sol-login').classList.add('hidden');
+                document.getElementById('icon-lua-login').classList.remove('hidden');
+                document.getElementById('bg-decoration-login').style.display = 'none';
+            } else {
+                document.body.classList.remove('theme-light');
+                document.getElementById('icon-sol-login').classList.remove('hidden');
+                document.getElementById('icon-lua-login').classList.add('hidden');
+                document.getElementById('bg-decoration-login').style.display = 'block';
+            }
+        }
+        document.getElementById('btn-theme-toggle-login').addEventListener('click', () => {
+            const isLight = document.body.classList.contains('theme-light');
+            setThemeLogin(isLight ? 'dark' : 'light');
+            localStorage.setItem('theme', isLight ? 'dark' : 'light');
+        });
+        initTemaLogin();
+
+        // ── Loading state on login button ──
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            const btn = document.getElementById('btn-login');
+            btn.classList.add('loading');
+        });
+    </script>
+</body>
+</html>

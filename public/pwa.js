@@ -1,5 +1,5 @@
-// Registrar Service Worker para PWA
-if ('serviceWorker' in navigator) {
+// Registrar Service Worker para PWA (só em http/https; não funciona em file://)
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {

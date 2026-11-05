@@ -157,11 +157,11 @@ async function executarBuscaRapida(termo) {
         document.getElementById('br-btn-placa').onclick = () => {
             setActive('btn-placas')
             abrirSubmenuPlacas()
-            carregarPlacas()
+            carregarPlacasGrande4()
             setTimeout(() => {
-                document.getElementById('ean-input').value = prod.codigo
-                document.getElementById('preco-input').value = prod.preco_venda || ''
-                document.getElementById('preco-input').focus()
+                document.getElementById('ean-input-g4').value = prod.codigo
+                document.getElementById('preco-input-g4').value = prod.preco_venda || ''
+                document.getElementById('preco-input-g4').focus()
             }, 100)
         }
     } catch {

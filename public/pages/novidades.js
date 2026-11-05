@@ -13,9 +13,9 @@ function nvSkeleton() {
 async function carregarNovidades() {
     setActive('btn-novidades')
     setConteudo(`
-        <div class="max-w-7xl mx-auto space-y-5">
+        <div class="max-w-7xl mx-auto space-y-7">
 
-            <div class="flex items-start sm:items-center justify-between flex-col sm:flex-row gap-2 sm:gap-3">
+            <div class="flex items-start sm:items-center justify-between flex-col sm:flex-row gap-4 sm:gap-5">
                 <div>
                     <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight page-title-glow">Novidades</h1>
                     <p class="text-xs sm:text-sm" style="color:var(--text-muted)">Produtos cadastrados a partir de 2026</p>
@@ -32,9 +32,9 @@ async function carregarNovidades() {
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3" id="nv-stats">
-                <div class="dash-glass p-3 sm:p-4 card-accent-blue statistic-card">
-                    <div class="flex items-center justify-between mb-1 sm:mb-2">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5" id="nv-stats">
+                <div class="dash-glass p-4 sm:p-5 card-accent-blue statistic-card">
+                    <div class="flex items-center justify-between mb-2 sm:mb-3">
                         <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-base-content/50">Total</span>
                         <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center" style="background:rgba(59,130,246,0.1);">
                             <svg width="14" height="14" fill="none" stroke="#3b82f6" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -42,8 +42,8 @@ async function carregarNovidades() {
                     </div>
                     <div class="text-xl sm:text-2xl font-extrabold tracking-tight" style="color:var(--text-primary)" id="nv-stat-total">—</div>
                 </div>
-                <div class="dash-glass p-3 sm:p-4 card-accent-yellow statistic-card">
-                    <div class="flex items-center justify-between mb-1 sm:mb-2">
+                <div class="dash-glass p-4 sm:p-5 card-accent-yellow statistic-card">
+                    <div class="flex items-center justify-between mb-2 sm:mb-3">
                         <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-base-content/50">Pendentes</span>
                         <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center" style="background:rgba(234,179,8,0.1);">
                             <svg width="14" height="14" fill="none" stroke="#eab308" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -51,8 +51,8 @@ async function carregarNovidades() {
                     </div>
                     <div class="text-xl sm:text-2xl font-extrabold tracking-tight text-warning" id="nv-stat-pendentes">—</div>
                 </div>
-                <div class="dash-glass p-3 sm:p-4 card-accent-green statistic-card">
-                    <div class="flex items-center justify-between mb-1 sm:mb-2">
+                <div class="dash-glass p-4 sm:p-5 card-accent-green statistic-card">
+                    <div class="flex items-center justify-between mb-2 sm:mb-3">
                         <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-base-content/50">Classificados</span>
                         <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center" style="background:rgba(34,197,94,0.1);">
                             <svg width="14" height="14" fill="none" stroke="#22c55e" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
@@ -60,8 +60,8 @@ async function carregarNovidades() {
                     </div>
                     <div class="text-xl sm:text-2xl font-extrabold tracking-tight text-success" id="nv-stat-classificados">—</div>
                 </div>
-                <div class="dash-glass p-3 sm:p-4 card-accent-red statistic-card">
-                    <div class="flex items-center justify-between mb-1 sm:mb-2">
+                <div class="dash-glass p-4 sm:p-5 card-accent-red statistic-card">
+                    <div class="flex items-center justify-between mb-2 sm:mb-3">
                         <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-base-content/50">Sem preço</span>
                         <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center" style="background:rgba(239,68,68,0.1);">
                             <svg width="14" height="14" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>

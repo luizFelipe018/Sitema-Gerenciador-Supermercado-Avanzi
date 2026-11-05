@@ -21,7 +21,7 @@ function carregarQrcode() {
                             onblur="this.style.borderColor='rgba(255,255,255,0.08)'">https://</textarea>
                     </div>
 
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
                         <div>
                             <label style="font-size:11px; font-weight:600; color:rgba(255,255,255,0.35); display:block; margin-bottom:4px;">Cor do QR Code</label>
                             <div class="flex items-center gap-2">

@@ -1,18 +1,39 @@
 {
   "name": "erp-avanzi",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "",
   "main": "main.js",
   "scripts": {
     "dev": "nodemon server.js",
     "start": "node server.js",
     "electron": "electron .",
-    "build": "electron-builder"
+    "build": "electron-builder",
+    "build:publish": "electron-builder --win --publish always",
+    "vite": "vite",
+    "vite:dev": "vite",
+    "vite:build": "vite build",
+    "vite:preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "build:ts": "tsc --declaration --declarationMap --outDir dist-types",
+    "import:teste": "node tools/gerar-planilha-teste.js tools/produtos-teste.xlsx && node tools/testar-importacao.js",
+    "import:verificar": "node tools/verificar-importacao.js",
+    "import:limpar": "node tools/limpar-teste.js",
+    "auditoria:testar": "node tools/testar-auditoria.js",
+    "auditoria:limpar": "node tools/limpar-auditoria.js",
+    "db:schema": "node tools/schema.js",
+    "db:usuarios": "node tools/usuarios.js",
+    "db:familias": "node tools/familias.js",
+    "verificar:menu": "node tools/verificar-menu.js",
+    "listas:excel": "node tools/testar-excel-lista.js",
+    "listas:limpar": "node tools/limpar-listas-teste.js"
   },
   "type": "commonjs",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.3.1",
+    "electron-updater": "^6.8.11",
     "exceljs": "^4.4.0",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
@@ -20,14 +41,29 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^26.0.1",
     "electron": "^40.6.1",
     "electron-builder": "^26.8.1",
     "nodemon": "^3.1.14",
-    "tailwindcss": "^4.2.2"
+    "supertest": "^7.2.2",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^6.0.3",
+    "vite": "^8.1.0",
+    "vitest": "^4.1.9"
   },
   "build": {
     "appId": "com.avanzi.erp",
     "productName": "Super Avanzi ERP",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "luizFelipe018",
+        "repo": "Sitema-Gerenciador-Supermercado-Avanzi"
+      }
+    ],
     "win": {
       "target": "nsis"
     },

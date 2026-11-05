@@ -1,212 +1,346 @@
+/* ═══════════════════════════════════════════════════════════════
+   PÁGINA INÍCIO — Dashboard estatístico moderno
+   ═══════════════════════════════════════════════════════════════ */
+
+let chartDias = null
+let chartDepto = null
+let chartTipos = null
+
 function carregarInicio() {
     setActive('btn-inicio')
+
     setConteudo(`
-        <div class="max-w-7xl mx-auto space-y-6 fade-slide-up">
+        <div class="ds-page-head fade-in">
+            <div>
+                <div class="ds-page-eyebrow">Painel de controle</div>
+                <h1 class="ds-page-title">Visão geral</h1>
+                <p class="ds-page-sub">Produtos, placas, listas e estatísticas do sistema em tempo real</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="ds-chip ds-chip-ok">
+                    <span style="width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block"></span>
+                    Sistema online
+                </span>
+            </div>
+        </div>
 
-            <div class="flex items-center justify-between flex-wrap gap-4">
-                <div>
-                    <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight page-title-glow">Dashboard</h1>
-                    <p class="text-xs sm:text-sm" style="color:var(--text-muted)">Visão geral do sistema</p>
+        <!-- Ações rápidas -->
+        <div class="ds-grid ds-grid-4" style="margin-bottom:28px">
+            ${acaoInicio('Gerar placas', 'Grande 4, grande e A4', 'btn-placas-menu', '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>')}
+            ${acaoInicio('Busca rápida', 'Localizar por EAN ou nome', 'btn-busca-rapida', '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>')}
+            ${acaoInicio('Importar produtos', 'Planilha do fornecedor', 'btn-importar', '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>')}
+            ${acaoInicio('Listas de preço', 'Gerar e exportar XLSX', 'btn-listas', '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>')}
+        </div>
+
+        <!-- KPIs principais com tendência -->
+        <div class="ds-grid ds-grid-4" style="margin-bottom:28px">
+            ${kpiCard('Produtos cadastrados', 'dv-total-produtos', 'var(--brand)', 'var(--brand-soft)', '<path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 002 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/>', 'dv-trend-produtos')}
+            ${kpiCard('Placas este mês', 'dv-placas-total', 'var(--brand-2)', 'var(--brand-soft-2)', '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>', 'dv-trend-placas')}
+            ${kpiCard('Sem EAN', 'dv-sem-ean', 'var(--warn)', 'var(--warn-soft)', '<path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 002 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/>', 'dv-trend-ean')}
+            ${kpiCard('Listas este mês', 'dv-listas-mes', 'var(--ok)', 'var(--ok-soft)', '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>', 'dv-trend-listas')}
+        </div>
+
+        <!-- Linha de gráficos -->
+        <div class="ds-grid" style="grid-template-columns: 2fr 1fr; margin-bottom:28px; gap:28px">
+            <!-- Gráfico de linha: placas por dia -->
+            <div class="ds-card">
+                <div class="ds-card-head">
+                    <div class="ds-card-title">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 18 6 12 2 12"/></svg>
+                        Placas por dia
+                    </div>
+                    <span class="ds-chip ds-chip-info" style="font-size:10px; padding:2px 8px">Últimos 30 dias</span>
                 </div>
-                <div class="flex items-center gap-2 text-xs" style="color:var(--text-muted)">
-                    <span class="w-2 h-2 rounded-full bg-success animate-pulse"></span>
-                    <span>Online</span>
+                <div class="ds-card-pad" style="padding-top:16px">
+                    <div style="height:260px; position:relative">
+                        <canvas id="chart-placas-dias"></canvas>
+                    </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3" id="dv-stats">
-                <div class="dash-glass p-3 sm:p-4 card-accent-blue statistic-card">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-base-content/50">Produtos</span>
-                        <span class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(59,130,246,0.1);">
-                            <svg width="16" height="16" fill="none" stroke="#3b82f6" stroke-width="2" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 002 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
-                        </span>
-                    </div>
-                    <div class="text-xl sm:text-2xl font-extrabold tracking-tight" style="color:var(--text-primary)" id="dv-total-produtos">—</div>
-                    <div class="text-[10px] mt-1" style="color:var(--text-muted)"><span id="dv-sem-ean">—</span> sem EAN</div>
-                </div>
-                <div class="dash-glass p-3 sm:p-4 card-accent-red statistic-card">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-base-content/50">Placas Mês</span>
-                        <span class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(239,68,68,0.1);">
-                            <svg width="16" height="16" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                        </span>
-                    </div>
-                    <div class="text-xl sm:text-2xl font-extrabold tracking-tight" style="color:var(--text-primary)" id="dv-placas-total">—</div>
-                    <div class="flex gap-2 text-[10px]" style="color:var(--text-muted)">
-                        <span>Branca <strong id="dv-placas-branca" style="color:var(--text-secondary)">—</strong></span>
-                        <span>Amarela <strong id="dv-placas-amarela" style="color:#ca8a04">—</strong></span>
-                        <span>Grande <strong id="dv-placas-grande" style="color:#3b82f6">—</strong></span>
+            <!-- Gráfico de rosca: tipos de placa -->
+            <div class="ds-card">
+                <div class="ds-card-head">
+                    <div class="ds-card-title">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Tipos de placa
                     </div>
                 </div>
-                <div class="dash-glass p-3 sm:p-4 card-accent-green statistic-card">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-base-content/50">Listas</span>
-                        <span class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(34,197,94,0.1);">
-                            <svg width="16" height="16" fill="none" stroke="#22c55e" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                        </span>
+                <div class="ds-card-pad" style="padding-top:16px">
+                    <div style="height:225px; position:relative">
+                        <canvas id="chart-tipos-placa"></canvas>
                     </div>
-                    <div class="text-xl sm:text-2xl font-extrabold tracking-tight" style="color:var(--text-primary)" id="dv-listas-mes">—</div>
-                    <div class="text-[10px] mt-1" style="color:var(--text-muted)">criadas este mês</div>
-                </div>
-                <div class="dash-glass p-3 sm:p-4 card-accent-yellow statistic-card">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-base-content/50">Impressão</span>
-                        <span class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:rgba(234,179,8,0.1);">
-                            <svg width="16" height="16" fill="none" stroke="#eab308" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                        </span>
-                    </div>
-                    <div class="text-xl sm:text-2xl font-extrabold tracking-tight" style="color:var(--text-primary)" id="dv-impressas">—</div>
-                    <div class="text-[10px] mt-1" style="color:var(--text-muted)">impressas este mês</div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                <div class="lg:col-span-2 dash-glass p-4 sm:p-5">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-2">
-                            <svg width="14" height="14" fill="none" stroke="var(--text-muted)" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                            <span class="text-xs font-semibold uppercase tracking-wider" style="color:var(--text-muted)">Placas por Dia (30 dias)</span>
+                    <div class="ds-grid ds-grid-3" style="margin-top:16px; gap:12px">
+                        <div class="ds-tile-item">
+                            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--brand);margin-right:6px"></span>
+                            <span class="ds-tile-label" style="font-size:11px">Grande 4</span>
+                            <span class="ds-tile-value" id="dv-placas-grande4" style="font-size:11px; font-weight:600">—</span>
                         </div>
-                    </div>
-                    <div id="dv-grafico-dias" class="h-48 flex items-end gap-1"></div>
-                </div>
-
-                <div class="dash-glass p-4 sm:p-5">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-2">
-                            <svg width="14" height="14" fill="none" stroke="var(--text-muted)" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 010-5C7 4 6 9 6 9z"/><path d="M18 9h1.5a2.5 2.5 0 000-5C17 4 18 9 18 9z"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>
-                            <span class="text-xs font-semibold uppercase tracking-wider" style="color:var(--text-muted)">Top Produtos</span>
+                        <div class="ds-tile-item">
+                            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--warn);margin-right:6px"></span>
+                            <span class="ds-tile-label" style="font-size:11px">A4</span>
+                            <span class="ds-tile-value" id="dv-placas-a4" style="font-size:11px; font-weight:600">—</span>
                         </div>
-                    </div>
-                    <div id="dv-top-produtos" class="space-y-2"></div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                <div class="dash-glass p-4 sm:p-5">
-                    <div class="flex items-center gap-2 mb-4">
-                        <svg width="14" height="14" fill="none" stroke="var(--text-muted)" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                        <span class="text-xs font-semibold uppercase tracking-wider" style="color:var(--text-muted)">Departamentos</span>
-                    </div>
-                    <div id="dv-departamentos" class="space-y-2"></div>
-                </div>
-
-                <div class="lg:col-span-2 dash-glass p-4 sm:p-5">
-                    <div class="flex items-center gap-2 mb-4">
-                        <svg width="14" height="14" fill="none" stroke="var(--text-muted)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                        <span class="text-xs font-semibold uppercase tracking-wider" style="color:var(--text-muted)">Resumo do Sistema</span>
-                    </div>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <div class="flex flex-col items-center gap-1 p-3 rounded-xl" style="background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.1);">
-                            <span class="text-lg font-extrabold tracking-tight" style="color:#3b82f6" id="dv-resumo-produtos">—</span>
-                            <span class="text-[10px]" style="color:var(--text-muted)">Produtos</span>
-                        </div>
-                        <div class="flex flex-col items-center gap-1 p-3 rounded-xl" style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.1);">
-                            <span class="text-lg font-extrabold tracking-tight" style="color:#ef4444" id="dv-resumo-placas">—</span>
-                            <span class="text-[10px]" style="color:var(--text-muted)">Placas mês</span>
-                        </div>
-                        <div class="flex flex-col items-center gap-1 p-3 rounded-xl" style="background:rgba(168,85,247,0.05);border:1px solid rgba(168,85,247,0.1);">
-                            <span class="text-lg font-extrabold tracking-tight" style="color:#a855f7" id="dv-resumo-imagem">—</span>
-                            <span class="text-[10px]" style="color:var(--text-muted)">Sem imagem</span>
-                        </div>
-                        <div class="flex flex-col items-center gap-1 p-3 rounded-xl" style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.1);">
-                            <span class="text-lg font-extrabold tracking-tight" style="color:#22c55e" id="dv-resumo-listas">—</span>
-                            <span class="text-[10px]" style="color:var(--text-muted)">Listas mês</span>
+                        <div class="ds-tile-item">
+                            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--info);margin-right:6px"></span>
+                            <span class="ds-tile-label" style="font-size:11px">Grande</span>
+                            <span class="ds-tile-value" id="dv-placas-grande" style="font-size:11px; font-weight:600">—</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    `, 'Dashboard')
+
+        <!-- Segunda linha: departamentos + top produtos -->
+        <div class="ds-grid" style="grid-template-columns: 1fr 2fr; gap:28px; margin-bottom:28px">
+            <!-- Gráfico de barras: departamentos -->
+            <div class="ds-card">
+                <div class="ds-card-head">
+                    <div class="ds-card-title">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                        Produtos por departamento
+                    </div>
+                </div>
+                <div class="ds-card-pad" style="padding-top:16px">
+                    <div style="height:260px; position:relative">
+                        <canvas id="chart-departamentos"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top produtos -->
+            <div class="ds-card">
+                <div class="ds-card-head">
+                    <div class="ds-card-title">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 010-5C7 4 6 9 6 9z"/><path d="M18 9h1.5a2.5 2.5 0 000-5C17 4 18 9 18 9z"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>
+                        Top produtos mais impressos
+                    </div>
+                </div>
+                <div class="ds-card-pad" style="padding-top:16px">
+                    <div id="dv-top-produtos" class="ds-list-modern"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumo rápido -->
+        <div class="ds-grid ds-grid-4" style="gap:28px">
+            ${tileInicio('Sem imagem', 'dv-resumo-imagem', 'var(--warn)', '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12.01" y2="8"/><line x1="12" y1="12" x2="12.01" y2="12"/>')}
+            ${tileInicio('Não verificados', 'dv-resumo-nao-verificados', 'var(--info)', '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>')}
+            ${tileInicio('Impressas hoje', 'dv-resumo-impressas', 'var(--ok)', '<polyline points="20 6 9 17 4 12"/>')}
+            ${tileInicio('Geradas hoje', 'dv-resumo-geradas', 'var(--brand-2)', '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>')}
+        </div>
+    `, 'Início')
 
     carregarDadosDashboard()
 }
 
+/* ── helpers de markup ─────────────────────────────────────── */
+
+function acaoInicio(titulo, subtitulo, btnId, paths) {
+    return `
+    <button class="ds-action-modern" onclick="document.getElementById('${btnId}').click()">
+        <div class="ds-action-ico-modern">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">${paths}</svg>
+        </div>
+        <div style="min-width:0">
+            <div class="ds-action-title-modern">${titulo}</div>
+            <div class="ds-action-sub-modern">${subtitulo}</div>
+        </div>
+    </button>`
+}
+
+function kpiCard(label, idValor, cor, corSoft, paths, idTrend) {
+    return `
+    <div class="ds-stat-modern">
+        <div class="flex items-center justify-between" style="margin-bottom:14px">
+            <span class="ds-stat-label-modern">${label}</span>
+            <div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:${corSoft};color:${cor}">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">${paths}</svg>
+            </div>
+        </div>
+        <div class="ds-stat-value-modern" id="${idValor}" style="color:${cor}">—</div>
+        <div class="ds-stat-trend" id="${idTrend}" style="font-size:11px; font-weight:600; display:flex; align-items:center; gap:6px; margin-top:8px">
+            <span style="color:var(--ok)">▲</span>
+            <span style="color:var(--text-2)">—%</span>
+        </div>
+    </div>`
+}
+
+function tileInicio(label, id, cor, paths) {
+    return `
+    <div class="ds-tile-modern">
+        <div style="display:flex; align-items:center; gap:8px">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">${paths}</svg>
+            <span class="ds-tile-label-modern">${label}</span>
+        </div>
+        <span class="ds-tile-value-modern" style="color:${cor}" id="${id}">—</span>
+    </div>`
+}
+
+/* ── dados ─────────────────────────────────────────────────── */
 async function carregarDadosDashboard() {
     try {
-        const res = await fetch(API+'/dashboard', { headers: authHeaders() })
+        const res = await fetch(API + '/dashboard', { headers: authHeaders() })
         const d = await res.json()
+        if (!res.ok) throw new Error(d.error || 'Erro ao carregar')
 
+        // KPIs
         el('dv-total-produtos').textContent = (d.totalProdutos || 0).toLocaleString('pt-BR')
-        el('dv-sem-ean').textContent = d.semEan || 0
-        el('dv-placas-total').textContent = d.placasMes?.total || 0
-        el('dv-placas-branca').textContent = d.placasMes?.branca || 0
-        el('dv-placas-amarela').textContent = d.placasMes?.amarela || 0
-        el('dv-placas-grande').textContent = d.placasMes?.grande || 0
-        el('dv-listas-mes').textContent = d.listasMes || 0
-        el('dv-impressas').textContent = d.impressasMes?.impressas || 0
+        el('dv-sem-ean').textContent = (d.semEan || 0).toLocaleString('pt-BR')
+        el('dv-placas-total').textContent = (d.placasMes?.total || 0).toLocaleString('pt-BR')
+        el('dv-listas-mes').textContent = (d.listasMes || 0).toLocaleString('pt-BR')
+        el('dv-resumo-imagem').textContent = (d.semImagem || 0).toLocaleString('pt-BR')
+        el('dv-resumo-nao-verificados').textContent = (d.naoVerificados || 0).toLocaleString('pt-BR')
+        el('dv-resumo-impressas').textContent = (d.impressasMes?.impressas || 0).toLocaleString('pt-BR')
+        el('dv-resumo-geradas').textContent = (d.impressasMes?.geradas || 0).toLocaleString('pt-BR')
 
-        el('dv-resumo-produtos').textContent = (d.totalProdutos || 0).toLocaleString('pt-BR')
-        el('dv-resumo-placas').textContent = d.placasMes?.total || 0
-        el('dv-resumo-imagem').textContent = d.semImagem || 0
-        el('dv-resumo-listas').textContent = d.listasMes || 0
+        // Tipos de placa
+        el('dv-placas-grande4').textContent = (d.placasMes?.grande4 || 0).toLocaleString('pt-BR')
+        el('dv-placas-a4').textContent = (d.placasMes?.a4 || 0).toLocaleString('pt-BR')
+        el('dv-placas-grande').textContent = (d.placasMes?.grande || 0).toLocaleString('pt-BR')
 
+        // Gráficos
         renderGraficoDias(d.placasDias || [])
+        renderGraficoDepartamentos(d.porDepto || [])
+        renderGraficoTipos(d.placasMes || {})
         renderTopProdutos(d.topProdutos || [])
-        renderDepartamentos(d.porDepto || [])
+
     } catch (e) {
-        console.error('Erro dashboard:', e)
+        const msg = e && e.name === 'TimeoutError'
+            ? 'Sem conexão com o servidor. Verifique se ele está rodando.'
+            : (e && e.message) || 'Erro ao carregar'
+        console.warn('[Início] ' + msg)
+        const top = el('dv-top-produtos')
+        if (top) top.innerHTML = `<div style="text-align:center; padding:32px 16px; color:var(--text-3); font-size:12.5px">${msg}<br><button class="ds-btn ds-btn-sm" style="margin-top:12px" onclick="carregarInicio()">Tentar novamente</button></div>`
+        ;['dv-total-produtos','dv-placas-total','dv-sem-ean','dv-listas-mes','dv-resumo-imagem','dv-resumo-nao-verificados','dv-resumo-impressas','dv-resumo-geradas','dv-placas-grande4','dv-placas-a4','dv-placas-grande'].forEach(id => {
+            const node = el(id)
+            if (node) node.textContent = '—'
+        })
     }
 }
 
 function el(id) { return document.getElementById(id) }
 
+/* ── gráfico de linha: placas por dia ──────────────────────── */
 function renderGraficoDias(dados) {
-    const container = el('dv-grafico-dias')
-    if (!dados.length) {
-        container.innerHTML = '<p class="text-xs text-center py-8" style="color:var(--text-muted)">Sem dados</p>'
-        return
-    }
-    const max = Math.max(...dados.map(d => d.total), 1)
-    container.innerHTML = dados.map(d => {
-        const altura = (d.total / max) * 100
-        const data = new Date(d.dia).toLocaleDateString('pt-BR', { day: '2-digit' })
-        return `<div class="flex-1 flex flex-col items-center gap-1 justify-end h-full">
-            <span class="text-[9px] font-semibold" style="color:var(--text-muted)">${d.total}</span>
-            <div class="w-full rounded-t-sm" style="height:${altura}%;min-height:2px;background:linear-gradient(to top,#b51515,var(--primary));border-radius:3px 3px 0 0;"></div>
-            <span class="text-[8px]" style="color:rgba(255,255,255,0.15)">${data}</span>
-        </div>`
-    }).join('')
+    const ctx = document.getElementById('chart-placas-dias')
+    if (!ctx) return
+    if (chartDias) chartDias.destroy()
+
+    const labels = dados.map(d => d.dia)
+    const values = dados.map(d => d.total)
+
+    chartDias = new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Placas',
+                data: values,
+                borderColor: 'var(--brand)',
+                backgroundColor: 'rgba(181, 21, 21, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 3,
+                pointHoverRadius: 6,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: 'var(--text-3)', font: { size: 10 } } },
+                y: { grid: { color: 'var(--border)' }, beginAtZero: true, ticks: { color: 'var(--text-3)', font: { size: 10 } } }
+            }
+        }
+    })
 }
 
+/* ── gráfico de barras: departamentos ──────────────────────── */
+function renderGraficoDepartamentos(dados) {
+    const ctx = document.getElementById('chart-departamentos')
+    if (!ctx) return
+    if (chartDepto) chartDepto.destroy()
+
+    chartDepto = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: dados.map(d => d.depto || 'Sem depto'),
+            datasets: [{
+                label: 'Produtos',
+                data: dados.map(d => d.total),
+                backgroundColor: [
+                    'var(--brand)', 'var(--brand-2)', 'var(--warn)', 'var(--info)', 'var(--ok)',
+                    'var(--danger)', 'var(--brand)', 'var(--brand-2)', 'var(--warn)', 'var(--info)'
+                ],
+                borderRadius: 6,
+                barThickness: 20
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: 'var(--text-3)', font: { size: 10 }, maxRotation: 45, minRotation: 45 } },
+                y: { grid: { color: 'var(--border)' }, beginAtZero: true, ticks: { color: 'var(--text-3)', font: { size: 10 } } }
+            }
+        }
+    })
+}
+
+/* ── gráfico de rosca: tipos de placa ──────────────────────── */
+function renderGraficoTipos(dados) {
+    const ctx = document.getElementById('chart-tipos-placa')
+    if (!ctx) return
+    if (chartTipos) chartTipos.destroy()
+
+    chartTipos = new Chart(ctx.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Grande 4', 'Grande', 'A4'],
+            datasets: [{
+                data: [dados.grande4 || 0, dados.grande || 0, dados.a4 || 0],
+                backgroundColor: ['var(--brand)', 'var(--info)', 'var(--warn)'],
+                borderWidth: 0,
+                hoverOffset: 20
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '75%',
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: ctx => ctx.label + ': ' + ctx.parsed + ' placa(s)' } }
+            }
+        }
+    })
+}
+
+/* ── top produtos ──────────────────────────────────────────── */
 function renderTopProdutos(dados) {
     const container = el('dv-top-produtos')
-    if (!dados.length) {
-        container.innerHTML = '<p class="text-xs text-center py-6" style="color:var(--text-muted)">Sem dados</p>'
-        return
-    }
-    const max = Math.max(...dados.map(d => d.total), 1)
-    container.innerHTML = dados.slice(0, 8).map(d => {
-        const pct = (d.total / max) * 100
-        const cor = d.tipo_placa === 'branca' ? 'rgba(255,255,255,0.5)' : d.tipo_placa === 'amarela' ? '#ca8a04' : '#3b82f6'
-        return `<div>
-            <div class="flex items-center justify-between mb-1">
-                <span class="text-xs font-medium truncate" style="color:var(--text-secondary);max-width:70%;">${d.descricao}</span>
-                <span class="text-xs font-bold" style="color:${cor}">${d.total}</span>
-            </div>
-            <div class="w-full h-1.5 rounded-full" style="background:rgba(255,255,255,0.05);">
-                <div class="h-full rounded-full transition-all" style="width:${pct}%;background:${cor};"></div>
-            </div>
-        </div>`
-    }).join('')
-}
+    if (!container) return
 
-function renderDepartamentos(dados) {
-    const container = el('dv-departamentos')
-    if (!dados.length) {
-        container.innerHTML = '<p class="text-xs text-center py-6" style="color:var(--text-muted)">Sem dados</p>'
+    if (!dados || dados.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:40px 20px; color:var(--text-3)"><p>Sem dados no período</p></div>'
         return
     }
-    const max = Math.max(...dados.map(d => d.total), 1)
-    container.innerHTML = dados.map(d => {
-        const pct = (d.total / max) * 100
-        return `<div class="flex items-center gap-3">
-            <span class="text-xs w-2/5 truncate" style="color:var(--text-secondary)">${d.depto}</span>
-            <div class="flex-1 h-2 rounded-full" style="background:rgba(255,255,255,0.05);">
-                <div class="h-full rounded-full" style="width:${pct}%;background:linear-gradient(90deg,var(--primary),rgba(181,21,21,0.4));"></div>
+
+    container.innerHTML = dados.map((d, i) => {
+        const medalha = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`
+        const cor = i === 0 ? 'var(--warn)' : i === 1 ? 'var(--text-2)' : i === 2 ? 'var(--brand-2)' : 'var(--text-3)'
+        return `
+        <div class="ds-top-item" style="display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px; margin-bottom:6px; background:var(--surface-1); border:1px solid var(--border); ${i < 3 ? 'border-left:3px solid ' + cor : ''}">
+            <span style="font-size:16px; color:${cor}; font-weight:700; width:24px">${medalha}</span>
+            <div style="flex:1; min-width:0">
+                <div style="font-size:12.5px; font-weight:600; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${d.descricao || 'Sem nome'}</div>
+                <div style="font-size:10.5px; color:var(--text-3)">${d.tipo_placa || ''} • ${d.total || 0} placa(s)</div>
             </div>
-            <span class="text-xs font-semibold w-8 text-right" style="color:var(--text-muted)">${d.total}</span>
+            <span style="font-size:12px; font-weight:700; color:var(--text-1)">${d.total || 0}</span>
         </div>`
     }).join('')
 }
