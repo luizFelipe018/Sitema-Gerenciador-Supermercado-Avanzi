@@ -516,6 +516,14 @@ document.getElementById('btn-imagens').addEventListener('click', () => {
     carregarImagens()
 })
 
+document.getElementById('btn-verificar-imagens').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuOfertas.classList.remove('open')
+    btnOfertasMenu.classList.remove('open')
+    carregarVerificarImagens()
+})
+
 document.getElementById('btn-busca-rapida').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')

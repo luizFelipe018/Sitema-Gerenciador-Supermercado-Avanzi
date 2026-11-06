@@ -23,15 +23,22 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
             WHERE iv.status = 'sem_imagem' OR iv.status IS NULL
         `)
 
+        // Placas geradas no mês contam como placas únicas do log (dedup por código ou descrição+EAN+preço+tipo)
         const [[placasMes]] = await db.query(`
             SELECT
-                SUM(tipo_placa = 'branca')  AS branca,
-                SUM(tipo_placa = 'amarela') AS amarela,
-                SUM(tipo_placa = 'grande')  AS grande,
-                COUNT(*)                    AS total
-            FROM registros_placas
-            WHERE MONTH(criado_em) = MONTH(CURDATE())
-              AND YEAR(criado_em)  = YEAR(CURDATE())
+                SUM(sub.tipo_placa = 'branca')  AS branca,
+                SUM(sub.tipo_placa = 'amarela') AS amarela,
+                SUM(sub.tipo_placa = 'grande')  AS grande,
+                SUM(sub.tipo_placa = 'grande4') AS grande4,
+                SUM(sub.tipo_placa = 'a4')      AS a4,
+                COUNT(*)                        AS total
+            FROM (
+                SELECT MAX(tipo_placa) AS tipo_placa
+                FROM log_placas
+                WHERE MONTH(criado_em) = MONTH(CURDATE())
+                  AND YEAR(criado_em)  = YEAR(CURDATE())
+                GROUP BY COALESCE(codigo, CONCAT(descricao, ean, preco, tipo_placa))
+            ) sub
         `)
 
         const [[impressasMes]] = await db.query(`
@@ -50,19 +57,23 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
         const [placasDias] = await db.query(`
             SELECT
                 DATE(criado_em) AS dia,
-                COUNT(*)        AS total
-            FROM registros_placas
+                COUNT(DISTINCT COALESCE(codigo, CONCAT(descricao, ean, preco, tipo_placa))) AS total
+            FROM log_placas
             WHERE criado_em >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
             GROUP BY dia
             ORDER BY dia ASC
         `)
 
         const [topProdutos] = await db.query(`
-            SELECT descricao, tipo_placa, COUNT(*) AS total
-            FROM registros_placas
-            WHERE MONTH(criado_em) = MONTH(CURDATE())
-              AND YEAR(criado_em)  = YEAR(CURDATE())
-            GROUP BY descricao, tipo_placa
+            SELECT sub.descricao, MAX(sub.tipo_placa) AS tipo_placa, COUNT(*) AS total
+            FROM (
+                SELECT descricao, MAX(tipo_placa) AS tipo_placa
+                FROM log_placas
+                WHERE MONTH(criado_em) = MONTH(CURDATE())
+                  AND YEAR(criado_em)  = YEAR(CURDATE())
+                GROUP BY descricao, COALESCE(codigo, CONCAT(descricao, ean, preco, tipo_placa))
+            ) sub
+            GROUP BY sub.descricao
             ORDER BY total DESC
             LIMIT 10
         `)

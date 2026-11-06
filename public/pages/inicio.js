@@ -221,6 +221,15 @@ async function carregarDadosDashboard() {
 
 function el(id) { return document.getElementById(id) }
 
+/* ── cores ──────────────────────────────────────────────────── */
+const CHART_PALETTE = [
+    '#e11d48', '#f97316', '#f59e0b', '#eab308', '#22c55e',
+    '#10b981', '#14b8a6', '#06b6d4', '#3b82f6', '#6366f1',
+    '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#fb7185',
+    '#fbbf24', '#34d399', '#38bdf8', '#818cf8', '#c084fc'
+]
+const chartColor = (i) => CHART_PALETTE[i % CHART_PALETTE.length]
+
 /* ── gráfico de linha: placas por dia ──────────────────────── */
 function renderGraficoDias(dados) {
     const ctx = document.getElementById('chart-placas-dias')
@@ -230,6 +239,18 @@ function renderGraficoDias(dados) {
     const labels = dados.map(d => d.dia)
     const values = dados.map(d => d.total)
 
+    const canvas = ctx.getContext('2d')
+    const grad = canvas.createLinearGradient(0, 0, canvas.canvas.width, 0)
+    grad.addColorStop(0, '#e11d48')
+    grad.addColorStop(0.25, '#f97316')
+    grad.addColorStop(0.5, '#f59e0b')
+    grad.addColorStop(0.75, '#22c55e')
+    grad.addColorStop(1, '#3b82f6')
+    const fillGrad = canvas.createLinearGradient(0, 0, 0, canvas.canvas.height)
+    fillGrad.addColorStop(0, 'rgba(59,130,246,0.25)')
+    fillGrad.addColorStop(0.5, 'rgba(168,85,247,0.12)')
+    fillGrad.addColorStop(1, 'rgba(225,29,72,0.02)')
+
     chartDias = new Chart(ctx.getContext('2d'), {
         type: 'line',
         data: {
@@ -237,13 +258,17 @@ function renderGraficoDias(dados) {
             datasets: [{
                 label: 'Placas',
                 data: values,
-                borderColor: 'var(--brand)',
-                backgroundColor: 'rgba(181, 21, 21, 0.1)',
+                borderColor: grad,
+                backgroundColor: fillGrad,
                 fill: true,
                 tension: 0.4,
-                pointRadius: 3,
-                pointHoverRadius: 6,
-                borderWidth: 2
+                borderWidth: 3,
+                pointRadius: ctx => (ctx.raw > 0 ? 4 : 0),
+                pointHoverRadius: 7,
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointBackgroundColor: ctx => chartColor(ctx.dataIndex),
+                pointRotation: 0
             }]
         },
         options: {
@@ -271,12 +296,10 @@ function renderGraficoDepartamentos(dados) {
             datasets: [{
                 label: 'Produtos',
                 data: dados.map(d => d.total),
-                backgroundColor: [
-                    'var(--brand)', 'var(--brand-2)', 'var(--warn)', 'var(--info)', 'var(--ok)',
-                    'var(--danger)', 'var(--brand)', 'var(--brand-2)', 'var(--warn)', 'var(--info)'
-                ],
+                backgroundColor: dados.map((_, i) => chartColor(i)),
                 borderRadius: 6,
-                barThickness: 20
+                barThickness: 20,
+                borderWidth: 0
             }]
         },
         options: {
@@ -303,9 +326,11 @@ function renderGraficoTipos(dados) {
             labels: ['Grande 4', 'Grande', 'A4'],
             datasets: [{
                 data: [dados.grande4 || 0, dados.grande || 0, dados.a4 || 0],
-                backgroundColor: ['var(--brand)', 'var(--info)', 'var(--warn)'],
-                borderWidth: 0,
-                hoverOffset: 20
+                backgroundColor: ['#e11d48', '#3b82f6', '#f59e0b'],
+                hoverBackgroundColor: ['#f43f5e', '#60a5fa', '#fbbf24'],
+                borderWidth: 2,
+                borderColor: 'var(--surface-1)',
+                hoverOffset: 18
             }]
         },
         options: {

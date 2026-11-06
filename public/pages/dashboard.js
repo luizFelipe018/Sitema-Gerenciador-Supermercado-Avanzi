@@ -1181,9 +1181,10 @@ async function dashGraficoDepto(porDepto) {
     })
     const valores = porDepto.map(d => Number(d.total) || 0)
     const cores = [
-        '#e11d48', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7',
-        '#06b6d4', '#ec4899', '#14b8a6', '#f97316', '#6366f1',
-        '#dc2626', '#2563eb', '#16a34a', '#d97706', '#8b5cf6'
+        '#e11d48', '#f97316', '#f59e0b', '#eab308', '#22c55e',
+        '#10b981', '#14b8a6', '#06b6d4', '#3b82f6', '#6366f1',
+        '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#fb7185',
+        '#fbbf24', '#34d399', '#38bdf8', '#818cf8', '#c084fc'
     ]
 
     window._chartDepto = new Chart(canvas, {
@@ -1258,6 +1259,19 @@ async function dashGraficoDias(placasDias) {
     if (window._chartDias) window._chartDias.destroy()
 
     const t = dashChartTheme()
+    const ctx = canvas.getContext('2d')
+    const gradLine = ctx.createLinearGradient(0, 0, ctx.canvas.width, 0)
+    gradLine.addColorStop(0, '#e11d48')
+    gradLine.addColorStop(0.25, '#f97316')
+    gradLine.addColorStop(0.5, '#f59e0b')
+    gradLine.addColorStop(0.75, '#22c55e')
+    gradLine.addColorStop(1, '#3b82f6')
+    const gradFill = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height)
+    gradFill.addColorStop(0, 'rgba(59,130,246,0.22)')
+    gradFill.addColorStop(0.5, 'rgba(168,85,247,0.1)')
+    gradFill.addColorStop(1, 'rgba(225,29,72,0.02)')
+    const colorAt = (i) => ['#e11d48', '#f97316', '#f59e0b', '#eab308', '#22c55e', '#10b981', '#06b6d4', '#3b82f6', '#6366f1', '#a855f7'][i % 10]
+
     const hoje = new Date()
     const labels = []
     const valores = []
@@ -1281,20 +1295,13 @@ async function dashGraficoDias(placasDias) {
             datasets: [{
                 label: 'Placas',
                 data: valores,
-                borderColor: '#e11d48',
-                backgroundColor: ctx => {
-                    const area = ctx.chart.chartArea
-                    if (!area) return 'rgba(225,29,72,0.08)'
-                    const g = ctx.chart.ctx.createLinearGradient(0, area.top, 0, area.bottom)
-                    g.addColorStop(0, 'rgba(225,29,72,0.28)')
-                    g.addColorStop(1, 'rgba(225,29,72,0.01)')
-                    return g
-                },
-                borderWidth: 2.5,
-                pointBackgroundColor: '#e11d48',
+                borderColor: gradLine,
+                backgroundColor: gradFill,
+                borderWidth: 3,
+                pointBackgroundColor: ctx => colorAt(ctx.dataIndex),
                 pointBorderColor: t.tooltipBg,
                 pointBorderWidth: 2,
-                pointRadius: ctx => (ctx.raw > 0 ? 3 : 0),
+                pointRadius: ctx => (ctx.raw > 0 ? 4 : 0),
                 pointHoverRadius: 6,
                 fill: true,
                 tension: 0.35

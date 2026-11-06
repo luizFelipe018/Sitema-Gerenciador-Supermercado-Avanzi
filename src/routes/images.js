@@ -2,6 +2,7 @@ const router = require('express').Router()
 const path = require('path')
 const fs = require('fs')
 const https = require('https')
+const authMiddleware = require('../middlewares/authMiddleware')
 
 async function getPastaImagens() {
     try {
@@ -114,6 +115,87 @@ router.get('/imagem', async (req, res) => {
         }
 
         res.sendFile(caminho)
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// Cache do índice de nomes de imagem (re-de-escanear em 5 minutos)
+let imgCache = { ts: 0, nomes: null }
+async function getNomesImagem() {
+    if (imgCache.ts && Date.now() - imgCache.ts < 5 * 60 * 1000 && imgCache.nomes) {
+        return imgCache.nomes
+    }
+    const PASTA_IMAGENS = await getPastaImagens()
+    const nomes = new Set()
+    const walk = (dir) => {
+        let itens = []
+        try { itens = fs.readdirSync(dir, { withFileTypes: true }) } catch { return }
+        for (const it of itens) {
+            const full = path.join(dir, it.name)
+            if (it.isDirectory()) walk(full)
+            else nomes.add(it.name.toLowerCase())
+        }
+    }
+    walk(PASTA_IMAGENS)
+    imgCache = { ts: Date.now(), nomes }
+    return nomes
+}
+const imgExiste = (nomes, descricao) => nomes.has((String(descricao || '').trim().toUpperCase() + '.png').toLowerCase())
+
+/**
+ * GET /imagens/auditar?page=1&limit=50&status=todas|existe|sem|pendente|verificada|corrigir|sem_imagem&busca=termo
+ * Cruza todos os produtos com a pasta de imagens e com imagens_verificacao.
+ */
+router.get('/imagens/auditar', authMiddleware, async (req, res) => {
+    try {
+        const nomes = await getNomesImagem()
+        const db = require('../config/database')
+        const page = Math.max(1, parseInt(req.query.page) || 1)
+        const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50))
+        const status = String(req.query.status || 'todas')
+        const busca = String(req.query.busca || '').trim().toLowerCase()
+
+        const [rows] = await db.query(`
+            SELECT p.codigo, p.descricao, p.ean, p.preco_venda, COALESCE(iv.status, 'pendente') AS status
+            FROM produtos p
+            LEFT JOIN imagens_verificacao iv ON iv.codigo = p.codigo
+        `)
+
+        let itens = rows.map(p => ({
+            codigo: p.codigo,
+            descricao: p.descricao,
+            ean: p.ean || '',
+            existe: imgExiste(nomes, p.descricao),
+            status: (p.status || 'pendente').trim() || 'pendente'
+        }))
+
+        const total = itens.length
+        const totalExiste = itens.filter(i => i.existe).length
+        const verificadas = itens.filter(i => i.status === 'verificada').length
+        const corrigir = itens.filter(i => i.status === 'corrigir').length
+        const semImagemBanco = itens.filter(i => i.status === 'sem_imagem').length
+        const pendentes = itens.filter(i => i.status === 'pendente').length
+
+        if (busca) itens = itens.filter(i => (i.codigo + ' ' + i.descricao).toLowerCase().includes(busca))
+        if (status === 'existe') itens = itens.filter(i => i.existe)
+        else if (status === 'sem') itens = itens.filter(i => !i.existe)
+        else if (status === 'verificada') itens = itens.filter(i => i.status === 'verificada')
+        else if (status === 'corrigir') itens = itens.filter(i => i.status === 'corrigir')
+        else if (status === 'sem_imagem') itens = itens.filter(i => i.status === 'sem_imagem')
+        else if (status === 'pendente') itens = itens.filter(i => i.status === 'pendente')
+
+        const filtrados = itens.length
+        const offset = (page - 1) * limit
+
+        res.json({
+            pagina: page,
+            limite: limit,
+            total: filtrados,
+            paginas: Math.max(1, Math.ceil(filtrados / limit)),
+            resumo: { total, totalExiste, totalSem: total - totalExiste, verificadas, corrigir, semImagemBanco, pendentes, naoVerificadas: pendentes + corrigir },
+            itens: itens.slice(offset, offset + limit)
+        })
     } catch (err) {
         res.status(500).json({ error: err.message })
     }

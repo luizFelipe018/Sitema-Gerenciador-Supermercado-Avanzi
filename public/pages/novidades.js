@@ -4,146 +4,107 @@ let nvAba = 'pendentes'
 let nvSelecionados = new Set()
 
 function nvSkeleton() {
-    return `<tr><td colspan="8" class="p-8"><div class="flex flex-col gap-3 items-center">
-        <div class="loading loading-spinner loading-md text-primary"></div>
-        <span class="text-xs text-base-content/30">Carregando produtos...</span>
-    </div></td></tr>`
+    return `<tr><td colspan="8" style="text-align:center; padding:60px 20px; color:var(--text-3); font-size:13px;">Carregando produtos...</td></tr>`
 }
 
 async function carregarNovidades() {
     setActive('btn-novidades')
     setConteudo(`
-        <div class="max-w-7xl mx-auto space-y-7">
-
-            <div class="flex items-start sm:items-center justify-between flex-col sm:flex-row gap-4 sm:gap-5">
-                <div>
-                    <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight page-title-glow">Novidades</h1>
-                    <p class="text-xs sm:text-sm" style="color:var(--text-muted)">Produtos cadastrados a partir de 2026</p>
-                </div>
-                <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <div class="join w-full sm:w-auto">
-                        <input type="text" id="nv-busca" placeholder="Buscar código, descrição ou EAN..."
-                            class="input input-bordered input-xs sm:input-sm join-item w-full sm:w-44"
-                            style="border-color:var(--border-color);background:var(--bg-input);color:var(--text-primary);">
-                        <button id="nv-atualizar" class="btn btn-square btn-xs sm:btn-sm join-item" style="background:var(--glass);border:1px solid var(--border-color);color:var(--text-secondary)">
-                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
-                        </button>
-                    </div>
-                </div>
+        <div class="ds-page-head fade-in">
+            <div>
+                <div class="ds-page-eyebrow">Catálogo</div>
+                <h1 class="ds-page-title">Novidades</h1>
+                <p class="ds-page-sub">Produtos cadastrados a partir de 2026</p>
             </div>
-
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5" id="nv-stats">
-                <div class="dash-glass p-4 sm:p-5 card-accent-blue statistic-card">
-                    <div class="flex items-center justify-between mb-2 sm:mb-3">
-                        <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-base-content/50">Total</span>
-                        <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center" style="background:rgba(59,130,246,0.1);">
-                            <svg width="14" height="14" fill="none" stroke="#3b82f6" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                        </span>
-                    </div>
-                    <div class="text-xl sm:text-2xl font-extrabold tracking-tight" style="color:var(--text-primary)" id="nv-stat-total">—</div>
-                </div>
-                <div class="dash-glass p-4 sm:p-5 card-accent-yellow statistic-card">
-                    <div class="flex items-center justify-between mb-2 sm:mb-3">
-                        <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-base-content/50">Pendentes</span>
-                        <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center" style="background:rgba(234,179,8,0.1);">
-                            <svg width="14" height="14" fill="none" stroke="#eab308" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        </span>
-                    </div>
-                    <div class="text-xl sm:text-2xl font-extrabold tracking-tight text-warning" id="nv-stat-pendentes">—</div>
-                </div>
-                <div class="dash-glass p-4 sm:p-5 card-accent-green statistic-card">
-                    <div class="flex items-center justify-between mb-2 sm:mb-3">
-                        <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-base-content/50">Classificados</span>
-                        <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center" style="background:rgba(34,197,94,0.1);">
-                            <svg width="14" height="14" fill="none" stroke="#22c55e" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                        </span>
-                    </div>
-                    <div class="text-xl sm:text-2xl font-extrabold tracking-tight text-success" id="nv-stat-classificados">—</div>
-                </div>
-                <div class="dash-glass p-4 sm:p-5 card-accent-red statistic-card">
-                    <div class="flex items-center justify-between mb-2 sm:mb-3">
-                        <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-base-content/50">Sem preço</span>
-                        <span class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center" style="background:rgba(239,68,68,0.1);">
-                            <svg width="14" height="14" fill="none" stroke="#ef4444" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                        </span>
-                    </div>
-                    <div class="text-xl sm:text-2xl font-extrabold tracking-tight text-error" id="nv-stat-sem-preco">—</div>
-                </div>
-            </div>
-
-            <div class="dash-glass">
-                <div class="px-3 sm:px-5 pt-4" style="border-bottom:1px solid var(--border-color);">
-                    <div role="tablist" class="tabs tabs-bordered">
-                        <button role="tab" class="tab tab-active gap-1 sm:gap-2 text-xs sm:text-sm" data-aba="pendentes" style="color:var(--text-primary);">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                            Pendentes
-                            <span id="nv-badge-pendentes" class="badge badge-warning badge-xs hidden"></span>
-                        </button>
-                        <button role="tab" class="tab gap-1 sm:gap-2 text-xs sm:text-sm" data-aba="todos" style="color:var(--text-secondary);">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                            Todos
-                        </button>
-                    </div>
-                </div>
-
-                <div id="nv-pendentes-actions" class="hidden flex items-center gap-2 sm:gap-3 p-3 sm:p-4 flex-wrap" style="background:rgba(234,179,8,0.03);border-bottom:1px solid var(--border-color);">
-                    <label class="flex items-center gap-1.5 text-xs sm:text-sm" style="color:var(--text-secondary)">
-                        <input type="checkbox" id="nv-check-all" class="checkbox checkbox-xs sm:checkbox-sm">
-                        <span><span id="nv-selecionados-count">0</span> selecionado(s)</span>
-                    </label>
-                    <div class="w-px h-4" style="background:var(--border-color);"></div>
-                    <select id="nv-bulk-status" class="select select-bordered select-xs sm:select-sm text-xs" style="border-color:var(--border-color);background:var(--bg-input);color:var(--text-primary);max-width:130px;">
-                        <option value="">Aplicar status...</option>
-                        <option value="novidades">Fazer</option>
-                        <option value="ja_tem">Já tem</option>
-                        <option value="para_chegar">Esperando chegar</option>
-                        <option value="nao_fazer">Não fazer</option>
-                    </select>
-                    <button id="nv-bulk-aplicar" class="btn btn-primary btn-xs sm:btn-sm glow-pulse">Aplicar</button>
-                    <button id="nv-bulk-limpar" class="btn btn-ghost btn-xs sm:btn-sm" style="color:var(--text-secondary);">Limpar</button>
-                </div>
-
-                <div id="nv-todos-filtro" class="hidden px-3 sm:px-5 py-3" style="background:rgba(59,130,246,0.03);border-bottom:1px solid var(--border-color);">
-                    <select id="nv-filtro-status" class="select select-bordered select-xs sm:select-sm text-xs" style="border-color:var(--border-color);background:var(--bg-input);color:var(--text-primary);">
-                        <option value="">Todos os status</option>
-                        <option value="novidades">Para fazer novidade</option>
-                        <option value="ja_tem">Já feito novidade</option>
-                        <option value="para_chegar">Esperando chegar</option>
-                        <option value="nao_fazer">Não fazer</option>
-                    </select>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="table table-xs sm:table-sm w-full">
-                        <thead>
-                            <tr>
-                                <th id="nv-th-check" class="hidden w-8 sm:w-10 text-center"><input type="checkbox" class="checkbox checkbox-xs sm:checkbox-sm"></th>
-                                <th class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider" style="color:var(--text-muted);">Código</th>
-                                <th class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider" style="color:var(--text-muted);">Descrição</th>
-                                <th class="text-right text-[10px] sm:text-xs font-semibold uppercase tracking-wider" style="color:var(--text-muted);">Preço</th>
-                                <th class="text-center text-[10px] sm:text-xs font-semibold uppercase tracking-wider hidden sm:table-cell" style="color:var(--text-muted);">Estoque</th>
-                                <th class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider hidden md:table-cell" style="color:var(--text-muted);">Depto</th>
-                                <th class="text-center text-[10px] sm:text-xs font-semibold uppercase tracking-wider hidden lg:table-cell" style="color:var(--text-muted);">Cadastro</th>
-                                <th class="text-center text-[10px] sm:text-xs font-semibold uppercase tracking-wider" style="color:var(--text-muted);">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="nv-tbody">
-                            ${nvSkeleton()}
-                        </tbody>
-                    </table>
-                </div>
+            <div class="frc10" style="width:auto; max-width:380px; width:100%;">
+                <input type="text" id="nv-busca" class="ds-input" placeholder="Buscar código, descrição ou EAN..." style="height:36px;">
+                <button id="nv-atualizar" class="ds-btn ds-btn-sm ds-btn-icon" title="Atualizar" type="button">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                </button>
             </div>
         </div>
 
-        <style>
-            .statistic-card { transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease; }
-            .statistic-card:hover { transform:translateY(-4px) scale(1.02); }
-            #conteudo .table tbody tr, #conteudo .table tbody tr:hover { transition:none !important; }
-            #conteudo .dash-glass:not(.statistic-card),
-            #conteudo .dash-glass:not(.statistic-card):hover,
-            #conteudo .dash-glass:not(.statistic-card)::before { transition:none !important; transform:none !important; animation:none !important; }
-            #conteudo .glow-pulse { animation:none !important; }
-        </style>
+        <div class="ds-grid ds-grid-4" id="nv-stats" style="margin-bottom:28px">
+            <div class="ds-stat">
+                <span class="ds-stat-label">Total</span>
+                <div class="ds-stat-value" id="nv-stat-total">—</div>
+            </div>
+            <div class="ds-stat">
+                <span class="ds-stat-label">Pendentes</span>
+                <div class="ds-stat-value" id="nv-stat-pendentes" style="color:var(--warn)">—</div>
+            </div>
+            <div class="ds-stat">
+                <span class="ds-stat-label">Classificados</span>
+                <div class="ds-stat-value" id="nv-stat-classificados" style="color:var(--ok)">—</div>
+            </div>
+            <div class="ds-stat">
+                <span class="ds-stat-label">Sem preço</span>
+                <div class="ds-stat-value" id="nv-stat-sem-preco" style="color:var(--danger)">—</div>
+            </div>
+        </div>
+
+        <div class="ds-card" style="overflow:hidden">
+            <div class="ds-card-head" style="justify-content:flex-start; gap:24px;">
+                <div class="ds-segmented" role="tablist" style="--x:0">
+                    <button role="tab" class="is-active" data-aba="pendentes" type="button">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Pendentes
+                        <span id="nv-badge-pendentes" class="ds-badge" style="background:var(--warn-soft); color:var(--warn); margin-left:2px" hidden></span>
+                    </button>
+                    <button role="tab" data-aba="todos" type="button">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        Todos
+                    </button>
+                </div>
+            </div>
+
+            <div id="nv-pendentes-actions" class="hidden" style="display:none; padding:12px 20px; gap:12px; align-items:center; border-bottom:1px solid var(--border); flex-wrap:wrap; background:rgba(245,158,11,0.03);">
+                <label class="flex items-center gap-2" style="color:var(--text-2); font-size:12.5px; cursor:pointer;">
+                    <input type="checkbox" id="nv-check-all" class="ds-switch-input" style="width:16px; height:16px; cursor:pointer;">
+                    <span><b id="nv-selecionados-count" style="color:var(--text-1)">0</b> selecionado(s)</span>
+                </label>
+                <div style="width:1px; height:18px; background:var(--border);"></div>
+                <select id="nv-bulk-status" class="ds-input" style="height:34px; width:auto; min-width:150px; font-size:12.5px;">
+                    <option value="">Aplicar status...</option>
+                    <option value="novidades">Fazer</option>
+                    <option value="ja_tem">Já tem</option>
+                    <option value="para_chegar">Esperando chegar</option>
+                    <option value="nao_fazer">Não fazer</option>
+                </select>
+                <button id="nv-bulk-aplicar" class="ds-btn ds-btn-sm ds-btn-primary" type="button">Aplicar</button>
+                <button id="nv-bulk-limpar" class="ds-btn ds-btn-sm" type="button">Limpar</button>
+            </div>
+
+            <div id="nv-todos-filtro" style="display:none; padding:12px 20px; border-bottom:1px solid var(--border); background:var(--info-soft);">
+                <select id="nv-filtro-status" class="ds-input" style="height:34px; width:auto; min-width:190px; font-size:12.5px;">
+                    <option value="">Todos os status</option>
+                    <option value="novidades">Para fazer novidade</option>
+                    <option value="ja_tem">Já feito novidade</option>
+                    <option value="para_chegar">Esperando chegar</option>
+                    <option value="nao_fazer">Não fazer</option>
+                </select>
+            </div>
+
+            <div style="overflow-x:auto">
+                <table class="ds-table-prod">
+                    <thead>
+                        <tr>
+                            <th id="nv-th-check" class="hidden" style="width:48px; text-align:center;"><input type="checkbox" id="nv-th-check-all" style="width:16px; height:16px; cursor:pointer;"></th>
+                            <th style="width:110px;">Código</th>
+                            <th>Descrição</th>
+                            <th style="width:130px; text-align:right;">Preço</th>
+                            <th class="hidden sm:table-cell" style="width:110px; text-align:center;">Estoque</th>
+                            <th class="hidden md:table-cell" style="width:160px;">Depto</th>
+                            <th class="hidden lg:table-cell" style="width:120px; text-align:center;">Cadastro</th>
+                            <th style="width:130px; text-align:center;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="nv-tbody">
+                        ${nvSkeleton()}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     `, 'Novidades')
 
     nvSelecionados.clear()
@@ -152,21 +113,31 @@ async function carregarNovidades() {
     document.getElementById('nv-bulk-aplicar').onclick = aplicarBatchNovidades
     document.getElementById('nv-bulk-limpar').onclick = limparSelecaoNovidades
     document.getElementById('nv-check-all').onchange = alternarTodosNovidades
+    document.getElementById('nv-th-check-all').onchange = () => {
+        const cb = document.getElementById('nv-check-all')
+        cb.checked = document.getElementById('nv-th-check-all').checked
+        alternarTodosNovidades()
+    }
 
-    document.querySelectorAll('[role="tablist"] .tab').forEach(tab => {
+    const actions = document.getElementById('nv-pendentes-actions')
+    function alternarAba(aba) {
+        nvAba = aba
+        nvSelecionados.clear()
+        actions.style.display = aba === 'pendentes' ? 'flex' : 'none'
+        document.getElementById('nv-todos-filtro').style.display = aba === 'todos' ? 'block' : 'none'
+        document.getElementById('nv-th-check').classList.toggle('hidden', aba !== 'pendentes')
+        carregarListaNovidades()
+    }
+
+    document.querySelectorAll('[role="tablist"] [role="tab"]').forEach(tab => {
         tab.onclick = () => {
-            document.querySelectorAll('[role="tablist"] .tab').forEach(t => t.classList.remove('tab-active'))
-            tab.classList.add('tab-active')
-            nvAba = tab.dataset.aba
-            nvSelecionados.clear()
-            document.getElementById('nv-pendentes-actions').classList.toggle('hidden', nvAba !== 'pendentes')
-            document.getElementById('nv-todos-filtro').classList.toggle('hidden', nvAba !== 'todos')
-            document.getElementById('nv-th-check').classList.toggle('hidden', nvAba !== 'pendentes')
-            carregarListaNovidades()
+            document.querySelectorAll('[role="tablist"] [role="tab"]').forEach(t => t.classList.remove('is-active'))
+            tab.classList.add('is-active')
+            alternarAba(tab.dataset.aba)
         }
     })
 
-    document.querySelector('[role="tablist"] .tab[data-aba="pendentes"]').click()
+    document.querySelector('[role="tablist"] [data-aba="pendentes"]').click()
 }
 
 async function carregarListaNovidades() {
@@ -183,7 +154,7 @@ async function carregarListaNovidades() {
         nvTodos = await res.json()
         aplicarFiltroNovidades()
     } catch {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8"><span class="text-error/80 text-sm">Erro ao conectar.</span></td></tr>'
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:40px 20px; color:var(--danger); font-size:13px;">Erro ao conectar.</td></tr>'
     }
 }
 
@@ -192,13 +163,13 @@ function atualizarStats() {
     const pendentes = nvTodos.filter(p => !p.novidade_status).length
     const classificados = total - pendentes
     const semPreco = nvTodos.filter(p => !p.preco_venda || parseFloat(p.preco_venda) === 0).length
-    document.getElementById('nv-stat-total').textContent = total
-    document.getElementById('nv-stat-pendentes').textContent = pendentes
-    document.getElementById('nv-stat-classificados').textContent = classificados
-    document.getElementById('nv-stat-sem-preco').textContent = semPreco
+    document.getElementById('nv-stat-total').textContent = total.toLocaleString('pt-BR')
+    document.getElementById('nv-stat-pendentes').textContent = pendentes.toLocaleString('pt-BR')
+    document.getElementById('nv-stat-classificados').textContent = classificados.toLocaleString('pt-BR')
+    document.getElementById('nv-stat-sem-preco').textContent = semPreco.toLocaleString('pt-BR')
     const badge = document.getElementById('nv-badge-pendentes')
-    if (pendentes > 0) { badge.textContent = pendentes; badge.classList.remove('hidden') }
-    else badge.classList.add('hidden')
+    if (pendentes > 0) { badge.textContent = pendentes; badge.hidden = false }
+    else badge.hidden = true
 }
 
 function aplicarFiltroNovidades() {
@@ -216,7 +187,7 @@ function aplicarFiltroNovidades() {
 function renderTabelaPendentes() {
     const tbody = document.getElementById('nv-tbody')
     if (!nvDados.length) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-12"><div class="flex flex-col items-center gap-3"><span class="text-5xl">📦</span><span class="text-sm font-medium" style="color:var(--text-muted)">Nenhum produto pendente</span><span class="text-xs" style="color:var(--text-muted);opacity:0.5">Todos os produtos foram classificados</span></div></td></tr>'
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:60px 20px; color:var(--text-3); font-size:13px;">Nenhum produto pendente — todos foram classificados.</td></tr>'
         return
     }
     tbody.innerHTML = nvDados.map((p, i) => {
@@ -224,14 +195,14 @@ function renderTabelaPendentes() {
         const checked = nvSelecionados.has(id) ? 'checked' : ''
         const semPreco = !p.preco_venda || parseFloat(p.preco_venda) === 0
         return `<tr>
-            <td class="text-center"><input type="checkbox" class="checkbox checkbox-xs sm:checkbox-sm nv-check-item" data-id="${id}" ${checked}></td>
-            <td class="text-[11px] sm:text-xs whitespace-nowrap font-mono" style="color:var(--text-muted)">${p.codigo || '—'}</td>
-            <td class="font-medium text-xs sm:text-sm" style="color:var(--text-primary)"><span class="line-clamp-2">${p.descricao || '—'}</span></td>
-            <td class="text-right font-semibold text-xs sm:text-sm whitespace-nowrap ${semPreco ? 'text-base-content/20' : 'text-success'}">${semPreco ? '0,00' : 'R$ '+parseFloat(p.preco_venda).toFixed(2).replace('.',',')}</td>
-            <td class="text-center text-[11px] sm:text-xs hidden sm:table-cell" style="color:var(--text-muted)">${p.estoque_atual ? parseFloat(p.estoque_atual).toFixed(3).replace('.',',') : '<span class="text-base-content/20">—</span>'}</td>
-            <td class="text-[11px] sm:text-xs hidden md:table-cell" style="color:var(--text-secondary)">${p.descricao_departamento ? p.descricao_departamento.substring(0,22) : ''}</td>
-            <td class="text-center text-[11px] sm:text-xs whitespace-nowrap hidden lg:table-cell" style="color:var(--text-muted)">${p.data_cadastro ? new Date(p.data_cadastro).toLocaleDateString('pt-BR') : '—'}</td>
-            <td class="text-center"><span class="badge badge-ghost badge-xs" style="background:rgba(234,179,8,0.1);color:#eab308;border:1px solid rgba(234,179,8,0.2);">Pendente</span></td>
+            <td class="nv-th-check text-center"><input type="checkbox" class="nv-check-item" data-id="${id}" ${checked} style="width:16px; height:16px; cursor:pointer;"></td>
+            <td class="mono" style="color:var(--text-3)">${p.codigo || '—'}</td>
+            <td class="strong">${p.descricao || '—'}</td>
+            <td class="preco" style="color:${semPreco ? 'var(--text-3)' : 'var(--ok)'}">${semPreco ? '0,00' : 'R$ '+parseFloat(p.preco_venda).toFixed(2).replace('.',',')}</td>
+            <td class="text-center muted hidden sm:table-cell">${p.estoque_atual ? parseFloat(p.estoque_atual).toFixed(3).replace('.',',') : '—'}</td>
+            <td class="muted hidden md:table-cell">${p.descricao_departamento ? p.descricao_departamento.substring(0,22) : ''}</td>
+            <td class="text-center muted hidden lg:table-cell" style="white-space:nowrap">${p.data_cadastro ? new Date(p.data_cadastro).toLocaleDateString('pt-BR') : '—'}</td>
+            <td class="text-center"><span class="ds-badge" style="background:var(--warn-soft); color:var(--warn);">Pendente</span></td>
         </tr>`
     }).join('')
 
@@ -248,29 +219,28 @@ function renderTabelaPendentes() {
 function renderTabelaTodos() {
     const tbody = document.getElementById('nv-tbody')
     if (!nvDados.length) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-12"><div class="flex flex-col items-center gap-3"><span class="text-5xl">🔍</span><span class="text-sm font-medium" style="color:var(--text-muted)">Nenhum produto encontrado</span><span class="text-xs" style="color:var(--text-muted);opacity:0.5">Tente alterar os filtros ou busca</span></div></td></tr>'
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:60px 20px; color:var(--text-3); font-size:13px;">Nenhum produto encontrado. Tente alterar os filtros ou a busca.</td></tr>'
         return
     }
     tbody.innerHTML = nvDados.map((p, i) => {
         const semPreco = !p.preco_venda || parseFloat(p.preco_venda) === 0
         const semMovimento = !semPreco && (!p.estoque_atual || parseFloat(p.estoque_atual) === 0) && (!p.qtde_vendida_mes || parseFloat(p.qtde_vendida_mes) === 0)
-        const rowBg = semPreco ? 'rgba(239,68,68,0.04)' : semMovimento ? 'rgba(234,179,8,0.04)' : ''
-        const precoCor = semPreco ? 'text-base-content/20' : 'text-success'
-        const badge = semPreco
-            ? '<span class="badge badge-xs gap-1" style="background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2);"><span class="w-1.5 h-1.5 rounded-full bg-current"></span>Sem preço</span>'
+        const rowBg = semPreco ? 'rgba(239,68,68,0.05)' : semMovimento ? 'rgba(245,158,11,0.05)' : ''
+        const chip = semPreco
+            ? '<span class="ds-badge" style="background:var(--danger-soft); color:var(--danger);">Sem preço</span>'
             : semMovimento
-                ? '<span class="badge badge-xs gap-1" style="background:rgba(234,179,8,0.1);color:#eab308;border:1px solid rgba(234,179,8,0.2);"><span class="w-1.5 h-1.5 rounded-full bg-current"></span>Sem movimento</span>'
-                : '<span class="badge badge-xs gap-1" style="background:rgba(34,197,94,0.1);color:#22c55e;border:1px solid rgba(34,197,94,0.2);"><span class="w-1.5 h-1.5 rounded-full bg-current"></span>Ativo</span>'
+                ? '<span class="ds-badge" style="background:var(--warn-soft); color:var(--warn);">Sem movimento</span>'
+                : '<span class="ds-badge" style="background:var(--ok-soft); color:var(--ok);">Ativo</span>'
         return `<tr style="background:${rowBg};">
             <td class="hidden"></td>
-            <td class="text-[11px] sm:text-xs whitespace-nowrap font-mono" style="color:var(--text-muted)">${p.codigo || '—'}</td>
-            <td class="font-medium text-xs sm:text-sm" style="color:var(--text-primary)"><span class="line-clamp-2">${p.descricao || '—'}</span></td>
-            <td class="text-right font-semibold text-xs sm:text-sm whitespace-nowrap ${precoCor}">${semPreco ? '0,00' : 'R$ '+parseFloat(p.preco_venda).toFixed(2).replace('.',',')}</td>
-            <td class="text-center text-[11px] sm:text-xs hidden sm:table-cell" style="color:var(--text-muted)">${p.estoque_atual ? parseFloat(p.estoque_atual).toFixed(3).replace('.',',') : '<span class="text-base-content/20">—</span>'}</td>
-            <td class="text-[11px] sm:text-xs hidden md:table-cell" style="color:var(--text-secondary)">${p.descricao_departamento ? p.descricao_departamento.substring(0,22) : ''}</td>
-            <td class="text-center text-[11px] sm:text-xs whitespace-nowrap hidden lg:table-cell" style="color:var(--text-muted)">${p.data_cadastro ? new Date(p.data_cadastro).toLocaleDateString('pt-BR') : '—'}</td>
+            <td class="mono" style="color:var(--text-3)">${p.codigo || '—'}</td>
+            <td class="strong">${p.descricao || '—'}</td>
+            <td class="preco" style="color:${semPreco ? 'var(--text-3)' : 'var(--ok)'}">${semPreco ? '0,00' : 'R$ '+parseFloat(p.preco_venda).toFixed(2).replace('.',',')}</td>
+            <td class="text-center muted hidden sm:table-cell">${p.estoque_atual ? parseFloat(p.estoque_atual).toFixed(3).replace('.',',') : '—'}</td>
+            <td class="muted hidden md:table-cell">${p.descricao_departamento ? p.descricao_departamento.substring(0,22) : ''}</td>
+            <td class="text-center muted hidden lg:table-cell" style="white-space:nowrap">${p.data_cadastro ? new Date(p.data_cadastro).toLocaleDateString('pt-BR') : '—'}</td>
             <td class="text-center">
-                <div class="flex gap-0.5 sm:gap-1 justify-center flex-wrap nv-status-group" data-codigo="${p.codigo}" data-ean="${p.ean || ''}" data-descricao="${(p.descricao || '').replace(/"/g, '&quot;')}" data-novidade-id="${p.novidade_id || ''}">
+                <div class="flex gap-1 justify-center flex-wrap nv-status-group" data-codigo="${p.codigo}" data-ean="${p.ean || ''}" data-descricao="${(p.descricao || '').replace(/"/g, '&quot;')}" data-novidade-id="${p.novidade_id || ''}">
                     ${botoesStatus(p)}
                 </div>
             </td>
@@ -285,8 +255,8 @@ function renderTabelaTodos() {
         grupo.querySelectorAll('.nv-btn-status').forEach(btn => {
             btn.onclick = async () => {
                 const status = btn.dataset.status
-                grupo.querySelectorAll('.nv-btn-status').forEach(b => { b.classList.remove('btn-active'); b.style.opacity = '0.5' })
-                btn.classList.add('btn-active'); btn.style.opacity = '1'
+                grupo.querySelectorAll('.nv-btn-status').forEach(b => { b.classList.remove('ds-btn-primary'); b.style.opacity = '0.55' })
+                btn.classList.add('ds-btn-primary'); btn.style.opacity = '1'
                 try {
                     if (novidadeId) {
                         await fetch(API+'/novidades/'+novidadeId, {
@@ -311,17 +281,17 @@ function renderTabelaTodos() {
 function botoesStatus(p) {
     const atual = p.novidade_status || ''
     const botoes = [
-        { value: 'novidades', label: 'Fazer', cor: 'btn-warning' },
-        { value: 'ja_tem', label: 'Já tem', cor: 'btn-success' },
-        { value: 'para_chegar', label: 'Esperando', cor: 'btn-info' },
-        { value: 'nao_fazer', label: 'Não fazer', cor: 'btn-ghost' }
+        { value: 'novidades', label: 'Fazer' },
+        { value: 'ja_tem', label: 'Já tem' },
+        { value: 'para_chegar', label: 'Esperando' },
+        { value: 'nao_fazer', label: 'Não fazer' }
     ]
     return botoes.map(b => {
         const ativo = atual === b.value
-        const classe = ativo ? b.cor : (b.cor === 'btn-ghost' ? '' : b.cor + ' btn-outline')
-        return `<button class="nv-btn-status btn btn-xs sm:btn-xs ${classe} gap-0.5 sm:gap-1 text-[10px] sm:text-xs px-1.5 sm:px-2"
+        const classe = ativo ? ' ds-btn-primary' : ''
+        return `<button class="nv-btn-status ds-btn ds-btn-sm${classe}"
             data-status="${b.value}"
-            style="opacity:${ativo ? '1' : '0.55'};">
+            style="opacity:${ativo ? '1' : '0.55'}; padding:0 10px;">
             ${b.label}
         </button>`
     }).join('')
@@ -329,8 +299,11 @@ function botoesStatus(p) {
 
 function atualizarContadorSelecionados() {
     const el = document.getElementById('nv-selecionados-count')
-    el.textContent = nvSelecionados.size
-    document.getElementById('nv-check-all').checked = nvSelecionados.size === nvDados.length && nvDados.length > 0
+    if (el) el.textContent = nvSelecionados.size
+    const ca = document.getElementById('nv-check-all')
+    if (ca) ca.checked = nvSelecionados.size === nvDados.length && nvDados.length > 0
+    const th = document.getElementById('nv-th-check-all')
+    if (th) th.checked = nvSelecionados.size === nvDados.length && nvDados.length > 0
 }
 
 function alternarTodosNovidades() {
@@ -347,6 +320,8 @@ function limparSelecaoNovidades() {
     nvSelecionados.clear()
     document.querySelectorAll('.nv-check-item').forEach(cb => { cb.checked = false })
     document.getElementById('nv-check-all').checked = false
+    const th = document.getElementById('nv-th-check-all')
+    if (th) th.checked = false
     atualizarContadorSelecionados()
 }
 
