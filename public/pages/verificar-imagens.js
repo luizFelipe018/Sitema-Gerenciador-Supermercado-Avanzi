@@ -107,7 +107,7 @@ async function viCarregar() {
                 }[p.status] || '<span class="ds-badge" style="background:var(--surface-3); color:var(--text-2);">Pendente</span>'
 
                 return `<tr>
-                    <td><img loading="lazy" src="/imagem?codigo=${encodeURIComponent(p.codigo)}" alt="" onerror="this.style.visibility='hidden'; this.parentNode.innerHTML='<span class=&quot;ds-badge&quot; style=&quot;background:var(--danger-soft); color:var(--danger);&quot;>Faltando</span>';" style="width:64px; height:48px; object-fit:contain; border-radius:6px; background:#fff;"></td>
+                    <td><img loading="lazy" src="${API}/imagem?codigo=${encodeURIComponent(p.codigo)}" alt="" onerror="this.onerror=null; this.style.visibility='hidden';" style="width:64px; height:48px; object-fit:contain; border-radius:6px; background:#fff;"></td>
                     <td class="mono" style="color:var(--text-3)">${p.codigo || '—'}</td>
                     <td class="strong">${p.descricao || '—'}</td>
                     <td class="text-center">${existeTag}</td>

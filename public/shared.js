@@ -27,13 +27,14 @@ window.fetch = async function(...args) {
             clearTimeout(timer)
             const isTimeout = e && e.name === 'AbortError'
             const isNetwork = e && (e.name === 'TypeError' || /Failed to fetch|Load failed|NetworkError/.test(String(e.message || '')))
-            // IP salvo antigo/indisponível: descarta e tenta 1x o localhost (mesma máquina)
+            // IP salvo antigo/indisponível: descarta e tenta 1x o localhost (qualquer origem)
             const savedUrl = localStorage.getItem('serverUrl')
-            if ((isTimeout || isNetwork) && savedUrl && url.includes(savedUrl) && window.location.protocol === 'file:') {
+            if ((isTimeout || isNetwork) && savedUrl && url.includes(savedUrl) && savedUrl !== 'http://localhost:3000') {
                 localStorage.removeItem('serverUrl')
                 const retryUrl = url.replace(savedUrl, 'http://localhost:3000')
                 try {
-                    return await _originalFetch(retryUrl, opts)
+                    const retryRes = await _originalFetch(retryUrl, opts)
+                    return retryRes
                 } catch { /* cai no erro abaixo */ }
             }
             if (isTimeout) {

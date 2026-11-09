@@ -57,6 +57,7 @@
   "build": {
     "appId": "com.avanzi.erp",
     "productName": "Super Avanzi ERP",
+    "artifactName": "Super.Avanzi.ERP.Setup.${version}.${ext}",
     "publish": [
       {
         "provider": "github",

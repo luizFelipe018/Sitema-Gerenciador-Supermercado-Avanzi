@@ -30,23 +30,31 @@ function setupAutoUpdate(mainWin) {
 
     autoUpdater.allowDowngrade = false
     autoUpdater.autoDownload = false
+    autoUpdater.autoInstallOnAppQuit = true
     autoUpdater.logger = { info: (...args) => console.log('[autoUpdater]', ...args), warn: (...args) => console.warn('[autoUpdater]', ...args), error: (...args) => console.error('[autoUpdater]', ...args) }
+
+    const textoProgresso = (p) => {
+        try { if (!mainWin.isDestroyed()) mainWin.setTitle(`Super Avanzi ERP — baixando atualização ${p}%`) } catch {}
+    }
 
     autoUpdater.on('checking-for-update', () => {
         console.log('[autoUpdater] Verificando atualização...')
     })
 
     autoUpdater.on('update-available', (info) => {
+        const releaseNotes = typeof info.releaseNotes === 'string'
+            ? info.releaseNotes.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+            : (info.releaseNotes ? String(info.releaseNotes) : 'Clique em Baixar para atualizar o Super Avanzi ERP.')
         dialog.showMessageBox(mainWin, {
             type: 'info',
             title: 'Atualização disponível',
             message: `Versão ${info.version} disponível. Baixar agora?`,
-            detail: info.releaseNotes || 'Clique em Baixar para atualizar o Super Avanzi ERP.',
+            detail: releaseNotes,
             buttons: ['Baixar', 'Agora não'],
             defaultId: 0
         }).then((res) => {
             if (res.response === 0) autoUpdater.downloadUpdate()
-        }).catch(() => {})
+        }).catch((e) => console.error('[autoUpdater] Falha no diálogo:', e && e.message ? e.message : e))
     })
 
     autoUpdater.on('update-not-available', () => {
@@ -54,19 +62,30 @@ function setupAutoUpdate(mainWin) {
     })
 
     autoUpdater.on('error', (err) => {
-        console.error('[autoUpdater] Erro na atualização:', err && err.message ? err.message : err)
+        const msg = (err && (err.message || err)) || 'Erro desconhecido'
+        console.error('[autoUpdater] Erro na atualização:', msg)
+        dialog.showMessageBox({
+            type: 'error',
+            title: 'Falha ao atualizar',
+            message: 'Não foi possível baixar a atualização.',
+            detail: String(msg),
+            buttons: ['Entendi']
+        }).catch(() => {})
     })
 
     autoUpdater.on('download-progress', (progress) => {
-        mainWin.webContents.send('update-progress', Math.round(progress.percent || 0))
+        const p = Math.round(progress.percent || 0)
+        textoProgresso(p)
+        console.log(`[autoUpdater] Baixando: ${p}% (${(progress.bytesPerSecond / 1024).toFixed(0)} KB/s)`)
     })
 
     autoUpdater.on('update-downloaded', (info) => {
+        textoProgresso(100)
         dialog.showMessageBox(mainWin, {
             type: 'info',
             title: 'Atualização baixada',
-            message: `Versão ${info.version} baixada. Fechar o app para instalar?`,
-            detail: 'A atualização será aplicada na próxima abertura.',
+            message: `Versão ${info.version} baixada e pronta para instalar.`,
+            detail: 'Clique em Fechar e instalar para reiniciar o app.',
             buttons: ['Fechar e instalar', 'Depois'],
             defaultId: 0
         }).then((res) => {
@@ -75,7 +94,9 @@ function setupAutoUpdate(mainWin) {
     })
 
     // Checagem inicial + a cada 4h com o app aberto
-    autoUpdater.checkForUpdates().catch(() => {})
+    setTimeout(() => {
+        autoUpdater.checkForUpdates().catch((e) => console.error('[autoUpdater] Falha ao verificar:', e && e.message ? e.message : e))
+    }, 5000)
     setInterval(() => {
         autoUpdater.checkForUpdates().catch(() => {})
     }, 4 * 60 * 60 * 1000)

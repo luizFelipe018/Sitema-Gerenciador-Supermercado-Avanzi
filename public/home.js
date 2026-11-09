@@ -410,6 +410,13 @@ document.getElementById('btn-placas-grande').addEventListener('click', () => {
     carregarPlacasGrande()
 })
 
+document.getElementById('btn-placas-media-pack').addEventListener('click', () => {
+    abrirSubmenuPlacas()
+    document.getElementById('submenu-modelos').classList.add('open')
+    document.getElementById('btn-modelos-menu').classList.add('open2')
+    carregarPlacasMediaPack()
+})
+
 document.getElementById('btn-placas-grande-4').addEventListener('click', () => {
     abrirSubmenuPlacas()
     document.getElementById('submenu-modelos').classList.add('open')
@@ -522,6 +529,14 @@ document.getElementById('btn-verificar-imagens').addEventListener('click', () =>
     submenuOfertas.classList.remove('open')
     btnOfertasMenu.classList.remove('open')
     carregarVerificarImagens()
+})
+
+document.getElementById('btn-conversor-webp').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuOfertas.classList.remove('open')
+    btnOfertasMenu.classList.remove('open')
+    carregarConversorWebp()
 })
 
 document.getElementById('btn-busca-rapida').addEventListener('click', () => {
@@ -647,6 +662,7 @@ aplicarPermissoesMenu()
 function executarContexto(fn) {
     const abaAtiva = document.querySelector('.submenu-btn.active, .submenu3-btn.active')?.id
     if (abaAtiva === 'btn-placas-grande') fn('Grande')
+    else if (abaAtiva === 'btn-placas-media-pack') fn('MediaPack')
     else if (abaAtiva === 'btn-placas-grande-4') fn('Grande4')
     else if (abaAtiva === 'btn-placas-a4') fn('A4')
     else fn('')
