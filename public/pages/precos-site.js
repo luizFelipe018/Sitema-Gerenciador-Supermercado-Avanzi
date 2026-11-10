@@ -42,8 +42,8 @@ function carregarPrecosSite() {
         <div class="ds-card" style="margin-top:24px">
             <div class="ds-card-pad">
                 <h3 class="ds-card-title">Em lote</h3>
-                <p class="ds-card-sub">Cole uma lista de códigos/EANs (um por linha) — consulta o site e adiciona todos de uma vez como placas modelo Grande</p>
-                <textarea id="ps-lote" rows="4" placeholder="1081143&#10;1079870&#10;1062522&#10;..." style="width:100%; resize:vertical; background:var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:12px; font-family:monospace; font-size:12.5px; color:var(--text-1); box-sizing:border-box;"></textarea>
+                <p class="ds-card-sub">Cole códigos, SKUs ou EANs (um por linha) — o sistema descobre o código ERP de cada um e cria as placas com o preço do site</p>
+                <textarea id="ps-lote" rows="4" placeholder="1081143&#10;1935&#10;7896275983949&#10;..." style="width:100%; resize:vertical; background:var(--surface-2); border:1px solid var(--border); border-radius:12px; padding:12px; font-family:monospace; font-size:12.5px; color:var(--text-1); box-sizing:border-box;"></textarea>
                 <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px;">
                     <label class="ds-label" style="display:flex; align-items:center; gap:6px; margin:0; cursor:pointer;">
                         <input type="checkbox" id="ps-promo" checked style="accent-color:var(--brand-2)"> usar preço promocional quando houver
@@ -260,13 +260,7 @@ async function criarPlacasPs() {
         for (const item of itens) {
             const s = item.site
             const preco = usarPromo && s.promotionalPrice != null && s.promotionalPrice < s.price ? s.promotionalPrice : s.price
-            let qtdKgL = 0
-            try {
-                const rProd = await fetch(API + '/produtos/busca?q=' + encodeURIComponent(item.codigo), { headers: authHeaders() })
-                const prods = await rProd.json()
-                const prod = Array.isArray(prods) ? prods.find(p => String(p.codigo) === String(item.codigo)) : null
-                if (prod) qtdKgL = parseFloat(item.quantidade_kg_l ?? prod.quantidade_kg_l) || 0
-            } catch {}
+            let qtdKgL = parseFloat(item.quantidade_kg_l) || 0
             const precoInfo = qtdKgL > 0 ? (preco / qtdKgL).toFixed(2).replace('.', ',') : preco.toFixed(2).replace('.', ',')
             dbPlacas.push({
                 descricao: item.descricao,
@@ -317,24 +311,29 @@ async function adicionarLotePs() {
     const encontrados = []
     const naoAchou = []
     for (let i = 0; i < codigos.length; i++) {
-        const codigo = codigos[i]
+        const termo = codigos[i]
         try {
-            // preço do site pelo SKU
-            const rSite = await fetch(API + `/precos-site/buscar?codigo=${encodeURIComponent(codigo)}`, { headers: authHeaders() })
-            const s = await rSite.json()
-            // produto no ERP (para a placa)
-            const rProd = await fetch(API + `/produtos/busca?q=${encodeURIComponent(codigo)}`, { headers: authHeaders() })
-            const prods = await rProd.json()
-            const prod = Array.isArray(prods) ? prods.find(p => String(p.codigo) === codigo) || prods[0] : null
-            if (rSite.ok && s && !s.erro) {
-                encontrados.push({ codigo: prod?.codigo || codigo, descricao: prod?.descricao || s.name, ean: prod?.ean || '', marca: prod?.marca || '', quantidade_kg_l: prod?.quantidade_kg_l ?? 0, site: s })
+            // uma chamada já resolve EAN/SKU → código ERP e busca preço no site
+            const r = await fetch(API + `/precos-site/buscar?q=${encodeURIComponent(termo)}`, { headers: authHeaders() })
+            const s = await r.json()
+            if (r.ok && s && !s.erro) {
+                const erp = s.erp || {}
+                encontrados.push({
+                    codigo: erp.codigo || s.codigoERP || termo,
+                    descricao: erp.descricao || s.name,
+                    ean: erp.ean || '',
+                    marca: erp.marca || '',
+                    quantidade_kg_l: erp.quantidade_kg_l ?? 0,
+                    site: s
+                })
             } else {
-                naoAchou.push(codigo)
+                naoAchou.push(termo)
             }
         } catch {
-            naoAchou.push(codigo)
+            naoAchou.push(termo)
         }
         elLog.innerHTML = `<div style="padding:14px 18px; font-size:12px; color:var(--text-3);">Consultando o site… ${i + 1}/${codigos.length}</div>`
+        await new Promise(r => setTimeout(r, 130))
     }
 
     if (naoAchou.length) {
