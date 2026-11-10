@@ -110,6 +110,52 @@ async function getIndiceSite(force = false) {
     return itens
 }
 
+/* ── dicionário de equivalências (abreviações do ERP ↔ formas do site) ── */
+const SINONIMOS = {
+    // unidades/medidas
+    'ml': ['ml'], 'lt': ['lt', 'l', 'litro'], 'l': ['l', 'lt', 'litro'], 'lts': ['lt', 'litros'],
+    'kg': ['kg', 'quilo'], 'g': ['g', 'grama'], 'gr': ['g', 'grama'], 'grs': ['grama'],
+    'cx': ['cx', 'caixa'], 'fd': ['fd', 'fardo'], 'pct': ['pct', 'pacote'],
+    'un': ['un', 'unidade'], 'und': ['un', 'unidade'], 'dz': ['dz', 'duzia'],
+    // abreviações comuns de produtos
+    'amac': ['amac', 'amaciante'], 'amaciante': ['amaciante', 'amac'],
+    'deterg': ['detergente'], 'detergente': ['detergente', 'deterg'],
+    'sab': ['sabao'], 'sabao': ['sabao', 'sab'], 'sabonete': ['sabonete'],
+    'shp': ['shampoo'], 'shampoo': ['shampoo', 'shp'],
+    'cond': ['condicionador'], 'condicionador': ['condicionador', 'cond'],
+    'crem': ['creme'], 'creme': ['creme', 'crem'],
+    'desod': ['desodorante'], 'perf': ['perfume'],
+    'esc': ['escova'], 'cig': ['cigarro'],
+    'ref': ['refil'], 'refil': ['refil', 'ref'],
+    'lat': ['lata'], 'bdj': ['broche'],
+    'fl': ['fl', 'frasco'], 'fr': ['frasco'], 'frasc': ['frasco'],
+    'frasco': ['frasco', 'fl', 'fr', 'frasc'],
+    'pump': ['pump', 'bomba'], 'bomba': ['bomba', 'pump'],
+    // abreviações de marcas/nomes
+    'ype': ['ype'], 'coca': ['coca', 'coca cola'], 'nescau': ['nescau'],
+    // embalagens
+    'garrafa': ['garrafa'], 'pet': ['pet'], 'latao': ['latao']
+}
+
+/* ── verifica se 2 tokens são "equivalentes" (iguais, abreviação ou sinônimo) ── */
+function tokensEquivalentes(a, b) {
+    if (a === b) return true
+    // números com unidade: 2l ≈ 2lt, 500g ≈ 500gr
+    const numA = a.match(/^(\d+)(l|lt|ml|g|gr|kg|mg)?$/)
+    const numB = b.match(/^(\d+)(l|lt|ml|g|gr|kg|mg)?$/)
+    if (numA && numB && numA[1] === numB[1]) {
+        const ua = numA[2] || '', ub = numB[2] || ''
+        if (ua === ub) return true
+        if ((ua === 'l' && ub === 'lt') || (ua === 'lt' && ub === 'l')) return true
+        if ((ua === 'g' && ub === 'gr') || (ua === 'gr' && ub === 'g')) return true
+    }
+    const sin = SINONIMOS[a]
+    if (sin && sin.includes(b)) return true
+    const sinB = SINONIMOS[b]
+    if (sinB && sinB.includes(a)) return true
+    return false
+}
+
 /* ── melhor match de um produto ERP no índice do site ── */
 async function buscarMatchSite(descricao) {
     const itens = await getIndiceSite()
@@ -118,23 +164,63 @@ async function buscarMatchSite(descricao) {
     if (!toksERP.length) return null
 
     // votação: candidatos que compartilham tokens com o produto do ERP
-    const votos = new Map()
+    const votos = new Map() // idx -> nº tokens exatos
     for (const t of toksERP) {
         for (const idx of (porToken.get(t) || [])) {
             votos.set(idx, (votos.get(idx) || 0) + 1)
         }
     }
-    let melhor = null
-    for (const [idx, inter] of votos) {
-        if (inter < 2) continue // exige pelo menos 2 tokens em comum
-        const item = itens[idx]
-        const toksSite = new Set(item.toks)
-        const menor = Math.min(toksERP.length, toksSite.size)
-        const score = inter / menor
-        const difTam = Math.abs(toksERP.length - toksSite.size)
-        if (score >= 0.55 && (!melhor || score > melhor.score || (score === melhor.score && difTam < melhor.difTam))) {
-            melhor = { ...item, score: Math.round(score * 100) / 100, difTam }
+    // candidatos por equivalência (abreviações/sinônimos) — contam 0.5
+    const eqTokens = new Map() // idx -> nº tokens equivalentes (não exatos)
+    for (const t of toksERP) {
+        const sin = SINONIMOS[t]
+        if (!sin) continue
+        for (const s of sin) {
+            if (s === t) continue
+            for (const idx of (porToken.get(s) || [])) {
+                // só conta se este token do ERP ainda não bate exatamente neste candidato
+                const item = itens[idx]
+                if (item.toks.includes(t)) continue
+                if (!votos.has(idx) || !item.toks.includes(t)) {
+                    eqTokens.set(idx, (eqTokens.get(idx) || 0) + 0.5)
+                }
+            }
         }
+    }
+    // equivalentes numéricos (2l ↔ 2lt): varre candidatos com 2+ em comum já
+    for (const [idx, inter] of votos) {
+        const item = itens[idx]
+        for (const t of toksERP) {
+            if (item.toks.includes(t)) continue
+            for (const s of item.toks) {
+                if (tokensEquivalentes(t, s)) {
+                    eqTokens.set(idx, (eqTokens.get(idx) || 0) + 0.5)
+                    break
+                }
+            }
+        }
+    }
+
+    let melhor = null
+    const avalia = (idx, interExato, interEq) => {
+        const item = itens[idx]
+        const tamERP = toksERP.length
+        const tamSite = new Set(item.toks).size
+        const interPonderada = interExato + interEq
+        if (interPonderada < 1) return
+        const menor = Math.min(tamERP, tamSite)
+        const score = interPonderada / menor
+        const coberturaERP = Math.min(1, interPonderada / tamERP)
+        const scoreFinal = Math.round((score * 0.7 + coberturaERP * 0.3) * 100) / 100
+        const difTam = Math.abs(tamERP - tamSite)
+        if (scoreFinal >= 0.4 && (!melhor || scoreFinal > melhor.score || (scoreFinal === melhor.score && difTam < melhor.difTam))) {
+            melhor = { ...item, score: scoreFinal, difTam }
+        }
+    }
+
+    for (const [idx, inter] of votos) avalia(idx, inter, eqTokens.get(idx) || 0)
+    for (const [idx, eq] of eqTokens) {
+        if (!votos.has(idx)) avalia(idx, 0, eq)
     }
     return melhor
 }
