@@ -171,6 +171,7 @@ let rfModeloBaixando = false
 async function rfChecarModelo() {
     try {
         const res = await fetch(API + '/remover-fundo/status?_=' + Date.now(), { headers: authHeaders(), cache: 'no-store' })
+        if (res.status === 404) throw new Error('O ERP está aberto com uma versão antiga. Feche o programa completamente e abra de novo.')
         const d = await res.json()
         rfModeloPronto = !!d.pronto
         rfModeloBaixando = !!d.baixando
@@ -232,6 +233,7 @@ async function rfPrepararModelo() {
             headers: { 'Content-Type': 'application/json', ...authHeaders() },
             body: '{}'
         })
+        if (res.status === 404) throw new Error('O ERP está aberto com uma versão antiga. Feche o programa completamente e abra de novo.')
         if (!res.ok) throw new Error('HTTP ' + res.status)
         // verificação contínua até terminar
         const ini = Date.now()
