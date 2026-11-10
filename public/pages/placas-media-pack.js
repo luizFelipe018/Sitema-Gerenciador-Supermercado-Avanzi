@@ -188,6 +188,11 @@ async function carregarPlacasMediaPack() {
                         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         Importar
                     </button>
+                    <label id="label-preco-site-mp" class="btn-s btn-preco-site" title="Quando ativado, busca o preço no site (lojasuperavanzi.com.br) pelo código/EAN e preenche automaticamente">
+                        <input type="checkbox" id="chk-preco-site-mp">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                        Preço do site
+                    </label>
                 </div>
                 <p style="font-size:11px; color:rgba(255,255,255,0.3); margin:8px 0 0; border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;">Media Pack = placa média + preço do fardo + preço por unidade + valor do fardo + valor do LT/KG no fardo.</p>
                 <div class="bar pg-actions" style="margin-top:12px;">
@@ -659,7 +664,15 @@ function imprimirTudoMediaPack() {
    ═══════════════════════════════════════════════════════════════ */
 async function adicionarPlacaMediaPack() {
     const codigo = document.getElementById('ean-input-mp').value.trim()
-    const precoRaw = document.getElementById('preco-input-mp').value
+    let precoRaw = document.getElementById('preco-input-mp').value
+    if (corePrecoSiteAtivo() && !precoRaw.trim() && codigo) {
+        const achou = await coreAplicarPrecoSite(codigo, 'preco-input-mp')
+        if (achou) {
+            precoRaw = document.getElementById('preco-input-mp').value
+        } else {
+            return aviso(`Não encontrei o preço de "${codigo}" no site. Digite o preço manualmente.`, { titulo: 'Preço do site' })
+        }
+    }
     const qtdPackInput = parseInt(document.getElementById('qtd-pack-input-mp').value) || 12
     const qtd = parseInt(document.getElementById('qtd-input-mp').value) || 1
 
@@ -836,6 +849,8 @@ function vincularEventosPlacasMediaPack() {
     document.getElementById('btn-limpar-mp').onclick = () => {
         if (confirm('Limpar todas as placas Media Pack?')) { plaquesSalvasMP = []; salvarERenderizarMediaPack() }
     }
+
+    coreVincularPrecoSite('chk-preco-site-mp', 'label-preco-site-mp', 'ean-input-mp', 'preco-input-mp')
 
     const eanInput = document.getElementById('ean-input-mp')
     const precoInput = document.getElementById('preco-input-mp')

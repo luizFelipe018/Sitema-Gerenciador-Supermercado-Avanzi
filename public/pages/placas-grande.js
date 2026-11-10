@@ -111,6 +111,11 @@ async function carregarPlacasGrande() {
                         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         Importar
                     </button>
+                    <label id="label-preco-site-grande" class="btn-s btn-preco-site" title="Quando ativado, busca o preço no site (lojasuperavanzi.com.br) pelo código/EAN e preenche automaticamente">
+                        <input type="checkbox" id="chk-preco-site-grande">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                        Preço do site
+                    </label>
                 </div>
                 <div class="bar pg-actions">
                     <div class="d3-zoom" title="Zoom de visualização (não afeta a impressão)">
@@ -425,7 +430,15 @@ function imprimirTudoGrande() {
 
 async function adicionarPlacaGrande() {
     const codigo = document.getElementById('ean-input-grande').value.trim()
-    const precoRaw = document.getElementById('preco-input-grande').value
+    let precoRaw = document.getElementById('preco-input-grande').value
+    if (corePrecoSiteAtivo() && !precoRaw.trim() && codigo) {
+        const achou = await coreAplicarPrecoSite(codigo, 'preco-input-grande')
+        if (achou) {
+            precoRaw = document.getElementById('preco-input-grande').value
+        } else {
+            return aviso(`Não encontrei o preço de "${codigo}" no site. Digite o preço manualmente.`, { titulo: 'Preço do site' })
+        }
+    }
     const preco = Math.round(parseFloat(precoRaw.replace(',', '.')) * 100) / 100
     const quantidade = parseInt(document.getElementById('qtd-input-grande').value) || 1
     if (!codigo || isNaN(preco)) return
@@ -704,6 +717,8 @@ function vincularEventosPlacasGrande() {
         placasSalvasGrande = []
         salvarERenderizarGrande()
     }
+
+    coreVincularPrecoSite('chk-preco-site-grande', 'label-preco-site-grande', 'ean-input-grande', 'preco-input-grande')
 
     document.getElementById('fechar-busca-grande').onclick = () => { document.getElementById('modal-busca-grande').style.display = 'none' }
     document.getElementById('fechar-import-grande').onclick = () => { document.getElementById('modal-import-grande').style.display = 'none' }

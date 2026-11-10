@@ -213,6 +213,11 @@ async function carregarPlacasPequena() {
                         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         Importar
                     </button>
+                    <label id="label-preco-site-pequena" class="btn-s btn-preco-site" title="Quando ativado, busca o preço no site (lojasuperavanzi.com.br) pelo código/EAN e preenche automaticamente">
+                        <input type="checkbox" id="chk-preco-site-pequena">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                        Preço do site
+                    </label>
                 </div>
                 <div class="bar pg-actions">
                     <div class="d3-zoom" title="Zoom de visualização (não afeta a impressão)">
@@ -840,7 +845,15 @@ function imprimirTudoPequena() {
 
 async function adicionarPlacaPequena() {
     const codigo = document.getElementById('ean-input-pequena').value.trim()
-    const precoRaw = document.getElementById('preco-input-pequena').value
+    let precoRaw = document.getElementById('preco-input-pequena').value
+    if (corePrecoSiteAtivo() && !precoRaw.trim() && codigo) {
+        const achou = await coreAplicarPrecoSite(codigo, 'preco-input-pequena')
+        if (achou) {
+            precoRaw = document.getElementById('preco-input-pequena').value
+        } else {
+            return aviso(`Não encontrei o preço de "${codigo}" no site. Digite o preço manualmente.`, { titulo: 'Preço do site' })
+        }
+    }
     const preco = Math.round(parseFloat(precoRaw.replace(',', '.')) * 100) / 100
     const quantidade = parseInt(document.getElementById('qtd-input-pequena').value) || 1
     if (!codigo || isNaN(preco)) return
@@ -1042,6 +1055,8 @@ function vincularEventosPlacasPequena() {
     document.getElementById('btn-limpar-pequena').onclick       = () => {
         if (confirm('Limpar todas as placas pequenas?')) { plaquesSalvasPequena = []; salvarERenderizarPequena() }
     }
+
+    coreVincularPrecoSite('chk-preco-site-pequena', 'label-preco-site-pequena', 'ean-input-pequena', 'preco-input-pequena')
 
     eanInput.addEventListener('keyup', (e) => {
         if (eanInput.value.length >= 13 || e.key === 'Enter') {

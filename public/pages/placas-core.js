@@ -219,3 +219,68 @@ function coreMudarPagina(state, v) {
     const total = Math.ceil(state.salvas.length / state.porPagina) || 1
     return Math.max(0, Math.min((state.pagina ?? 0) + v, total - 1))
 }
+
+// -- Preço do site (lojasuperavanzi.com.br) --
+const PRECO_SITE_KEY = '' + 'placas_preco_site'
+
+function corePrecoSiteAtivo() {
+    try { return localStorage.getItem(PRECO_SITE_KEY) === '1' } catch (e) { return false }
+}
+
+function coreSalvarPrecoSiteAtivo(v) {
+    try { localStorage.setItem(PRECO_SITE_KEY, v ? '1' : '0') } catch (e) { /* sem armazenamento */ }
+}
+
+/* Busca o preco do produto no site pelo codigo/EAN (SKU == codigo do ERP) e
+   preenche o input. Usa o preco promocional quando a promocao esta ativa.
+   Retorna true se conseguiu preencher. */
+async function coreAplicarPrecoSite(codigo, inputId) {
+    const input = document.getElementById(inputId)
+    if (!input || !codigo) return false
+    try {
+        const res = await fetch(API + '/precos-site/buscar?codigo=' + encodeURIComponent(codigo), { headers: authHeaders() })
+        if (!res.ok) return false
+        const data = await res.json()
+        const promo = data.promotion === true && Number(data.promotionalPrice) > 0
+        const preco = promo ? Number(data.promotionalPrice) : Number(data.price)
+        if (!preco || !(preco > 0)) return false
+        input.value = preco.toFixed(2).replace('.', ',')
+        input.style.borderColor = 'var(--ok)'
+        setTimeout(() => { input.style.borderColor = '' }, 1500)
+        return true
+    } catch (e) {
+        return false
+    }
+}
+
+/* Liga o checkbox "Preco do site" da aba: persiste a escolha e preenche o
+   preco ao sair do campo de codigo (e ao ativar, se ja houver codigo digitado). */
+function coreVincularPrecoSite(chkId, labelId, eanInputId, precoInputId) {
+    const chk = document.getElementById(chkId)
+    const label = document.getElementById(labelId)
+    const eanInput = document.getElementById(eanInputId)
+    if (!chk || !eanInput) return
+
+    const aplicarEstado = (v) => {
+        chk.checked = v
+        if (label) label.classList.toggle('is-on', v)
+    }
+    aplicarEstado(corePrecoSiteAtivo())
+
+    chk.addEventListener('change', () => {
+        coreSalvarPrecoSiteAtivo(chk.checked)
+        aplicarEstado(chk.checked)
+        if (chk.checked) {
+            const codigo = eanInput.value.trim()
+            if (codigo) coreAplicarPrecoSite(codigo, precoInputId)
+        }
+    })
+
+    eanInput.addEventListener('blur', () => {
+        if (!corePrecoSiteAtivo()) return
+        const codigo = eanInput.value.trim()
+        if (codigo && !document.getElementById(precoInputId).value.trim()) {
+            coreAplicarPrecoSite(codigo, precoInputId)
+        }
+    })
+}
