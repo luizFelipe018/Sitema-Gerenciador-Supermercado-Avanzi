@@ -129,6 +129,7 @@ async function iniciarDownload() {
 }
 
 router.get('/remover-fundo/status', authMiddleware, (req, res) => {
+    res.setHeader('Cache-Control', 'no-store')
     res.json({ pronto: modeloPronto() || progresso.pronto, baixando, ...progresso })
 })
 

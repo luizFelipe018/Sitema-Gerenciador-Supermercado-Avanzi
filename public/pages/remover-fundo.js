@@ -170,7 +170,7 @@ let rfModeloBaixando = false
 
 async function rfChecarModelo() {
     try {
-        const res = await fetch(API + '/remover-fundo/status', { headers: authHeaders() })
+        const res = await fetch(API + '/remover-fundo/status?_=' + Date.now(), { headers: authHeaders(), cache: 'no-store' })
         const d = await res.json()
         rfModeloPronto = !!d.pronto
         rfModeloBaixando = !!d.baixando
@@ -236,7 +236,7 @@ async function rfPrepararModelo() {
         // verificação contínua até terminar
         const ini = Date.now()
         while (Date.now() - ini < 15 * 60 * 1000) {
-            const r = await fetch(API + '/remover-fundo/status', { headers: authHeaders() })
+            const r = await fetch(API + '/remover-fundo/status?_=' + Date.now(), { headers: authHeaders(), cache: 'no-store' })
             const d = await r.json()
             rfAtualizarUIDoModelo(d)
             if (d.pronto) {
