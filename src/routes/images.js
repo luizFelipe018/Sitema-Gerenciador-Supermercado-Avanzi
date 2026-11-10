@@ -103,6 +103,24 @@ router.get('/imagem', async (req, res) => {
         const caminho = buscarImagem(PASTA_IMAGENS, nomeArquivo)
 
         if (!caminho) {
+            // 1º fallback: site da loja (lojasuperavanzi.com.br) — própria imagem do produto
+            try {
+                let codigoSite = req.query.codigo || null
+                if (!codigoSite && req.query.nome) {
+                    const dbSite = require('../config/database')
+                    const [rowsSite] = await dbSite.query('SELECT codigo FROM produtos WHERE descricao = ? LIMIT 1', [String(req.query.nome).trim()])
+                    if (rowsSite[0]) codigoSite = rowsSite[0].codigo
+                }
+                if (codigoSite) {
+                    const site = require('./imagensSite')
+                    const info = await site.buscarImagemSitePorCodigo(codigoSite)
+                    if (info && info.ok && info.score >= 0.7) {
+                        const proxyUrl = `/off-image?url=${encodeURIComponent(info.imagem_url)}`
+                        return res.redirect(proxyUrl)
+                    }
+                }
+            } catch (e) {}
+            // 2º fallback: Open Food Facts
             try {
                 const nomeBusca = req.query.nome || req.query.codigo
                 const produtoOFF = await buscarOpenFoodFacts(nomeBusca)

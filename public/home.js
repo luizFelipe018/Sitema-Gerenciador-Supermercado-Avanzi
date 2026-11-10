@@ -539,6 +539,14 @@ document.getElementById('btn-conversor-webp').addEventListener('click', () => {
     carregarConversorWebp()
 })
 
+document.getElementById('btn-imagens-site').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuOfertas.classList.remove('open')
+    btnOfertasMenu.classList.remove('open')
+    carregarImagensSite()
+})
+
 document.getElementById('btn-busca-rapida').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
