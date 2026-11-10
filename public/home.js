@@ -515,6 +515,13 @@ document.getElementById('btn-baixar-site').addEventListener('click', () => {
     carregarBaixarSite()
 })
 
+document.getElementById('btn-remover-fundo').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    abrirSubmenuImagens()
+    carregarRemoverFundo()
+})
+
 document.getElementById('btn-imagens-site').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')

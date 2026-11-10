@@ -11,3 +11,5 @@ release/
 # artefatos gerados pelos utilit√°rios de teste
 tools/produtos-teste.xlsx
 tools/b64.*
+# modelo de IA do removedor de fundo (~75MB, baixado sob demanda no 1∫ uso)
+public/vendor/imgly/
