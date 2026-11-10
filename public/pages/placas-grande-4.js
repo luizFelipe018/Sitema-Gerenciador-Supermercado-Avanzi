@@ -465,15 +465,15 @@ function montarPlacaGrande4HTML(p) {
             </div>
 
             <div class="pg-rodape-wrapper" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:1mm; position:absolute; bottom:0; left:0; padding-bottom:${FOOTER_PAD_G4}px;">
-                <div class="pg-preco-wrapper" style="width:100%; display:flex; align-items:flex-end;${uniDisplay !== 'UN' ? " justify-content:space-between;" : " justify-content:center;"} transform:scaleY(1.3);">
+                <div class="pg-preco-wrapper" style="width:100%; display:flex; align-items:flex-end; justify-content:center; transform:scaleY(1.3);">
                     <span class="pg-preco-simbolo" style="font-size:20px; font-weight:bold; margin-right:2px; margin-bottom:20px; line-height:1;">R$</span>
                     <span class="pg-preco-valor" data-ajuste="preco" style="font-size:${precoFontSize}px; font-weight:900; line-height:1;">${reaisExib},${centsExib}</span>
                     ${fracionar
-                        ? `<span class="pg-preco-unidade" style="font-size:16px; font-weight:bold; display:flex; flex-direction:column; align-items:center; line-height:1.15; margin-bottom:16px; margin-left:0;">
+                        ? `<span class="pg-preco-unidade" style="font-size:16px; font-weight:bold; display:flex; flex-direction:column; align-items:center; line-height:1.15; margin-bottom:16px; margin-left:3px;">
                             <span>A CADA</span>
                             <span>100G</span>
                         </span>`
-                        : `<span class="pg-preco-unidade" data-field="unidade" style="font-size:20px; font-weight:bold;${uniDisplay !== 'UN' ? " margin-left:0;" : " margin-left:3px;"} margin-bottom:20px; line-height:1;">${uniDisplay}</span>`}
+                        : `<span class="pg-preco-unidade" data-field="unidade" style="font-size:20px; font-weight:bold; margin-left:3px; margin-bottom:20px; line-height:1;">${uniDisplay}</span>`}
                 </div>
                 <div class="pg-rodape-texto-wrapper" style="width:100%; text-align:center; margin-top:${MARGEM_RODAPE_G4}px; height:${mrRodape.altura}px;">
                     <div class="pg-rodape-texto" data-field="rodape" style="font-size:15px; font-weight:bold; line-height:0.66; position:relative; top:${mrRodape.deslocamento}px; transform:scaleY(${ESCALA_Y_G4});">${rodape}</div>
