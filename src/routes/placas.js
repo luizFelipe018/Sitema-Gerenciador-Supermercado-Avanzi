@@ -27,7 +27,7 @@ router.post('/log-placas', authMiddleware, async (req, res) => {
             p.codigo    || null,
             p.ean       || null,
             p.preco     || null,
-            p.tipo_placa || 'grande4',
+            p.tipo_placa || 'pequena',
             u.usuario   || null,
             u.id        || null,
             u.nome      || null
@@ -41,7 +41,7 @@ router.post('/log-placas', authMiddleware, async (req, res) => {
         const ids = Array.from({ length: valores.length }, (_, i) => firstId + i)
 
         // Auditoria: quem criou as placas
-        const tipos = [...new Set(registros.map(p => p.tipo_placa || 'grande4'))]
+        const tipos = [...new Set(registros.map(p => p.tipo_placa || 'pequena'))]
         await auditService.registrar(req, auditService.ACOES.CRIAR_PLACAS, {
             descricao: `criou ${valores.length} placa(s)`,
             entidade: 'log_placas',

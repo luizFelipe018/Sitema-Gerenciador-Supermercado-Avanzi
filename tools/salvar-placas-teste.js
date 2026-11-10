@@ -1,4 +1,4 @@
-// Salva placas de teste no tipo grande4 para conferir a visualização.
+// Salva placas de teste no tipo pequena para conferir a visualização.
 // Uso: node tools/salvar-placas-teste.js [quantidade]
 const API = 'http://localhost:3000'
 
@@ -25,7 +25,7 @@ async function main() {
 
     const res = await fetch(`${API}/registros-placas`, {
         method: 'POST', headers: h,
-        body: JSON.stringify({ tipo: 'grande4', placas })
+        body: JSON.stringify({ tipo: 'pequena', placas })
     })
     console.log('salvas:', JSON.stringify(await res.json()))
 }

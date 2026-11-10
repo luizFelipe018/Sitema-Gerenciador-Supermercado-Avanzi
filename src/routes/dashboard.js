@@ -29,7 +29,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
                 SUM(sub.tipo_placa = 'branca')  AS branca,
                 SUM(sub.tipo_placa = 'amarela') AS amarela,
                 SUM(sub.tipo_placa = 'grande')  AS grande,
-                SUM(sub.tipo_placa = 'grande4') AS grande4,
+                SUM(sub.tipo_placa = 'pequena') AS pequena,
                 SUM(sub.tipo_placa = 'a4')      AS a4,
                 COUNT(*)                        AS total
             FROM (

@@ -283,7 +283,7 @@ function registrarImpressaoPlacas() {
                         codigo: p.codigo || null,
                         ean: p.ean || null,
                         preco: p.preco || 0,
-                        tipo_placa: p.tipo_placa || 'grande4'
+                        tipo_placa: p.tipo_placa || 'pequena'
                     }))
                     const res = await fetch(API+'/log-placas', {
                         method: 'POST',
@@ -421,11 +421,11 @@ document.getElementById('btn-placas-media-pack').addEventListener('click', () =>
     carregarPlacasMediaPack()
 })
 
-document.getElementById('btn-placas-grande-4').addEventListener('click', () => {
+document.getElementById('btn-placas-pequena').addEventListener('click', () => {
     abrirSubmenuPlacas()
     document.getElementById('submenu-modelos').classList.add('open')
     document.getElementById('btn-modelos-menu').classList.add('open2')
-    carregarPlacasGrande4()
+    carregarPlacasPequena()
 })
 
 document.getElementById('btn-placas-a4').addEventListener('click', () => {
@@ -679,7 +679,7 @@ function executarContexto(fn) {
     const abaAtiva = document.querySelector('.submenu-btn.active, .submenu3-btn.active')?.id
     if (abaAtiva === 'btn-placas-grande') fn('Grande')
     else if (abaAtiva === 'btn-placas-media-pack') fn('MediaPack')
-    else if (abaAtiva === 'btn-placas-grande-4') fn('Grande4')
+    else if (abaAtiva === 'btn-placas-pequena') fn('Pequena')
     else if (abaAtiva === 'btn-placas-a4') fn('A4')
     else fn('')
     document.getElementById('contextMenu').style.display = 'none'
@@ -704,7 +704,7 @@ document.getElementById('ctx-padrao-novas').onclick = () => executarContexto(suf
 })
 
 document.addEventListener('click', (e) => {
-    if (!e.target.closest('.placa') && !e.target.closest('.placa-grande') && !e.target.closest('.placa-grande-4')) {
+    if (!e.target.closest('.placa') && !e.target.closest('.placa-grande') && !e.target.closest('.placa-pequena')) {
         document.getElementById('contextMenu').style.display = 'none'
     }
     if (popupBuscaAberto && !e.target.closest('.modal-box')) {
@@ -965,11 +965,11 @@ async function executarBuscaGlobal(termo, selecionarPrimeiro = false) {
             abrirSubmenuPlacas()
             document.getElementById('submenu-modelos').classList.add('open')
             document.getElementById('btn-modelos-menu').classList.add('open2')
-            carregarPlacasGrande4()
+            carregarPlacasPequena()
             setTimeout(() => {
-                document.getElementById('ean-input-g4').value = codigo
-                document.getElementById('preco-input-g4').value = preco
-                document.getElementById('preco-input-g4').focus()
+                document.getElementById('ean-input-pequena').value = codigo
+                document.getElementById('preco-input-pequena').value = preco
+                document.getElementById('preco-input-pequena').focus()
             }, 150)
         }
     })

@@ -1,13 +1,13 @@
 /* ═══════════════════════════════════════════════════════════════
    PÁGINA PLACA A4
-   Mesma arte e mesmas métricas da placa "Grande 4", porém ampliada
+   Mesma arte e mesmas métricas da placa "Placa Pequena", porém ampliada
    para ocupar UMA folha A4 inteira (210mm x 297mm) em vez de 4
    por folha. O conteúdo é o mesmo 561x794px — só a escala muda:
 
-     Grande 4 : 2x2 por folha  -> escala 0.7068  (105 x 148,5 mm cada)
+     Placa Pequena : 2x2 por folha  -> escala 0.7068  (105 x 148,5 mm cada)
      A4       : 1x1  por folha  -> escala 1.4137  (210 x 297 mm)
 
-   O layout interno (posições, margens, preços) é o mesmo do Grande 4,
+   O layout interno (posições, margens, preços) é o mesmo do Placa Pequena,
    por isso a arte e as medidas continuam idênticas — apenas maiores.
    ═══════════════════════════════════════════════════════════════ */
 
@@ -26,12 +26,12 @@ const K_TELA_A4 = 0.42
 const PASSOS_ZOOM_A4 = [0.24, 0.32, 0.42, 0.55, 0.7, 0.9, 1.1]
 let zoomTelaA4 = K_TELA_A4
 
-// A folha A4 usa o mesmo conteúdo/métricas da Grande 4
+// A folha A4 usa o mesmo conteúdo/métricas da Placa Pequena
 const CSS_FOLHA_A4 = `
 @page { size: A4 portrait; margin: 0; }
-${typeof CSS_PLACA_G4 !== 'undefined' ? CSS_PLACA_G4 : ''}
+${typeof CSS_PLACA_PEQUENA !== 'undefined' ? CSS_PLACA_PEQUENA : ''}
 .folha-a4 { --k:${K_IMPRESSAO_A4}; display:grid; grid-template-columns:1fr; grid-template-rows:1fr; gap:0; width:210mm; height:297mm; margin:0; padding:0; background:#fff !important; box-sizing:border-box; overflow:hidden; page-break-after:always; break-after:page; page-break-inside:avoid; break-inside:avoid; }
-.folha-a4 .placa-grande-4 { width:100%; height:100%; }
+.folha-a4 .placa-pequena { width:100%; height:100%; }
 .placa-selecionada { outline:none !important; box-shadow:none !important; }
 @media print {
   @page { size: A4 portrait; margin: 0; }
@@ -41,7 +41,7 @@ ${typeof CSS_PLACA_G4 !== 'undefined' ? CSS_PLACA_G4 : ''}
 `
 
 function carregarEstilosA4() {
-    // reaproveita o CSS da placa (conteúdo, fonte, guias) da Grande 4
+    // reaproveita o CSS da placa (conteúdo, fonte, guias) da Placa Pequena
     if (typeof carregarEstilos === 'function') carregarEstilos()
     if (!document.getElementById('placas-a4-guide')) {
         const style = document.createElement('style')
@@ -49,7 +49,7 @@ function carregarEstilosA4() {
         style.textContent = `
         #container-placas-a4 { display:flex; flex-wrap:wrap; gap:0; justify-content:center; align-items:flex-start; }
         .folha-a4-tela { --k:var(--k-a4-tela, ${K_TELA_A4}); display:grid; grid-template-columns:calc(561px * var(--k)); grid-template-rows:calc(794px * var(--k)); gap:0; margin:0 auto 16px; background:#fff; box-sizing:border-box; box-shadow:0 2px 12px rgba(0,0,0,0.15); }
-        .folha-a4-tela .placa-grande-4 { width:100%; height:100%; }
+        .folha-a4-tela .placa-pequena { width:100%; height:100%; }
         `
         document.head.appendChild(style)
     }
@@ -213,8 +213,8 @@ function renderizarPlacasA4() {
 
     lista.forEach(p => {
         const div = document.createElement('div')
-        div.className = 'placa-grande-4'
-        div.innerHTML = montarPlacaGrande4HTML(p)
+        div.className = 'placa-pequena'
+        div.innerHTML = montarPlacaPequenaHTML(p)
 
         // Alternar entre KG e 100g ao clicar no botão
         div.querySelectorAll('.pg-toggle-fracao').forEach(btn => {
@@ -252,7 +252,7 @@ function renderizarPlacasA4() {
             menu.style.left = e.clientX + 'px'
         }
 
-        // ajuste de fonte/posição no clique no texto (mesma mecânica da Grande 4)
+        // ajuste de fonte/posição no clique no texto (mesma mecânica da Placa Pequena)
         div.querySelectorAll('[data-field]').forEach(el => {
             el.style.cursor = 'pointer'
             const field = el.getAttribute('data-field')
@@ -299,7 +299,7 @@ function renderizarPlacasA4() {
                 }, 300)
             }
 
-            // Duplo clique para trocar unidade (igual Grande 4)
+            // Duplo clique para trocar unidade (igual Placa Pequena)
             if (field === 'unidade') {
                 el.ondblclick = async (e) => {
                     e.preventDefault()
@@ -332,7 +332,7 @@ function renderizarPlacasA4() {
 function marcarPlacaSelecionadaA4(div, selecionada) {
     if (!div) return
     div.classList.toggle('placa-selecionada', !!selecionada)
-    document.querySelectorAll('.placa-grande-4.placa-selecionada').forEach(el => {
+    document.querySelectorAll('.placa-pequena.placa-selecionada').forEach(el => {
         if (el !== div) el.classList.remove('placa-selecionada')
     })
 }
@@ -406,8 +406,8 @@ function imprimirTudoA4() {
         if (!placasNaFolha.length) continue
         placasNaFolha.forEach(p => {
             const div = document.createElement('div')
-            div.className = 'placa-grande-4'
-            div.innerHTML = montarPlacaGrande4HTML(p)
+            div.className = 'placa-pequena'
+            div.innerHTML = montarPlacaPequenaHTML(p)
             folha.appendChild(div)
         })
         container.appendChild(folha)
@@ -605,11 +605,11 @@ async function processarImportacaoA4() {
     await salvarERenderizarA4()
     document.getElementById('import-texto-a4').value = ''
 
-    if (destino === 'grande4') {
+    if (destino === 'pequena') {
         document.getElementById('modal-import-a4').style.display = 'none'
-        if (document.getElementById('btn-placas-grande-4')) document.getElementById('btn-placas-grande-4').click()
-        else if (typeof carregarPlacasGrande4 === 'function') carregarPlacasGrande4()
-        if (typeof salvarERenderizarGrande4 === 'function') await salvarERenderizarGrande4()
+        if (document.getElementById('btn-placas-pequena')) document.getElementById('btn-placas-pequena').click()
+        else if (typeof carregarPlacasPequena === 'function') carregarPlacasPequena()
+        if (typeof salvarERenderizarPequena === 'function') await salvarERenderizarPequena()
         alert(`${resImp.contador} placa(s) gerada(s).`)
         document.getElementById('import-texto-a4').value = ''
         return
@@ -687,8 +687,8 @@ function vincularEventosPlacasA4() {
         const page = placasSalvasA4.slice(start, Math.min(start + placasPorPaginaA4, len))
         page.forEach(p => {
             const div = document.createElement('div')
-            div.className = 'placa-grande-4'
-            div.innerHTML = montarPlacaGrande4HTML(p)
+            div.className = 'placa-pequena'
+            div.innerHTML = montarPlacaPequenaHTML(p)
             folha.appendChild(div)
         })
         printFolha(folha.outerHTML, CSS_FOLHA_A4)

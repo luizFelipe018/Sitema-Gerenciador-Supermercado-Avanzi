@@ -270,7 +270,7 @@ async function carregarResumoAuditoria() {
                 const max = Math.max(...linhas.map(l => Number(l.total) || 0), 1)
                 cont.innerHTML = linhas.slice(0, 12).map(l => {
                     const pct = (Number(l.total) / max) * 100
-                    const cor = l.tipo_placa === 'grande4' ? 'var(--brand-2)' : l.tipo_placa === 'grande' ? 'var(--info)' : 'var(--text-3)'
+                    const cor = l.tipo_placa === 'pequena' ? 'var(--brand-2)' : l.tipo_placa === 'grande' ? 'var(--info)' : 'var(--text-3)'
                     return `
                     <div class="ds-list-item">
                         <span class="ds-list-name" title="${audEsc(l.usuario_nome || l.usuario)}">${audEsc(l.usuario_nome || l.usuario)}</span>

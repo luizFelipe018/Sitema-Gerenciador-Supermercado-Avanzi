@@ -1,60 +1,60 @@
-var plaquesBancoGrande4 = []
-var plaquesSalvasGrande4 = []
-var paginaPlacasGrande4 = 0
-const plaquesPorPaginaGrande4 = 4
-var placaClicadaGrande4 = null
-var placaClicadaElGrande4 = null
-var _salvandoGrande4 = false
+var plaquesBancoPequena = []
+var plaquesSalvasPequena = []
+var paginaPlacasPequena = 0
+const plaquesPorPaginaPequena = 4
+var placaClicadaPequena = null
+var placaClicadaElPequena = null
+var _salvandoPequena = false
 
-// A placa Grande 4 e a MESMA placa Grande original (561x794px), so que reduzida por
+// A placa Placa Pequena e a MESMA placa Grande original (561x794px), so que reduzida por
 // transform para caber na celula de 105mm x 148,5mm (396,85 x 561,26px).
 // Manter o layout interno em 561x794 preserva todas as metricas ja calibradas
 // (margin-top do texto, preco de 140px, padding-bottom, margem do rodape).
-const K_IMPRESSAO_G4 = 0.7068
-const K_TELA_G4 = 0.32
-// Zoom de visualização (só tela). A impressão usa sempre K_IMPRESSAO_G4.
-const ZOOM_MIN_G4 = 0.32
-const ZOOM_MAX_G4 = 1.45
-const PASSOS_ZOOM_G4 = [0.32, 0.45, 0.6, 0.8, 1.0, 1.2, 1.45]
+const K_IMPRESSAO_PEQUENA = 0.7068
+const K_TELA_PEQUENA = 0.32
+// Zoom de visualização (só tela). A impressão usa sempre K_IMPRESSAO_PEQUENA.
+const ZOOM_MIN_PEQUENA = 0.32
+const ZOOM_MAX_PEQUENA = 1.45
+const PASSOS_ZOOM_PEQUENA = [0.32, 0.45, 0.6, 0.8, 1.0, 1.2, 1.45]
 // recupera o zoom salvo da última sessão
-let zoomTelaG4 = (() => {
-    const salvo = Number(localStorage.getItem('zoomG4'))
-    return salvo >= ZOOM_MIN_G4 && salvo <= ZOOM_MAX_G4 ? salvo : K_TELA_G4
+let zoomTelaPequena = (() => {
+    const salvo = Number(localStorage.getItem('zoomPequena'))
+    return salvo >= ZOOM_MIN_PEQUENA && salvo <= ZOOM_MAX_PEQUENA ? salvo : K_TELA_PEQUENA
 })()
 
 // Margem extra no topo (px no layout 561x794): desce o bloco texto 1/2/3
 // para abaixo do fim do banner SUPER OFERTA (o desenho atual termina ~246px)
 // e preserva o espaco em branco do topo (ja presente na arte) para a dobra.
 // 40px no layout ~ 7,5mm na folha impressa (148,5mm de altura -> 794px).
-const MARGEM_TOPO_G4 = 40
+const MARGEM_TOPO_PEQUENA = 40
 
 // Regra compartilhada entre a tela e a janela de impressao.
-const CSS_PLACA_G4 = `
-.placa-grande-4 { position:relative; overflow:hidden; background:transparent; }
+const CSS_PLACA_PEQUENA = `
+.placa-pequena { position:relative; overflow:hidden; background:transparent; }
 /* display:flow-root cria BFC e impede o colapso da margin-top do .pg-texto-wrapper.
    Sem isso os 200px "escapavam" para fora da placa e o texto subia para o topo,
    ficando por cima do banner SUPER OFERTA. */
-.placa-grande-4 .placa-grande-conteudo { display:flow-root; width:561px !important; height:794px !important; margin:0 !important; transform:scale(var(--k)); transform-origin:top left; outline:none !important; }
+.placa-pequena .placa-grande-conteudo { display:flow-root; width:561px !important; height:794px !important; margin:0 !important; transform:scale(var(--k)); transform-origin:top left; outline:none !important; }
 /* Guias de corte: linha preta de 1px passando na metade da folha (vertical e
-   horizontal), dividindo as 4 placas grande-4 para recorte. Nao altera o
+   horizontal), dividindo as 4 placas pequena para recorte. Nao altera o
    tamanho das placas nem a quantidade de paginas. */
-.folha-grande-4, .folha-grande-4-tela { position:relative; }
-.folha-grande-4::before, .folha-grande-4::after,
-.folha-grande-4-tela::before, .folha-grande-4-tela::after { content:''; position:absolute; background:#000; z-index:5; pointer-events:none; }
-.folha-grande-4::before, .folha-grande-4-tela::before { top:calc(50% - 0.5px); left:0; width:100%; height:1px; }
-.folha-grande-4::after, .folha-grande-4-tela::after { left:calc(50% - 0.5px); top:0; width:1px; height:100%; }
+.folha-pequena, .folha-pequena-tela { position:relative; }
+.folha-pequena::before, .folha-pequena::after,
+.folha-pequena-tela::before, .folha-pequena-tela::after { content:''; position:absolute; background:#000; z-index:5; pointer-events:none; }
+.folha-pequena::before, .folha-pequena-tela::before { top:calc(50% - 0.5px); left:0; width:100%; height:1px; }
+.folha-pequena::after, .folha-pequena-tela::after { left:calc(50% - 0.5px); top:0; width:1px; height:100%; }
 `
 
-const CSS_FOLHA_G4 = `
+const CSS_FOLHA_PEQUENA = `
 @page { size: A4 portrait; margin: 0; }
-${CSS_PLACA_G4}
-.folha-grande-4 { --k:${K_IMPRESSAO_G4}; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:0; width:210mm; height:297mm; margin:0; padding:0; background:#fff !important; box-sizing:border-box; overflow:hidden; page-break-after:always; break-after:page; page-break-inside:avoid; break-inside:avoid; }
-.folha-grande-4 .placa-grande-4 { width:100%; height:100%; }
+${CSS_PLACA_PEQUENA}
+.folha-pequena { --k:${K_IMPRESSAO_PEQUENA}; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:0; width:210mm; height:297mm; margin:0; padding:0; background:#fff !important; box-sizing:border-box; overflow:hidden; page-break-after:always; break-after:page; page-break-inside:avoid; break-inside:avoid; }
+.folha-pequena .placa-pequena { width:100%; height:100%; }
 .placa-selecionada { outline:none !important; }
 @media print {
   @page { size: A4 portrait; margin: 0; }
   html, body { margin:0; padding:0; background:#fff; }
-  .folha-grande-4 { box-shadow:none !important; margin:0 !important; border:none !important; }
+  .folha-pequena { box-shadow:none !important; margin:0 !important; border:none !important; }
   .pg-toggle-fracao { display:none !important; }
 }
 `
@@ -67,17 +67,17 @@ function carregarEstilos() {
         link.href = 'style.css'
         document.head.appendChild(link)
     }
-    if (!document.getElementById('placas-grande-4-guide')) {
+    if (!document.getElementById('placas-pequena-guide')) {
         const style = document.createElement('style')
-        style.id = 'placas-grande-4-guide'
-        style.textContent = CSS_PLACA_G4 + `
-#container-placas-g4 { display:flex; flex-wrap:wrap; gap:0; justify-content:center; align-items:flex-start; }
-.folha-grande-4-tela { --k:var(--k-g4-tela, ${K_TELA_G4}); display:grid; grid-template-columns:repeat(2, calc(561px * var(--k))); grid-template-rows:repeat(2, calc(794px * var(--k))); gap:0; margin:0 auto 16px; background:#fff; box-sizing:border-box; box-shadow:0 2px 12px rgba(0,0,0,0.15); }
-.folha-grande-4-tela .placa-grande-4 { width:100%; height:100%; }
+        style.id = 'placas-pequena-guide'
+        style.textContent = CSS_PLACA_PEQUENA + `
+#container-placas-pequena { display:flex; flex-wrap:wrap; gap:0; justify-content:center; align-items:flex-start; }
+.folha-pequena-tela { --k:var(--k-pequena-tela, ${K_TELA_PEQUENA}); display:grid; grid-template-columns:repeat(2, calc(561px * var(--k))); grid-template-rows:repeat(2, calc(794px * var(--k))); gap:0; margin:0 auto 16px; background:#fff; box-sizing:border-box; box-shadow:0 2px 12px rgba(0,0,0,0.15); }
+.folha-pequena-tela .placa-pequena { width:100%; height:100%; }
 .placa-grande-conteudo * { color:#000 !important; }
 /* Zoom de visualização: escala a folha inteira na tela, sem afetar a impressão. */
-#container-placas-g4 { --k-g4-tela:${K_TELA_G4}; }
-.folha-grande-4-tela { transform-origin: top center; }
+#container-placas-pequena { --k-pequena-tela:${K_TELA_PEQUENA}; }
+.folha-pequena-tela { transform-origin: top center; }
 .d3-zoom {
     display: inline-flex;
     align-items: center;
@@ -117,45 +117,45 @@ function carregarEstilos() {
     }
 }
 
-function atualizarStatusBanco4(texto, cor) {
+function atualizarStatusBancoPequena(texto, cor) {
     const el = document.getElementById('pg-status-banco-4')
     if (el) { el.textContent = texto; if (cor) el.style.color = cor }
 }
 
 /** Destaca a placa selecionada (apenas na tela). */
-function marcarPlacaSelecionadaG4(div, selecionada) {
+function marcarPlacaSelecionadaPequena(div, selecionada) {
     if (!div) return
     div.classList.toggle('placa-selecionada', !!selecionada)
-    document.querySelectorAll('.placa-grande-4.placa-selecionada').forEach(el => {
+    document.querySelectorAll('.placa-pequena.placa-selecionada').forEach(el => {
         if (el !== div) el.classList.remove('placa-selecionada')
     })
 }
 
 /** Aplica o zoom de visualização na folha da tela (não afeta a impressão). */
-function aplicarZoomTelaG4() {
-    const alvo = document.getElementById('container-placas-g4')
-    if (alvo) alvo.style.setProperty('--k-g4-tela', zoomTelaG4)
-    try { localStorage.setItem('zoomG4', String(zoomTelaG4)) } catch {}
-    const pct = document.getElementById('g4-zoom-pct')
+function aplicarZoomTelaPequena() {
+    const alvo = document.getElementById('container-placas-pequena')
+    if (alvo) alvo.style.setProperty('--k-pequena-tela', zoomTelaPequena)
+    try { localStorage.setItem('zoomPequena', String(zoomTelaPequena)) } catch {}
+    const pct = document.getElementById('pequena-zoom-pct')
     if (pct) {
         // percentual em relação ao tamanho real de impressão (100% = k 0.7068)
-        pct.textContent = Math.round((zoomTelaG4 / K_IMPRESSAO_G4) * 100) + '%'
+        pct.textContent = Math.round((zoomTelaPequena / K_IMPRESSAO_PEQUENA) * 100) + '%'
     }
-    const fit = document.getElementById('g4-zoom-fit')
-    if (fit) fit.classList.toggle('is-on', Math.abs(zoomTelaG4 - K_TELA_G4) < 0.001)
+    const fit = document.getElementById('pequena-zoom-fit')
+    if (fit) fit.classList.toggle('is-on', Math.abs(zoomTelaPequena - K_TELA_PEQUENA) < 0.001)
 }
 
-function mudarZoomTelaG4(delta) {
-    let i = PASSOS_ZOOM_G4.findIndex(p => p >= zoomTelaG4 - 0.001)
-    if (i === -1) i = PASSOS_ZOOM_G4.length - 1
-    i = Math.max(0, Math.min(PASSOS_ZOOM_G4.length - 1, i + delta))
-    zoomTelaG4 = PASSOS_ZOOM_G4[i]
-    aplicarZoomTelaG4()
+function mudarZoomTelaPequena(delta) {
+    let i = PASSOS_ZOOM_PEQUENA.findIndex(p => p >= zoomTelaPequena - 0.001)
+    if (i === -1) i = PASSOS_ZOOM_PEQUENA.length - 1
+    i = Math.max(0, Math.min(PASSOS_ZOOM_PEQUENA.length - 1, i + delta))
+    zoomTelaPequena = PASSOS_ZOOM_PEQUENA[i]
+    aplicarZoomTelaPequena()
 }
 
-function encaixarZoomG4() {
-    zoomTelaG4 = K_TELA_G4
-    aplicarZoomTelaG4()
+function encaixarZoomPequena() {
+    zoomTelaPequena = K_TELA_PEQUENA
+    aplicarZoomTelaPequena()
 }
 
 function quebrarNome(descricao) {
@@ -180,9 +180,9 @@ function quebrarPorMarca(descricao, marca) {
     }
 }
 
-async function carregarPlacasGrande4() {
+async function carregarPlacasPequena() {
     carregarEstilos()
-    setActive('btn-placas-grande-4')
+    setActive('btn-placas-pequena')
     setConteudo(`
         <div class="pg-wrapper" style="max-width:1200px; margin:0 auto;">
 
@@ -191,94 +191,94 @@ async function carregarPlacasGrande4() {
                 <div class="frc mb16" style="align-items:end;">
                     <div class="fcc">
                         <label class="lb">Código / EAN</label>
-                        <input type="text" id="ean-input-g4" autocomplete="off" autofocus class="inp inp-w140">
+                        <input type="text" id="ean-input-pequena" autocomplete="off" autofocus class="inp inp-w140">
                     </div>
                     <div class="fcc">
                         <label class="lb">Preço (R$)</label>
-                        <input type="text" id="preco-input-g4" inputmode="decimal" class="inp inp-w120">
+                        <input type="text" id="preco-input-pequena" inputmode="decimal" class="inp inp-w120">
                     </div>
                     <div class="fcc">
                         <label class="lb">Qtd</label>
-                        <input type="number" id="qtd-input-g4" value="1" min="1" class="inp inp-w70">
+                        <input type="number" id="qtd-input-pequena" value="1" min="1" class="inp inp-w70">
                     </div>
-                    <button id="btn-add-placa-g4" class="btn-p">
+                    <button id="btn-add-placa-pequena" class="btn-p">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         Adicionar
                     </button>
-                    <button id="btn-abrir-busca-g4" class="btn-s">
+                    <button id="btn-abrir-busca-pequena" class="btn-s">
                         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                         Buscar
                     </button>
-                    <button id="btn-abrir-import-g4" class="btn-s">
+                    <button id="btn-abrir-import-pequena" class="btn-s">
                         <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         Importar
                     </button>
                 </div>
                 <div class="bar pg-actions">
                     <div class="d3-zoom" title="Zoom de visualização (não afeta a impressão)">
-                        <button id="g4-zoom-out" title="Diminuir">−</button>
-                        <span id="g4-zoom-pct">45%</span>
-                        <button id="g4-zoom-in" title="Aumentar">+</button>
-                        <button id="g4-zoom-fit" title="Enquadrar a folha inteira" style="width:auto; padding:0 8px; font-size:11px; font-weight:600;">Enquadrar</button>
+                        <button id="pequena-zoom-out" title="Diminuir">−</button>
+                        <span id="pequena-zoom-pct">45%</span>
+                        <button id="pequena-zoom-in" title="Aumentar">+</button>
+                        <button id="pequena-zoom-fit" title="Enquadrar a folha inteira" style="width:auto; padding:0 8px; font-size:11px; font-weight:600;">Enquadrar</button>
                     </div>
-                    <button id="btn-print-atual-g4" class="btn-sm">
+                    <button id="btn-print-atual-pequena" class="btn-sm">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                         Pág. Atual
                     </button>
-                    <button id="btn-print-tudo-g4" class="btn-sm">
+                    <button id="btn-print-tudo-pequena" class="btn-sm">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                         Imprimir Tudo
                     </button>
 
                     <div class="frc6" style="margin-left:8px;">
-                        <button id="btn-pag-ant-g4" class="btn-g">
+                        <button id="btn-pag-ant-pequena" class="btn-g">
                             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
                             Ant.
                         </button>
-                        <span id="contador-pagina-g4" class="pg">Página 1 de 1</span>
-                        <button id="btn-pag-prox-g4" class="btn-g">
+                        <span id="contador-pagina-pequena" class="pg">Página 1 de 1</span>
+                        <button id="btn-pag-prox-pequena" class="btn-g">
                             Próx.
                             <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
                         </button>
                     </div>
 
-                    <button id="btn-limpar-g4" class="btn-d mla">
+                    <button id="btn-limpar-pequena" class="btn-d mla">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                         Limpar
                     </button>
                 </div>
             </div>
 
-            <div class="pg-plaques" id="container-placas-g4" style="padding:10px 0; overflow-x:auto;"></div>
+            <div class="pg-plaques" id="container-placas-pequena" style="padding:10px 0; overflow-x:auto;"></div>
 
         </div>
-    `, 'Placas Grande 4')
+    `, 'Placa Pequena')
 
-    aplicarZoomTelaG4()
+    aplicarZoomTelaPequena()
 
-    if (plaquesBancoGrande4.length === 0) {
+    if (plaquesBancoPequena.length === 0) {
         try {
             const res = await fetch(API+'/produtos?page=1&limit=500', { headers: authHeaders() })
             const json = await res.json()
             if (json.data && Array.isArray(json.data)) {
-                plaquesBancoGrande4 = json.data.map(p => ({
+                plaquesBancoPequena = json.data.map(p => ({
                     ...p,
                     preco_venda: parseFloat(p.preco_venda),
                     quantidade_kg_l: parseFloat(p.quantidade_kg_l || 0)
                 }))
-                atualizarStatusBanco4(`✓ ${plaquesBancoGrande4.length} produto(s) carregado(s)`)
+                atualizarStatusBancoPequena(`✓ ${plaquesBancoPequena.length} produto(s) carregado(s)`)
             } else {
-                atualizarStatusBanco4('✗ Nenhum produto encontrado no banco', '#ef4444')
+                atualizarStatusBancoPequena('✗ Nenhum produto encontrado no banco', '#ef4444')
             }
         } catch {
-            atualizarStatusBanco4('✗ Erro ao carregar produtos', '#ef4444')
+            atualizarStatusBancoPequena('✗ Erro ao carregar produtos', '#ef4444')
         }
     } else {
-        atualizarStatusBanco4(`✓ ${plaquesBancoGrande4.length} produto(s) em memória`)
+        atualizarStatusBancoPequena(`✓ ${plaquesBancoPequena.length} produto(s) em memória`)
     }
 
-    const carregadas = await coreCarregarPlacas('grande4', p => {
-        const prod = plaquesBancoGrande4.find(x => String(x.codigo) === String(p.codigo) || (x.ean && p.ean && String(x.ean) === String(p.ean)))
+    const carregadas = await coreCarregarPlacas('pequena', p => {
+        const prod = plaquesBancoPequena.find(x => String(x.codigo) === String(p.codigo) || (x.ean && p.ean && String(x.ean) === String(p.ean)))
         return {
             ...p,
             preco: Math.round(parseFloat(p.preco) * 100) / 100,
@@ -288,16 +288,16 @@ async function carregarPlacasGrande4() {
             _fs: coreParseConfig(p.config) || undefined
         }
     })
-    plaquesSalvasGrande4 = carregadas.placas
+    plaquesSalvasPequena = carregadas.placas
     if (carregadas.origem === 'pendente' || carregadas.origem === 'cache-servidor-vazio') {
-        atualizarStatusBanco4(`⚠ Exibindo ${plaquesSalvasGrande4.length} placa(s) do armazenamento local — o servidor ainda não recebeu o último salvamento. Elas serão reenviadas ao salvar.`, '#facc15')
+        atualizarStatusBancoPequena(`⚠ Exibindo ${plaquesSalvasPequena.length} placa(s) do armazenamento local — o servidor ainda não recebeu o último salvamento. Elas serão reenviadas ao salvar.`, '#facc15')
     } else if (carregadas.origem === 'offline') {
-        atualizarStatusBanco4(`⚠ Servidor fora do ar — exibindo ${plaquesSalvasGrande4.length} placa(s) salvas neste computador.`, '#facc15')
+        atualizarStatusBancoPequena(`⚠ Servidor fora do ar — exibindo ${plaquesSalvasPequena.length} placa(s) salvas neste computador.`, '#facc15')
     }
 
-    renderizarPlacasGrande4()
-    vincularEventosPlacasGrande4()
-    window._placasAtuais = plaquesSalvasGrande4
+    renderizarPlacasPequena()
+    vincularEventosPlacasPequena()
+    window._placasAtuais = plaquesSalvasPequena
 }
 
 const _ctxLargura = { ctx: null }
@@ -338,9 +338,9 @@ function calcBrandFontSize(texto) {
     return fontSize
 }
 
-const ESCALA_Y_G4 = 1.3
-const FONTE_PLACA_G4 = "'Arial Black', Arial, sans-serif"
-let _ctxG4 = null
+const ESCALA_Y_PEQUENA = 1.3
+const FONTE_PLACA_PEQUENA = "'Arial Black', Arial, sans-serif"
+let _ctxPequena = null
 
 // Cada linha recebe uma caixa com a altura EXATA da sua propria tinta e um
 // deslocamento (`position:relative; top`) que faz a tinta comecar no topo da
@@ -349,12 +349,12 @@ let _ctxG4 = null
 //
 // Sem isso, a linha 2 (line-height:0.66) tinha caixa de 0.66*F e tinta de
 // ~0.93*F: a tinta transbordava da caixa e invadia as linhas vizinhas.
-function metricasLinhaG4(texto, fontSize, fontWeight, lineHeight) {
+function metricasLinhaPequena(texto, fontSize, fontWeight, lineHeight) {
     const limpo = String(texto || '').trim()
     if (!limpo) return { altura: 0, deslocamento: 0 }
-    if (!_ctxG4) _ctxG4 = document.createElement('canvas').getContext('2d')
-    _ctxG4.font = `${fontWeight} ${fontSize}px ${FONTE_PLACA_G4}`
-    const m = _ctxG4.measureText(limpo.toUpperCase())
+    if (!_ctxPequena) _ctxPequena = document.createElement('canvas').getContext('2d')
+    _ctxPequena.font = `${fontWeight} ${fontSize}px ${FONTE_PLACA_PEQUENA}`
+    const m = _ctxPequena.measureText(limpo.toUpperCase())
     const asc = m.actualBoundingBoxAscent || fontSize * 0.72
     const desc = m.actualBoundingBoxDescent || 0
     const fAsc = m.fontBoundingBoxAscent || fontSize
@@ -364,14 +364,14 @@ function metricasLinhaG4(texto, fontSize, fontWeight, lineHeight) {
     const base = (box - (fAsc + fDesc)) / 2 + fAsc
     const yTopoTinta = base - asc
     // scaleY(1.3) atua sobre o centro da caixa
-    const deslocamento = (box / 2) * (ESCALA_Y_G4 - 1) - ESCALA_Y_G4 * yTopoTinta
+    const deslocamento = (box / 2) * (ESCALA_Y_PEQUENA - 1) - ESCALA_Y_PEQUENA * yTopoTinta
     return {
-        altura: Math.max(1, Math.round((asc + desc) * ESCALA_Y_G4)),
+        altura: Math.max(1, Math.round((asc + desc) * ESCALA_Y_PEQUENA)),
         deslocamento: Math.round(deslocamento)
     }
 }
 
-function montarPlacaGrande4HTML(p) {
+function montarPlacaPequenaHTML(p) {
     const descricaoLimpa = (p.descricao || '').replace(/\s+(KG|LT|LITRO|LITROS|KILO|KILOS|QUILO|QUILOS)$/i, '')
     const { linha1, linha2, linha3 } = quebrarPorMarca(descricaoLimpa, p.marca)
     const preco = parseFloat(p.preco)
@@ -402,22 +402,22 @@ function montarPlacaGrande4HTML(p) {
     const brandFontSize = calcBrandFontSize(linha2)
     // Largura util: a placa tem 561px e as linhas 1/3 sao white-space:nowrap,
     // entao qualquer excesso seria cortado pelo overflow:hidden.
-    const LARGURA_G4 = 540
-    let linha1FontSize = p._fs?.linha1 || fitFontSize(linha1, Math.max(Math.round(brandFontSize * 0.4), 12), LARGURA_G4, 'bold')
-    let linha3FontSize = p._fs?.linha3 || fitFontSize(linha3, Math.max(Math.round(brandFontSize * 0.4), 12), LARGURA_G4, 'bold')
+    const LARGURA_PEQUENA = 540
+    let linha1FontSize = p._fs?.linha1 || fitFontSize(linha1, Math.max(Math.round(brandFontSize * 0.4), 12), LARGURA_PEQUENA, 'bold')
+    let linha3FontSize = p._fs?.linha3 || fitFontSize(linha3, Math.max(Math.round(brandFontSize * 0.4), 12), LARGURA_PEQUENA, 'bold')
     let brandSz = p._fs?.linha2 || fitFontSize(linha2, brandFontSize, 472, '900')
 
     // Espacamento medido entre as TINTAS. Cada linha tem caixa com a altura
     // exata da sua tinta, entao a margem entre as caixas E o espaco visual.
-    const FOLGA_G4 = 6
-    const gapLinha3 = Math.max(0, p._fs?.gap3 ?? FOLGA_G4)
+    const FOLGA_PEQUENA = 6
+    const gapLinha3 = Math.max(0, p._fs?.gap3 ?? FOLGA_PEQUENA)
     const LH_L1 = 1.7, LH_L2 = 0.66, LH_L3 = 1.7
 
     const medirBloco = () => {
-        const m1 = metricasLinhaG4(linha1, linha1FontSize, 'bold', LH_L1)
-        const m2 = metricasLinhaG4(linha2, brandSz, '900', LH_L2)
-        const m3 = metricasLinhaG4(linha3, linha3FontSize, 'bold', LH_L3)
-        const entre12 = m1.altura ? FOLGA_G4 : 0
+        const m1 = metricasLinhaPequena(linha1, linha1FontSize, 'bold', LH_L1)
+        const m2 = metricasLinhaPequena(linha2, brandSz, '900', LH_L2)
+        const m3 = metricasLinhaPequena(linha3, linha3FontSize, 'bold', LH_L3)
+        const entre12 = m1.altura ? FOLGA_PEQUENA : 0
         const entre23 = m2.altura ? gapLinha3 : 0
         return { m1, m2, m3, total: m1.altura + entre12 + m2.altura + entre23 + m3.altura }
     }
@@ -425,12 +425,12 @@ function montarPlacaGrande4HTML(p) {
     // Encaixe automatico: o bloco precisa caber abaixo do fim do banner SUPER
     // OFERTA (o desenho atual termina ~246px) e acima do inicio do preco
     // (~549px). Reduzimos as 3 fontes na mesma proporcao ate caber.
-    const TOPO_BLOCO_G4 = 242 + MARGEM_TOPO_G4
-    const BASE_BLOCO_G4 = 534
+    const TOPO_BLOCO_PEQUENA = 242 + MARGEM_TOPO_PEQUENA
+    const BASE_BLOCO_PEQUENA = 534
     for (let i = 0; i < 5; i++) {
         const b = medirBloco()
-        if (TOPO_BLOCO_G4 + b.total <= BASE_BLOCO_G4) break
-        const k = (BASE_BLOCO_G4 - TOPO_BLOCO_G4) / b.total
+        if (TOPO_BLOCO_PEQUENA + b.total <= BASE_BLOCO_PEQUENA) break
+        const k = (BASE_BLOCO_PEQUENA - TOPO_BLOCO_PEQUENA) / b.total
         linha1FontSize = Math.max(12, Math.floor(linha1FontSize * k))
         brandSz = Math.max(14, Math.floor(brandSz * k))
         linha3FontSize = Math.max(12, Math.floor(linha3FontSize * k))
@@ -440,31 +440,31 @@ function montarPlacaGrande4HTML(p) {
     // Rodape: a linha "NESTA EMBALAGEM..." tem line-height:0.66 com scaleY(1.3),
     // entao a tinta transbordava da caixa e era cortada pelo fundo da placa.
     // Mesma solucao das linhas do texto: caixa com a altura exata da tinta.
-    const mrRodape = metricasLinhaG4(rodape, 15, 'bold', 0.66)
+    const mrRodape = metricasLinhaPequena(rodape, 15, 'bold', 0.66)
     // Codigo de barras, no mesmo formato da placa Branca ("Cod.<ean>")
     const textoCod = !semEan ? `Cód.${p.ean}` : ''
-    const mrCod = metricasLinhaG4(textoCod, 13, 'bold', 0.66)
-    const MARGEM_RODAPE_G4 = 80
-    const GAP_COD_G4 = 6
-    const FOOTER_PAD_G4 = 16
+    const mrCod = metricasLinhaPequena(textoCod, 13, 'bold', 0.66)
+    const MARGEM_RODAPE_PEQUENA = 80
+    const GAP_COD_PEQUENA = 6
+    const FOOTER_PAD_PEQUENA = 16
 
     return `
         <div id="placa-grande-conteudo" class="placa-grande-conteudo" style="width:561px; height:794px; margin:0; position:relative; box-sizing:border-box; font-family:'Arial Black',Arial,sans-serif; font-weight:900; background-image:url('assets/MODELOS PLACAS 2026.png'); background-size:100% 100%; background-position:center; background-repeat:no-repeat;">
-            <div class="pg-texto-wrapper" style="width:100%; display:flex; flex-direction:column; align-items:center; padding-bottom:110px; margin-top:${212 + MARGEM_TOPO_G4}px;">
+            <div class="pg-texto-wrapper" style="width:100%; display:flex; flex-direction:column; align-items:center; padding-bottom:110px; margin-top:${212 + MARGEM_TOPO_PEQUENA}px;">
                 <div class="pg-linha1-wrapper" style="width:100%; text-align:center; margin-top:30px; height:${M.m1.altura}px;">
-                    <div class="pg-linha1" data-field="linha1" style="font-size:${linha1FontSize}px; font-weight:bold; line-height:${LH_L1}; text-transform:uppercase; white-space:nowrap; overflow:hidden; position:relative; top:${M.m1.deslocamento}px; transform:scaleY(${ESCALA_Y_G4});">${linha1}</div>
+                    <div class="pg-linha1" data-field="linha1" style="font-size:${linha1FontSize}px; font-weight:bold; line-height:${LH_L1}; text-transform:uppercase; white-space:nowrap; overflow:hidden; position:relative; top:${M.m1.deslocamento}px; transform:scaleY(${ESCALA_Y_PEQUENA});">${linha1}</div>
                 </div>
 
-                <div class="pg-linha2-wrapper" style="width:90%; text-align:center; margin-top:${FOLGA_G4}px; height:${M.m2.altura}px;">
-                    <div class="pg-linha2" data-field="linha2" style="font-size:${brandSz}px; font-weight:900; line-height:${LH_L2}; letter-spacing:2px; text-transform:uppercase; white-space:nowrap; width:100%; position:relative; top:${M.m2.deslocamento}px; transform:scaleY(${ESCALA_Y_G4});">${linha2}</div>
+                <div class="pg-linha2-wrapper" style="width:90%; text-align:center; margin-top:${FOLGA_PEQUENA}px; height:${M.m2.altura}px;">
+                    <div class="pg-linha2" data-field="linha2" style="font-size:${brandSz}px; font-weight:900; line-height:${LH_L2}; letter-spacing:2px; text-transform:uppercase; white-space:nowrap; width:100%; position:relative; top:${M.m2.deslocamento}px; transform:scaleY(${ESCALA_Y_PEQUENA});">${linha2}</div>
                 </div>
 
                 <div class="pg-linha3-wrapper" style="width:100%; text-align:center; margin-top:${gapLinha3}px; height:${M.m3.altura}px;">
-                    <div class="pg-linha3" data-field="linha3" style="font-size:${linha3FontSize}px; font-weight:bold; line-height:${LH_L3}; text-transform:uppercase; white-space:nowrap; position:relative; top:${M.m3.deslocamento}px; transform:scaleY(${ESCALA_Y_G4});">${linha3}</div>
+                    <div class="pg-linha3" data-field="linha3" style="font-size:${linha3FontSize}px; font-weight:bold; line-height:${LH_L3}; text-transform:uppercase; white-space:nowrap; position:relative; top:${M.m3.deslocamento}px; transform:scaleY(${ESCALA_Y_PEQUENA});">${linha3}</div>
                 </div>
             </div>
 
-            <div class="pg-rodape-wrapper" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:1mm; position:absolute; bottom:0; left:0; padding-bottom:${FOOTER_PAD_G4}px;">
+            <div class="pg-rodape-wrapper" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:1mm; position:absolute; bottom:0; left:0; padding-bottom:${FOOTER_PAD_PEQUENA}px;">
                 <div class="pg-preco-wrapper" style="width:100%; display:flex; align-items:flex-end; justify-content:center; transform:scaleY(1.3);">
                     <span class="pg-preco-simbolo" style="font-size:20px; font-weight:bold; margin-right:2px; margin-bottom:20px; line-height:1;">R$</span>
                     <span class="pg-preco-valor" data-ajuste="preco" style="font-size:${precoFontSize}px; font-weight:900; line-height:1;">${reaisExib},${centsExib}</span>
@@ -475,12 +475,12 @@ function montarPlacaGrande4HTML(p) {
                         </span>`
                         : `<span class="pg-preco-unidade" data-field="unidade" style="font-size:20px; font-weight:bold; margin-left:3px; margin-bottom:20px; line-height:1;">${uniDisplay}</span>`}
                 </div>
-                <div class="pg-rodape-texto-wrapper" style="width:100%; text-align:center; margin-top:${MARGEM_RODAPE_G4}px; height:${mrRodape.altura}px;">
-                    <div class="pg-rodape-texto" data-field="rodape" style="font-size:15px; font-weight:bold; line-height:0.66; position:relative; top:${mrRodape.deslocamento}px; transform:scaleY(${ESCALA_Y_G4});">${rodape}</div>
+                <div class="pg-rodape-texto-wrapper" style="width:100%; text-align:center; margin-top:${MARGEM_RODAPE_PEQUENA}px; height:${mrRodape.altura}px;">
+                    <div class="pg-rodape-texto" data-field="rodape" style="font-size:15px; font-weight:bold; line-height:0.66; position:relative; top:${mrRodape.deslocamento}px; transform:scaleY(${ESCALA_Y_PEQUENA});">${rodape}</div>
                 </div>
                 ${textoCod ? `
-                <div class="pg-cod-wrapper" style="width:100%; text-align:center; margin-top:${GAP_COD_G4}px; height:${mrCod.altura}px;">
-                    <div class="pg-cod-texto" data-field="ean" style="font-size:13px; font-weight:bold; line-height:0.66; letter-spacing:0.5px; position:relative; top:${mrCod.deslocamento}px; transform:scaleY(${ESCALA_Y_G4});">${textoCod}</div>
+                <div class="pg-cod-wrapper" style="width:100%; text-align:center; margin-top:${GAP_COD_PEQUENA}px; height:${mrCod.altura}px;">
+                    <div class="pg-cod-texto" data-field="ean" style="font-size:13px; font-weight:bold; line-height:0.66; letter-spacing:0.5px; position:relative; top:${mrCod.deslocamento}px; transform:scaleY(${ESCALA_Y_PEQUENA});">${textoCod}</div>
                 </div>` : ''}
                 ${uni === 'KG' ? `
                 <span class="pg-toggle-fracao" data-fracao="${fracionar ? '1' : '0'}" style="position:absolute;bottom:4px;right:6px;cursor:pointer;font-size:10px;color:rgba(0,0,0,0.25);background:rgba(0,0,0,0.04);border-radius:4px;padding:2px 5px;letter-spacing:0.3px;user-select:none;white-space:nowrap;">
@@ -495,43 +495,43 @@ function montarPlacaGrande4HTML(p) {
  * Salva a predefinição de texto (tamanhos/posições) da placa selecionada.
  * Chamado pelo menu de contexto (junto de Duplicar e Excluir).
  */
-async function onSalvarPredefGrande4() {
-    const p = placaClicadaGrande4
+async function onSalvarPredefPequena() {
+    const p = placaClicadaPequena
     if (!p) { toast('Selecione uma placa primeiro', 'aviso'); return }
     if (!p._fs || !Object.keys(p._fs).length) {
         toast('Esta placa não tem ajustes para salvar', 'info')
         return
     }
-    await salvarPlacasGrande4()
+    await salvarPlacasPequena()
     toast('Predefinição da placa salva', 'ok')
 }
 
 /** Usa a predefinição da placa como padrão das novas placas do modelo. */
-async function onSalvarPredefPadraoGrande4() {
-    const p = placaClicadaGrande4
+async function onSalvarPredefPadraoPequena() {
+    const p = placaClicadaPequena
     if (!p) { toast('Selecione uma placa primeiro', 'aviso'); return }
     if (!p._fs || !Object.keys(p._fs).length) {
         toast('Esta placa não tem ajustes para salvar', 'info')
         return
     }
-    coreSalvarPresetPadrao('grande4', JSON.parse(JSON.stringify(p._fs)))
+    coreSalvarPresetPadrao('pequena', JSON.parse(JSON.stringify(p._fs)))
     toast('As novas placas já vão nascer com esta predefinição', 'ok')
 }
 
-function renderizarPlacasGrande4() {
-    const container = document.getElementById('container-placas-g4')
+function renderizarPlacasPequena() {
+    const container = document.getElementById('container-placas-pequena')
     if (!container) return
     container.innerHTML = ''
 
-    const totalPaginas = Math.ceil(plaquesSalvasGrande4.length / plaquesPorPaginaGrande4) || 1
-    if (paginaPlacasGrande4 >= totalPaginas) paginaPlacasGrande4 = totalPaginas - 1
+    const totalPaginas = Math.ceil(plaquesSalvasPequena.length / plaquesPorPaginaPequena) || 1
+    if (paginaPlacasPequena >= totalPaginas) paginaPlacasPequena = totalPaginas - 1
 
-    const contadorEl = document.getElementById('contador-pagina-g4')
-    if (contadorEl) contadorEl.innerText = `Página ${paginaPlacasGrande4 + 1} de ${totalPaginas}`
+    const contadorEl = document.getElementById('contador-pagina-pequena')
+    if (contadorEl) contadorEl.innerText = `Página ${paginaPlacasPequena + 1} de ${totalPaginas}`
 
-    const lista = plaquesSalvasGrande4.slice(
-        paginaPlacasGrande4 * plaquesPorPaginaGrande4,
-        (paginaPlacasGrande4 + 1) * plaquesPorPaginaGrande4
+    const lista = plaquesSalvasPequena.slice(
+        paginaPlacasPequena * plaquesPorPaginaPequena,
+        (paginaPlacasPequena + 1) * plaquesPorPaginaPequena
     )
     if (!lista.length) {
         container.innerHTML = `
@@ -544,19 +544,19 @@ function renderizarPlacasGrande4() {
     }
 
     const folha = document.createElement('div')
-    folha.className = 'folha-grande-4-tela'
+    folha.className = 'folha-pequena-tela'
 
     lista.forEach(p => {
         const div = document.createElement('div')
-        div.className = 'placa-grande-4'
-        div.innerHTML = montarPlacaGrande4HTML(p)
+        div.className = 'placa-pequena'
+        div.innerHTML = montarPlacaPequenaHTML(p)
 
         // clique na placa (fora dos textos) seleciona a placa do menu de contexto
         div.addEventListener('click', (e) => {
             if (e.target.closest('[data-field]')) return
-            placaClicadaGrande4 = p
-            placaClicadaElGrande4 = div
-            marcarPlacaSelecionadaG4(div, true)
+            placaClicadaPequena = p
+            placaClicadaElPequena = div
+            marcarPlacaSelecionadaPequena(div, true)
         })
 
         div.querySelectorAll('[data-field]').forEach(el => {
@@ -620,7 +620,7 @@ function renderizarPlacasGrande4() {
                                 const wrapper = el.parentElement
                                 const val = parseInt(wrapper.style.marginTop) || 0
                                 p._fs.gap3 = val
-                                salvarERenderizarGrande4()
+                                salvarERenderizarPequena()
                             }
                             document.addEventListener('mousemove', onMove)
                             document.addEventListener('mouseup', onUp)
@@ -632,7 +632,7 @@ function renderizarPlacasGrande4() {
                         if (!popup.contains(ev2.target)) {
                             popup.remove()
                             document.removeEventListener('mousedown', fecharPopup)
-                            salvarERenderizarGrande4()
+                            salvarERenderizarPequena()
                         }
                     }
                     setTimeout(() => document.addEventListener('mousedown', fecharPopup), 100)
@@ -648,7 +648,7 @@ function renderizarPlacasGrande4() {
                     const ciclo = { KG: 'LT', LT: 'UN', UN: 'KG' }
                     p._fs.unidade = ciclo[el.innerText.trim()] || 'KG'
                     delete p._fs.fracionar100g
-                    await salvarERenderizarGrande4()
+                    await salvarERenderizarPequena()
                     return
                 }
 
@@ -680,10 +680,10 @@ function renderizarPlacasGrande4() {
                             if (!p._fs.rodape && txtRodapeAtual) p._fs.rodape = txtRodapeAtual
                         }
                         p.ean = novoEan
-                        await salvarERenderizarGrande4()
+                        await salvarERenderizarPequena()
                         return
                     }
-                    if (!v) { renderizarPlacasGrande4(); return }
+                    if (!v) { renderizarPlacasPequena(); return }
                     if (field === 'preco') {
                         p.preco = parseFloat(v.replace(',', '.'))
                         const qtdKgL = parseFloat(p.quantidade_kg_l)
@@ -702,16 +702,16 @@ function renderizarPlacasGrande4() {
                         if (!p._fs) p._fs = {}
                         p._fs.rodape = v
                     }
-                    await salvarERenderizarGrande4()
+                    await salvarERenderizarPequena()
                 }
-                input.onkeydown = (ev) => { if (ev.key === 'Enter') fechar(); if (ev.key === 'Escape') renderizarPlacasGrande4() }
+                input.onkeydown = (ev) => { if (ev.key === 'Enter') fechar(); if (ev.key === 'Escape') renderizarPlacasPequena() }
                 input.onblur = fechar
             }
         })
 
         div.oncontextmenu = (e) => {
             e.preventDefault()
-            placaClicadaGrande4 = p
+            placaClicadaPequena = p
             const menu = document.getElementById('contextMenu')
             // "Usar como padrão" só aparece se a placa tem ajustes salvos
             const itemPadrao = document.getElementById('ctx-padrao-novas')
@@ -729,7 +729,7 @@ function renderizarPlacasGrande4() {
                 e.stopPropagation()
                 if (!p._fs) p._fs = {}
                 p._fs.fracionar100g = !p._fs.fracionar100g
-                salvarERenderizarGrande4()
+                salvarERenderizarPequena()
             }
         }
 
@@ -739,21 +739,21 @@ function renderizarPlacasGrande4() {
     container.appendChild(folha)
 }
 
-async function onExcluirPlacaGrande4() {
-    coreExcluirPlaca({ salvas: plaquesSalvasGrande4, clicada: placaClicadaGrande4 })
-    await salvarERenderizarGrande4()
+async function onExcluirPlacaPequena() {
+    coreExcluirPlaca({ salvas: plaquesSalvasPequena, clicada: placaClicadaPequena })
+    await salvarERenderizarPequena()
 }
 
-async function onDuplicarPlacaGrande4() {
-    coreDuplicarPlaca({ salvas: plaquesSalvasGrande4, clicada: placaClicadaGrande4 })
-    await salvarERenderizarGrande4()
+async function onDuplicarPlacaPequena() {
+    coreDuplicarPlaca({ salvas: plaquesSalvasPequena, clicada: placaClicadaPequena })
+    await salvarERenderizarPequena()
 }
 
-async function salvarPlacasGrande4() {
-    if (_salvandoGrande4) return
-    _salvandoGrande4 = true
+async function salvarPlacasPequena() {
+    if (_salvandoPequena) return
+    _salvandoPequena = true
     try {
-        const placas = plaquesSalvasGrande4.map(p => ({
+        const placas = plaquesSalvasPequena.map(p => ({
             descricao: p.descricao,
             codigo: p.codigo,
             ean: p.ean,
@@ -764,88 +764,88 @@ async function salvarPlacasGrande4() {
             marca: p.marca || null,
             config: p._fs ? JSON.stringify(p._fs) : null
         }))
-        coreCacheSalvar('grande4', placas)
+        coreCacheSalvar('pequena', placas)
         const res = await fetch(API+'/registros-placas', {
             method: 'POST',
             headers: { ...authHeaders(), 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tipo: 'grande4', placas })
+            body: JSON.stringify({ tipo: 'pequena', placas })
         })
         const data = await res.json()
         if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status))
-        coreCachePendente('grande4', false)
+        coreCachePendente('pequena', false)
         if (data.logIds && data.logIds.length) {
             window._ultimasPlacasGeradas.push(...data.logIds)
         }
         // se havia aviso de copia local/offline, volta ao normal apos sincronizar
         const stEl = document.getElementById('pg-status-banco-4')
         if (stEl && /armazenamento local|Servidor fora do ar/i.test(stEl.innerText)) {
-            atualizarStatusBanco4(`✓ ${plaquesSalvasGrande4.length} placa(s) salva(s) no servidor`)
+            atualizarStatusBancoPequena(`✓ ${plaquesSalvasPequena.length} placa(s) salva(s) no servidor`)
         }
     } catch (e) {
         console.error('Erro ao salvar placas grandes 4:', e)
-        coreCachePendente('grande4', true)
+        coreCachePendente('pequena', true)
         alert('Erro ao salvar no servidor: ' + e.message +
             '\n\nSuas placas continuam salvas neste computador e serão reenviadas quando o servidor voltar.')
     } finally {
-        _salvandoGrande4 = false
+        _salvandoPequena = false
     }
 }
 
-async function salvarERenderizarGrande4() {
-    await salvarPlacasGrande4()
-    renderizarPlacasGrande4()
+async function salvarERenderizarPequena() {
+    await salvarPlacasPequena()
+    renderizarPlacasPequena()
 }
 
-async function mudarPaginaPlacasGrande4(v) {
-    await salvarPlacasGrande4()
-    paginaPlacasGrande4 = coreMudarPagina({ salvas: plaquesSalvasGrande4, porPagina: plaquesPorPaginaGrande4, pagina: paginaPlacasGrande4 }, v)
-    renderizarPlacasGrande4()
+async function mudarPaginaPlacasPequena(v) {
+    await salvarPlacasPequena()
+    paginaPlacasPequena = coreMudarPagina({ salvas: plaquesSalvasPequena, porPagina: plaquesPorPaginaPequena, pagina: paginaPlacasPequena }, v)
+    renderizarPlacasPequena()
 }
 
-function imprimirTudoGrande4() {
-    if (!plaquesSalvasGrande4.length) {
+function imprimirTudoPequena() {
+    if (!plaquesSalvasPequena.length) {
         alert('Nenhuma placa para imprimir.')
         return
     }
     
-    const container = document.getElementById('container-placas-g4')
-    const paginaOriginal = paginaPlacasGrande4
+    const container = document.getElementById('container-placas-pequena')
+    const paginaOriginal = paginaPlacasPequena
     container.innerHTML = ''
     
-    for (let i = 0; i < plaquesSalvasGrande4.length; i += plaquesPorPaginaGrande4) {
+    for (let i = 0; i < plaquesSalvasPequena.length; i += plaquesPorPaginaPequena) {
         const folha = document.createElement('div')
-        folha.className = 'folha-grande-4'
-        const placasNaFolha = plaquesSalvasGrande4.slice(i, i + plaquesPorPaginaGrande4)
+        folha.className = 'folha-pequena'
+        const placasNaFolha = plaquesSalvasPequena.slice(i, i + plaquesPorPaginaPequena)
         
         if (!placasNaFolha.length) continue
         
         placasNaFolha.forEach(p => {
             const div = document.createElement('div')
-            div.className = 'placa-grande-4'
-            div.innerHTML = montarPlacaGrande4HTML(p)
+            div.className = 'placa-pequena'
+            div.innerHTML = montarPlacaPequenaHTML(p)
             folha.appendChild(div)
         })
         container.appendChild(folha)
     }
     
     setTimeout(() => {
-        printFolha(container.innerHTML, CSS_FOLHA_G4)
+        printFolha(container.innerHTML, CSS_FOLHA_PEQUENA)
         setTimeout(() => {
-            paginaPlacasGrande4 = paginaOriginal
-            renderizarPlacasGrande4()
+            paginaPlacasPequena = paginaOriginal
+            renderizarPlacasPequena()
             registrarImpressaoPlacas()
         }, 1000)
     }, 500)
 }
 
-async function adicionarPlacaGrande4() {
-    const codigo = document.getElementById('ean-input-g4').value.trim()
-    const precoRaw = document.getElementById('preco-input-g4').value
+async function adicionarPlacaPequena() {
+    const codigo = document.getElementById('ean-input-pequena').value.trim()
+    const precoRaw = document.getElementById('preco-input-pequena').value
     const preco = Math.round(parseFloat(precoRaw.replace(',', '.')) * 100) / 100
-    const quantidade = parseInt(document.getElementById('qtd-input-g4').value) || 1
+    const quantidade = parseInt(document.getElementById('qtd-input-pequena').value) || 1
     if (!codigo || isNaN(preco)) return
 
-    let prod = plaquesBancoGrande4.find(p => String(p.ean) === codigo) || plaquesBancoGrande4.find(p => String(p.codigo) === codigo)
+    let prod = plaquesBancoPequena.find(p => String(p.ean) === codigo) || plaquesBancoPequena.find(p => String(p.codigo) === codigo)
 
     if (!prod) {
         try {
@@ -853,7 +853,7 @@ async function adicionarPlacaGrande4() {
             const res = await fetch(url, { headers: authHeaders() })
             if (res.ok) {
                 const p = await res.json()
-                plaquesBancoGrande4.push(p)
+                plaquesBancoPequena.push(p)
                 prod = p
             }
         } catch {}
@@ -864,7 +864,7 @@ async function adicionarPlacaGrande4() {
             const res = await fetch(url, { headers: authHeaders() })
             if (res.ok) {
                 const p = await res.json()
-                plaquesBancoGrande4.push(p)
+                plaquesBancoPequena.push(p)
                 prod = p
             }
         } catch {}
@@ -874,35 +874,35 @@ async function adicionarPlacaGrande4() {
         const qtdKgL = parseFloat(prod.quantidade_kg_l)
         const precoUn = qtdKgL > 0 ? (preco / qtdKgL).toFixed(2).replace('.', ',') : prod.preco_venda
         for (let i = 0; i < quantidade; i++) {
-            plaquesSalvasGrande4.push(coreAplicarPresetPadrao({ ...prod, preco, preco_info: precoUn, id_unico: Date.now() + Math.random() }, 'grande4'))
+            plaquesSalvasPequena.push(coreAplicarPresetPadrao({ ...prod, preco, preco_info: precoUn, id_unico: Date.now() + Math.random() }, 'pequena'))
         }
-        await salvarERenderizarGrande4()
-        document.getElementById('ean-input-g4').value = ''
-        document.getElementById('preco-input-g4').value = ''
-        document.getElementById('qtd-input-g4').value = 1
-        document.getElementById('ean-input-g4').focus()
+        await salvarERenderizarPequena()
+        document.getElementById('ean-input-pequena').value = ''
+        document.getElementById('preco-input-pequena').value = ''
+        document.getElementById('qtd-input-pequena').value = 1
+        document.getElementById('ean-input-pequena').focus()
     } else {
         alert('Produto não encontrado. Verifique o código e tente novamente.')
     }
 }
 
-function abrirBuscaNomeGrande4() {
-    coreAbrirBuscaNome('-g4')
+function abrirBuscaNomePequena() {
+    coreAbrirBuscaNome('-pequena')
 }
 
-function abrirImportacaoGrande4() {
-    const modal = document.getElementById('modal-import-g4')
+function abrirImportacaoPequena() {
+    const modal = document.getElementById('modal-import-pequena')
     if (modal) modal.style.display = 'block'
-    const input = document.getElementById('import-texto-g4')
+    const input = document.getElementById('import-texto-pequena')
     if (input) { input.value = ''; input.focus() }
 }
 
-async function onBuscaNomeKeydownGrande4(e) {
+async function onBuscaNomeKeydownPequena(e) {
     if (e.key !== 'Enter') return
     const termo = e.target.value.trim()
     if (!termo || termo.length < 2) return
 
-    const tbody = document.querySelector('#tabela-busca-g4 tbody')
+    const tbody = document.querySelector('#tabela-busca-pequena tbody')
     tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:10px;color:#999;">Buscando...</td></tr>'
 
     try {
@@ -926,10 +926,10 @@ async function onBuscaNomeKeydownGrande4(e) {
         tbody.querySelectorAll('tr').forEach(tr => {
             tr.onclick = () => {
                 const i = parseInt(tr.getAttribute('data-index'))
-                document.getElementById('ean-input-g4').value = resultados[i].codigo
-                document.getElementById('preco-input-g4').value = resultados[i].preco_venda != null ? resultados[i].preco_venda : ''
-                fecharModaisGrande4()
-                document.getElementById('preco-input-g4').focus()
+                document.getElementById('ean-input-pequena').value = resultados[i].codigo
+                document.getElementById('preco-input-pequena').value = resultados[i].preco_venda != null ? resultados[i].preco_venda : ''
+                fecharModaisPequena()
+                document.getElementById('preco-input-pequena').focus()
             }
         })
     } catch {
@@ -937,16 +937,16 @@ async function onBuscaNomeKeydownGrande4(e) {
     }
 }
 
-function extrairKgLtG4(desc) {
+function extrairKgLtPequena(desc) {
     return coreExtrairKgLt(desc)
 }
 
-async function processarImportacaoGrande4() {
-    const texto = document.getElementById('import-texto-g4').value.trim()
+async function processarImportacaoPequena() {
+    const texto = document.getElementById('import-texto-pequena').value.trim()
     if (!texto) return
-    const qtdGlobal = parseInt(document.getElementById('qtd-input-g4')?.value) || 1
-    const logErros = document.getElementById('log-erros-g4')
-    const listaErros = document.getElementById('lista-erros-g4')
+    const qtdGlobal = parseInt(document.getElementById('qtd-input-pequena')?.value) || 1
+    const logErros = document.getElementById('log-erros-pequena')
+    const listaErros = document.getElementById('lista-erros-pequena')
     listaErros.innerHTML = ''
     logErros.style.display = 'none'
     let contador = 0
@@ -957,8 +957,8 @@ async function processarImportacaoGrande4() {
             const descProcurada = colunas[0].trim().toUpperCase()
             const precoNovo = parseFloat(colunas[1].replace('R$', '').replace(/\s/g, '').replace(',', '.').trim())
             if (!isNaN(precoNovo)) {
-                let prod = plaquesBancoGrande4.find(p => p.descricao?.toUpperCase() === descProcurada) ||
-                           plaquesBancoGrande4.find(p => p.descricao?.toUpperCase().includes(descProcurada))
+                let prod = plaquesBancoPequena.find(p => p.descricao?.toUpperCase() === descProcurada) ||
+                           plaquesBancoPequena.find(p => p.descricao?.toUpperCase().includes(descProcurada))
                 if (!prod) {
                     try {
                         const res = await fetch(API+'/produtos/busca?q='+encodeURIComponent(descProcurada), { headers: authHeaders() })
@@ -968,7 +968,7 @@ async function processarImportacaoGrande4() {
                                 const res2 = await fetch(API+'/produtos/'+encodeURIComponent(lista[0].codigo), { headers: authHeaders() })
                                 if (res2.ok) {
                                     const p = await res2.json()
-                                    plaquesBancoGrande4.push(p)
+                                    plaquesBancoPequena.push(p)
                                     prod = p
                                 }
                             }
@@ -979,14 +979,14 @@ async function processarImportacaoGrande4() {
                     const qtdKgL = parseFloat(prod.quantidade_kg_l)
                     const precoUn = qtdKgL > 0 ? (precoNovo / qtdKgL).toFixed(2).replace('.', ',') : prod.preco_venda
                     for (let i = 0; i < qtdGlobal; i++) {
-                        plaquesSalvasGrande4.push(coreAplicarPresetPadrao({ ...prod, preco: precoNovo, preco_info: precoUn, id_unico: Date.now() + Math.random() }, 'grande4'))
+                        plaquesSalvasPequena.push(coreAplicarPresetPadrao({ ...prod, preco: precoNovo, preco_info: precoUn, id_unico: Date.now() + Math.random() }, 'pequena'))
                     }
                     contador++
                 } else {
-                    const qtdKgL = extrairKgLtG4(descProcurada)
+                    const qtdKgL = extrairKgLtPequena(descProcurada)
                     const precoUn = qtdKgL > 0 ? (precoNovo / qtdKgL).toFixed(2).replace('.', ',') : precoNovo.toFixed(2).replace('.', ',')
                     for (let i = 0; i < qtdGlobal; i++) {
-                        plaquesSalvasGrande4.push(coreAplicarPresetPadrao({ descricao: colunas[0].trim(), codigo: '', ean: '', preco: precoNovo, preco_info: precoUn, quantidade_kg_l: qtdKgL, id_unico: Date.now() + Math.random() }, 'grande4'))
+                        plaquesSalvasPequena.push(coreAplicarPresetPadrao({ descricao: colunas[0].trim(), codigo: '', ean: '', preco: precoNovo, preco_info: precoUn, quantidade_kg_l: qtdKgL, id_unico: Date.now() + Math.random() }, 'pequena'))
                     }
                     contador++
                 }
@@ -994,53 +994,53 @@ async function processarImportacaoGrande4() {
         }
     }
 
-    fecharModaisGrande4()
+    fecharModaisPequena()
     alert(contador + ' placa(s) gerada(s).')
-    await salvarERenderizarGrande4()
-    document.getElementById('import-texto-g4').value = ''
+    await salvarERenderizarPequena()
+    document.getElementById('import-texto-pequena').value = ''
 }
 
 
-function fecharModaisGrande4() {
-    document.getElementById('modal-busca-g4').style.display = 'none'
-    document.getElementById('modal-import-g4').style.display = 'none'
-    if (document.getElementById('log-erros-g4')) document.getElementById('log-erros-g4').style.display = 'none'
+function fecharModaisPequena() {
+    document.getElementById('modal-busca-pequena').style.display = 'none'
+    document.getElementById('modal-import-pequena').style.display = 'none'
+    if (document.getElementById('log-erros-pequena')) document.getElementById('log-erros-pequena').style.display = 'none'
 }
 
-function vincularEventosPlacasGrande4() {
-    const eanInput   = document.getElementById('ean-input-g4')
-    const precoInput = document.getElementById('preco-input-g4')
-    const qtdInput   = document.getElementById('qtd-input-g4')
+function vincularEventosPlacasPequena() {
+    const eanInput   = document.getElementById('ean-input-pequena')
+    const precoInput = document.getElementById('preco-input-pequena')
+    const qtdInput   = document.getElementById('qtd-input-pequena')
     if (!eanInput) return
 
-    document.getElementById('btn-add-placa-g4').onclick    = adicionarPlacaGrande4
-    document.getElementById('btn-abrir-busca-g4').onclick  = abrirBuscaNomeGrande4
-    document.getElementById('btn-abrir-import-g4').onclick = abrirImportacaoGrande4
+    document.getElementById('btn-add-placa-pequena').onclick    = adicionarPlacaPequena
+    document.getElementById('btn-abrir-busca-pequena').onclick  = abrirBuscaNomePequena
+    document.getElementById('btn-abrir-import-pequena').onclick = abrirImportacaoPequena
 
     // Zoom de visualização (só na tela)
-    document.getElementById('g4-zoom-in')?.addEventListener('click', () => mudarZoomTelaG4(1))
-    document.getElementById('g4-zoom-out')?.addEventListener('click', () => mudarZoomTelaG4(-1))
-    document.getElementById('g4-zoom-fit')?.addEventListener('click', encaixarZoomG4)
-    document.getElementById('btn-print-atual-g4').onclick  = () => {
+    document.getElementById('pequena-zoom-in')?.addEventListener('click', () => mudarZoomTelaPequena(1))
+    document.getElementById('pequena-zoom-out')?.addEventListener('click', () => mudarZoomTelaPequena(-1))
+    document.getElementById('pequena-zoom-fit')?.addEventListener('click', encaixarZoomPequena)
+    document.getElementById('btn-print-atual-pequena').onclick  = () => {
         const folha = document.createElement('div')
-        folha.className = 'folha-grande-4'
-        const len = plaquesSalvasGrande4.length
-        const start = paginaPlacasGrande4 * plaquesPorPaginaGrande4
-        const page = plaquesSalvasGrande4.slice(start, Math.min(start + plaquesPorPaginaGrande4, len))
+        folha.className = 'folha-pequena'
+        const len = plaquesSalvasPequena.length
+        const start = paginaPlacasPequena * plaquesPorPaginaPequena
+        const page = plaquesSalvasPequena.slice(start, Math.min(start + plaquesPorPaginaPequena, len))
         page.forEach(p => {
             const div = document.createElement('div')
-            div.className = 'placa-grande-4'
-            div.innerHTML = montarPlacaGrande4HTML(p)
+            div.className = 'placa-pequena'
+            div.innerHTML = montarPlacaPequenaHTML(p)
             folha.appendChild(div)
         })
-        printFolha(folha.outerHTML, CSS_FOLHA_G4)
+        printFolha(folha.outerHTML, CSS_FOLHA_PEQUENA)
         setTimeout(registrarImpressaoPlacas, 1000)
     }
-    document.getElementById('btn-print-tudo-g4').onclick   = imprimirTudoGrande4
-    document.getElementById('btn-pag-ant-g4').onclick      = () => mudarPaginaPlacasGrande4(-1)
-    document.getElementById('btn-pag-prox-g4').onclick     = () => mudarPaginaPlacasGrande4(1)
-    document.getElementById('btn-limpar-g4').onclick       = () => {
-        if (confirm('Limpar todas as placas grandes?')) { plaquesSalvasGrande4 = []; salvarERenderizarGrande4() }
+    document.getElementById('btn-print-tudo-pequena').onclick   = imprimirTudoPequena
+    document.getElementById('btn-pag-ant-pequena').onclick      = () => mudarPaginaPlacasPequena(-1)
+    document.getElementById('btn-pag-prox-pequena').onclick     = () => mudarPaginaPlacasPequena(1)
+    document.getElementById('btn-limpar-pequena').onclick       = () => {
+        if (confirm('Limpar todas as placas grandes?')) { plaquesSalvasPequena = []; salvarERenderizarPequena() }
     }
 
     eanInput.addEventListener('keyup', (e) => {
@@ -1052,15 +1052,15 @@ function vincularEventosPlacasGrande4() {
         if (e.key === 'Enter') { e.preventDefault(); qtdInput.focus(); qtdInput.select() }
     })
     qtdInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); adicionarPlacaGrande4() }
+        if (e.key === 'Enter') { e.preventDefault(); adicionarPlacaPequena() }
     })
 
-    const btnProcessar = document.getElementById('btn-processar-import-g4')
-    if (btnProcessar) btnProcessar.onclick = processarImportacaoGrande4
-    const inputBusca = document.getElementById('input-busca-nome-g4')
-    if (inputBusca) inputBusca.addEventListener('keydown', onBuscaNomeKeydownGrande4)
-    const fecharBusca = document.getElementById('fechar-busca-g4')
-    if (fecharBusca) fecharBusca.onclick = fecharModaisGrande4
-    const fecharImport = document.getElementById('fechar-import-g4')
-    if (fecharImport) fecharImport.onclick = fecharModaisGrande4
+    const btnProcessar = document.getElementById('btn-processar-import-pequena')
+    if (btnProcessar) btnProcessar.onclick = processarImportacaoPequena
+    const inputBusca = document.getElementById('input-busca-nome-pequena')
+    if (inputBusca) inputBusca.addEventListener('keydown', onBuscaNomeKeydownPequena)
+    const fecharBusca = document.getElementById('fechar-busca-pequena')
+    if (fecharBusca) fecharBusca.onclick = fecharModaisPequena
+    const fecharImport = document.getElementById('fechar-import-pequena')
+    if (fecharImport) fecharImport.onclick = fecharModaisPequena
 }

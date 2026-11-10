@@ -46,7 +46,7 @@ function registrarImpressaoPlacas() {
                         codigo: p.codigo || null,
                         ean: p.ean || null,
                         preco: p.preco || 0,
-                        tipo_placa: p.tipo_placa || 'grande4'
+                        tipo_placa: p.tipo_placa || 'pequena'
                     }))
                     const res = await fetch(API+'/log-placas', {
                         method: 'POST',
@@ -107,7 +107,7 @@ async function carregarRelatorioPlacas() {
                     <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Tipo</label>
                     <select id="rel-tipo" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; transition:all 0.3s; cursor:pointer;">
                         <option value="" style="background:#1a1a2e;color:#fafafa;">Todos</option>
-                        <option value="grande4" style="background:#1a1a2e;color:#fafafa;">Grande 4</option>
+                        <option value="pequena" style="background:#1a1a2e;color:#fafafa;">Placa Pequena</option>
                         <option value="a4" style="background:#1a1a2e;color:#fafafa;">Placa A4</option>
                         <option value="grande" style="background:#1a1a2e;color:#fafafa;">Grande</option>
                     </select>
@@ -193,7 +193,7 @@ async function buscarRelatorio() {
         })
 
         const tipoBadge = (t) => {
-            const cores = { grande4: ['rgba(225,29,72,0.15)','#f87171'], a4: ['rgba(245,158,11,0.15)','#f59e0b'], grande: ['rgba(91,154,255,0.15)','#5b9aff'] }
+            const cores = { pequena: ['rgba(225,29,72,0.15)','#f87171'], a4: ['rgba(245,158,11,0.15)','#f59e0b'], grande: ['rgba(91,154,255,0.15)','#5b9aff'] }
             const [bg, color] = cores[t] || ['rgba(255,255,255,0.08)','rgba(255,255,255,0.6)']
             return `<span style="padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600; background:${bg}; color:${color};">${t}</span>`
         }
@@ -364,7 +364,7 @@ function abrirPopupDatas(nome, tipo, conteudoHtml) {
     const anterior = document.getElementById('popup-datas')
     if (anterior) anterior.remove()
 
-    const cores = { grande4: ['rgba(225,29,72,0.15)','#f87171'], a4: ['rgba(245,158,11,0.15)','#f59e0b'], grande: ['rgba(91,154,255,0.15)','#5b9aff'] }
+    const cores = { pequena: ['rgba(225,29,72,0.15)','#f87171'], a4: ['rgba(245,158,11,0.15)','#f59e0b'], grande: ['rgba(91,154,255,0.15)','#5b9aff'] }
     const [bg, color] = cores[tipo] || ['rgba(255,255,255,0.08)','rgba(255,255,255,0.6)']
 
     const overlay = document.createElement('div')

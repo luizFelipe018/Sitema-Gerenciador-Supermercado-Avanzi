@@ -87,7 +87,7 @@ export interface AuthResponse {
   token: string
 }
 
-export type TipoPlaca = 'grande4' | 'grande'
+export type TipoPlaca = 'pequena' | 'grande'
 
 export interface RegistroPlaca {
   id: number
@@ -169,7 +169,7 @@ export interface DepartamentoCount {
 }
 
 export interface PlacasMesCount {
-  grande4: number
+  pequena: number
   grande: number
   total: number
 }

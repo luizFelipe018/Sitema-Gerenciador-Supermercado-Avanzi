@@ -32,8 +32,8 @@ beforeAll(async () => {
   await db.query(
     `INSERT INTO registros_placas (usuario, descricao, codigo, ean, preco, tipo_placa, ordem) VALUES ?`,
     [[
-      ['__test__', 'Arroz',  '__test__001', '1234567890123', 5.00, 'grande4',  0],
-      ['__test__', 'Feijao', '__test__002', null,            8.00, 'grande4',  1],
+      ['__test__', 'Arroz',  '__test__001', '1234567890123', 5.00, 'pequena',  0],
+      ['__test__', 'Feijao', '__test__002', null,            8.00, 'pequena',  1],
       ['__test__', 'Leite',  '__test__003', '2345678901234', 4.50, 'grande', 0]
     ]]
   )
@@ -41,8 +41,8 @@ beforeAll(async () => {
   await db.query(
     `INSERT INTO log_placas (descricao, codigo, ean, preco, tipo_placa, impressa) VALUES ?`,
     [[
-      ['Arroz',  '__test__001', '1234567890123', 5.00, 'grande4',  0],
-      ['Feijao', '__test__002', null,            8.00, 'grande4',  1],
+      ['Arroz',  '__test__001', '1234567890123', 5.00, 'pequena',  0],
+      ['Feijao', '__test__002', null,            8.00, 'pequena',  1],
       ['Leite',  '__test__003', '2345678901234', 4.50, 'grande', 0]
     ]]
   )
@@ -121,7 +121,7 @@ describe('GET /dashboard', () => {
       .get('/dashboard')
       .set('Authorization', `Bearer ${token}`)
 
-    expect(res.body.placasMes).toHaveProperty('grande4')
+    expect(res.body.placasMes).toHaveProperty('pequena')
     expect(res.body.placasMes).toHaveProperty('grande')
     expect(res.body.placasMes).toHaveProperty('grande')
     expect(res.body.placasMes).toHaveProperty('total')

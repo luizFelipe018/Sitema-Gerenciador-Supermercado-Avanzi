@@ -754,10 +754,10 @@ async function processarImportacaoGrande() {
     await salvarERenderizarGrande()
     document.getElementById('import-texto-g').value = ''
 
-    if (destino === 'grande4') {
-        if (document.getElementById('btn-placas-grande-4')) document.getElementById('btn-placas-grande-4').click()
-        else if (typeof carregarPlacasGrande4 === 'function') carregarPlacasGrande4()
-        if (typeof salvarERenderizarGrande4 === 'function') await salvarERenderizarGrande4()
+    if (destino === 'pequena') {
+        if (document.getElementById('btn-placas-pequena')) document.getElementById('btn-placas-pequena').click()
+        else if (typeof carregarPlacasPequena === 'function') carregarPlacasPequena()
+        if (typeof salvarERenderizarPequena === 'function') await salvarERenderizarPequena()
         document.getElementById('import-texto-g').value=''; return
     }
     if (destino === 'a4') {

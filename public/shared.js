@@ -91,7 +91,7 @@ window.PERMISSOES = {
     // Páginas básicas - todos acessam
     placas: ['atendente', 'gerente', 'administrador'],
     placasGrande: ['atendente', 'gerente', 'administrador'],
-    placasGrande4: ['atendente', 'gerente', 'administrador'],
+    placasPequena: ['atendente', 'gerente', 'administrador'],
     placasA4: ['atendente', 'gerente', 'administrador'],
 produtos: ['atendente', 'gerente', 'administrador'],
     imagens: ['atendente', 'gerente', 'administrador'],

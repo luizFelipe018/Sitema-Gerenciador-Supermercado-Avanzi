@@ -1796,7 +1796,7 @@ body.theme-light .hover\:bg-white\/10:hover {
                     <span class="arrow2">▶</span>
                 </button>
                 <div id="submenu-modelos" class="submenu2">
-                    <button id="btn-placas-grande-4" class="submenu3-btn"><span class="dot"></span> Grande 4</button>
+                    <button id="btn-placas-pequena" class="submenu3-btn"><span class="dot"></span> Placa Pequena</button>
                     <button id="btn-placas-media-pack" class="submenu3-btn"><span class="dot"></span> Media Pack</button>
                     <button id="btn-placas-a4" class="submenu3-btn"><span class="dot"></span> Placa A4</button>
                     <button id="btn-placas-grande" class="submenu3-btn"><span class="dot"></span> Grande</button>
@@ -2041,19 +2041,19 @@ body.theme-light .hover\:bg-white\/10:hover {
         </div>
     </div>
 
-    <!-- Modal Busca (Grande 4) -->
-    <div id="modal-busca-g4" class="modal-overlay">
+    <!-- Modal Busca (Placa Pequena) -->
+    <div id="modal-busca-pequena" class="modal-overlay">
         <div class="modal-box" style="width:600px;">
             <div class="modal-header">
                 <h3 class="font-semibold text-white text-lg">Buscar Produto</h3>
-                <button id="fechar-busca-g4" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                <button id="fechar-busca-pequena" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
             <div class="modal-body" style="padding: 20px 24px;">
-                <input type="text" id="input-busca-nome-g4" placeholder="Digite o nome e pressione ENTER" class="input-modern mb-4">
+                <input type="text" id="input-busca-nome-pequena" placeholder="Digite o nome e pressione ENTER" class="input-modern mb-4">
                 <div style="max-height:300px; overflow-y:auto;">
-                    <table id="tabela-busca-g4" class="table-modern">
+                    <table id="tabela-busca-pequena" class="table-modern">
                          <thead><tr><th>Código</th><th>Descrição</th><th style="text-align:right;">Preço</th></tr></thead>
                          <tbody></tbody>
                      </table>
@@ -2085,25 +2085,25 @@ body.theme-light .hover\:bg-white\/10:hover {
         </div>
     </div>
 
-    <!-- Modal Import (Grande 4) -->
-    <div id="modal-import-g4" class="modal-overlay">
+    <!-- Modal Import (Placa Pequena) -->
+    <div id="modal-import-pequena" class="modal-overlay">
         <div class="modal-box" style="width:560px;">
             <div class="modal-header">
                 <h3 class="font-semibold text-white text-lg">Importação Rápida</h3>
-                <button id="fechar-import-g4" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                <button id="fechar-import-pequena" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
             <div class="modal-body">
                 <p class="text-white/40 text-xs mb-3">Cole as colunas do Excel (Descrição [TAB] Preço):</p>
-                <textarea id="import-texto-g4" rows="7" placeholder="Ex: ARROZ TIO JOAO 5KG&#9;29,90" class="input-modern font-mono text-sm" style="resize:none;"></textarea>
-                <div id="log-erros-g4" class="mt-4 p-4 rounded-xl text-sm" style="background:rgba(248,113,113,0.1); color:#f87171; display:none;">
+                <textarea id="import-texto-pequena" rows="7" placeholder="Ex: ARROZ TIO JOAO 5KG&#9;29,90" class="input-modern font-mono text-sm" style="resize:none;"></textarea>
+                <div id="log-erros-pequena" class="mt-4 p-4 rounded-xl text-sm" style="background:rgba(248,113,113,0.1); color:#f87171; display:none;">
                     <strong>⚠️ Itens não encontrados:</strong>
-                    <ul id="lista-erros-g4" class="mt-2 pl-4"></ul>
+                    <ul id="lista-erros-pequena" class="mt-2 pl-4"></ul>
                 </div>
             </div>
             <div class="modal-footer">
-                <button id="btn-processar-import-g4" class="btn-3d w-full" style="background: linear-gradient(135deg, #16a34a, #15803d);">Gerar Placas</button>
+                <button id="btn-processar-import-pequena" class="btn-3d w-full" style="background: linear-gradient(135deg, #16a34a, #15803d);">Gerar Placas</button>
             </div>
         </div>
     </div>
@@ -2161,7 +2161,7 @@ body.theme-light .hover\:bg-white\/10:hover {
     <script src="pages/placas-core.js"></script>
     <script src="pages/placas-ajustes.js"></script>
     <script src="pages/placas-grande.js"></script>
-    <script src="pages/placas-grande-4.js"></script>
+    <script src="pages/placas-pequena.js"></script>
     <script src="pages/placas-media-pack.js"></script>
     <script src="pages/placas-a4.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
