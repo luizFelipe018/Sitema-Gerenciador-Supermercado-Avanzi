@@ -34,7 +34,7 @@ const CSS_PLACA_PEQUENA = `
 /* display:flow-root cria BFC e impede o colapso da margin-top do .pg-texto-wrapper.
    Sem isso os 200px "escapavam" para fora da placa e o texto subia para o topo,
    ficando por cima do banner SUPER OFERTA. */
-.placa-pequena .placa-media-conteudo { display:flow-root; width:561px !important; height:794px !important; margin:0 !important; transform:scale(var(--k)); transform-origin:top left; outline:none !important; }
+.placa-pequena .placa-pequena-conteudo { display:flow-root; width:561px !important; height:794px !important; margin:0 !important; transform:scale(var(--k)); transform-origin:top left; outline:none !important; }
 /* Guias de corte: linha preta de 1px passando na metade da folha (vertical e
    horizontal), dividindo as 4 placas pequena para recorte. Nao altera o
    tamanho das placas nem a quantidade de paginas. */
@@ -74,7 +74,7 @@ function carregarEstilos() {
 #container-placas-pequena { display:flex; flex-wrap:wrap; gap:0; justify-content:center; align-items:flex-start; }
 .folha-pequena-tela { --k:var(--k-pequena-tela, ${K_TELA_PEQUENA}); display:grid; grid-template-columns:repeat(2, calc(561px * var(--k))); grid-template-rows:repeat(2, calc(794px * var(--k))); gap:0; margin:0 auto 16px; background:#fff; box-sizing:border-box; box-shadow:0 2px 12px rgba(0,0,0,0.15); }
 .folha-pequena-tela .placa-pequena { width:100%; height:100%; }
-.placa-media-conteudo * { color:#000 !important; }
+.placa-pequena-conteudo * { color:#000 !important; }
 /* Zoom de visualização: escala a folha inteira na tela, sem afetar a impressão. */
 #container-placas-pequena { --k-pequena-tela:${K_TELA_PEQUENA}; }
 .folha-pequena-tela { transform-origin: top center; }
