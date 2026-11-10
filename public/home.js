@@ -318,19 +318,23 @@ function registrarImpressaoPlacas() {
     }, 500)
 }
 
-// ── SUBMENU OFERTAS ───────────────────────────────────
-const btnOfertasMenu  = document.getElementById('btn-ofertas-menu')
-const submenuOfertas  = document.getElementById('submenu-ofertas')
+// ── SUBMENU IMAGENS ───────────────────────────────────
+const btnImagensMenu = document.getElementById('btn-imagens-menu')
+const submenuImagens = document.getElementById('submenu-imagens')
 
-btnOfertasMenu.addEventListener('click', () => {
-    const aberto = submenuOfertas.classList.contains('open')
-    submenuOfertas.classList.toggle('open', !aberto)
-    btnOfertasMenu.classList.toggle('open', !aberto)
-})
+if (btnImagensMenu && submenuImagens) {
+    btnImagensMenu.addEventListener('click', () => {
+        const aberto = submenuImagens.classList.contains('open')
+        submenuImagens.classList.toggle('open', !aberto)
+        btnImagensMenu.classList.toggle('open', !aberto)
+    })
+}
 
-function abrirSubmenuOfertas() {
-    submenuOfertas.classList.add('open')
-    btnOfertasMenu.classList.add('open')
+function abrirSubmenuImagens() {
+    if (submenuImagens && btnImagensMenu) {
+        submenuImagens.classList.add('open')
+        btnImagensMenu.classList.add('open')
+    }
 }
 
 // ── SUBMENU MARKETING ────────────────────────────────────
@@ -382,24 +386,24 @@ function abrirSubmenuPlacas() {
 document.getElementById('btn-inicio').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarInicio()
 })
 
 document.getElementById('btn-dashboard').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarDashboard()
 })
 
 document.getElementById('btn-produtos').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarProdutos()
 })
 
@@ -434,8 +438,8 @@ document.getElementById('btn-placas-a4').addEventListener('click', () => {
 document.getElementById('btn-arte-semanal')?.addEventListener('click', () => {
     if (submenuPlacas) { submenuPlacas.classList.remove('open') }
     if (btnPlacasMenu) { btnPlacasMenu.classList.remove('open') }
-    if (submenuOfertas) { submenuOfertas.classList.remove('open') }
-    if (btnOfertasMenu) { btnOfertasMenu.classList.remove('open') }
+    if (submenuImagens) { submenuImagens.classList.remove('open') }
+    if (btnImagensMenu) { btnImagensMenu.classList.remove('open') }
     if (typeof abrirSubmenuMarketing === 'function') abrirSubmenuMarketing()
     carregarArteSemanal()
 })
@@ -448,150 +452,146 @@ document.getElementById('btn-relatorio-placas').addEventListener('click', () => 
 document.getElementById('btn-cardapio').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    abrirSubmenuOfertas()
+    abrirSubmenuMarketing()
     carregarCardapio()
 })
 
 document.getElementById('btn-terca-pizza').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    abrirSubmenuOfertas()
+    abrirSubmenuMarketing()
     carregarTercaPizza()
 })
 
 document.getElementById('btn-atalhos').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarAtalhos()
 })
 
 document.getElementById('btn-formatos').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarFormatos()
 })
 
 document.getElementById('btn-capitalize').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarCapitalize()
 })
 
 document.getElementById('btn-importar').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarImportar()
 })
 
 document.getElementById('btn-textos').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarTextos()
 })
 
 document.getElementById('btn-criar-texto').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarCriarTexto()
 })
 
 document.getElementById('btn-listas').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarListas()
 })
 
 document.getElementById('btn-imagens').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    abrirSubmenuImagens()
     carregarImagens()
 })
 
 document.getElementById('btn-verificar-imagens').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    abrirSubmenuImagens()
     carregarVerificarImagens()
 })
 
 document.getElementById('btn-conversor-webp').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    abrirSubmenuImagens()
     carregarConversorWebp()
 })
 
 document.getElementById('btn-imagens-site').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    abrirSubmenuImagens()
     carregarImagensSite()
 })
 
 document.getElementById('btn-precos-site').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarPrecosSite()
 })
 
 document.getElementById('btn-busca-rapida').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarBuscaRapida()
 })
 
 document.getElementById('btn-marcas-massa')?.addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     if (typeof carregarMarcasMassa === 'function') carregarMarcasMassa()
 })
 
 document.getElementById('btn-gerenciador-placas').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarGerenciadorPlacas()
 })
 
 document.getElementById('btn-estoque-placas').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarEstoquePlacas()
 })
 
 document.getElementById('btn-importar-cardapio').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarImportarCardapio()
 })
 
@@ -600,39 +600,39 @@ document.getElementById('btn-importar-cardapio').addEventListener('click', () =>
 document.getElementById('btn-qrcode').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarQrcode()
 })
 
 document.getElementById('btn-feriados').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarFeriados()
 })
 
 document.getElementById('btn-cotacao').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarCotacao()
 })
 
 document.getElementById('btn-auditoria').addEventListener('click', () => {    submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarAuditoria()
 })
 
 document.getElementById('btn-calc-kglt').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
-    submenuOfertas.classList.remove('open')
-    btnOfertasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
     carregarCalcKglt()
 })
 
