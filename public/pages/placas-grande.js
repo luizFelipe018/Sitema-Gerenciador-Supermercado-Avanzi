@@ -42,7 +42,7 @@ ${typeof CSS_PLACA_PEQUENA !== 'undefined' ? CSS_PLACA_PEQUENA : ''}
 
 function carregarEstilosGrande() {
     // reaproveita o CSS da placa (conteúdo, fonte, guias) da Placa Pequena
-    if (typeof carregarEstilos === 'function') carregarEstilos()
+    if (typeof carregarEstilosPequena === 'function') carregarEstilosPequena()
     if (!document.getElementById('placas-grande-guide')) {
         const style = document.createElement('style')
         style.id = 'placas-grande-guide'

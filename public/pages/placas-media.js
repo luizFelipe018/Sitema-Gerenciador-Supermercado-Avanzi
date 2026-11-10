@@ -22,7 +22,7 @@ const CSS_FOLHA_G = `
 // 40px no layout ~ 10,6mm na placa Media original.
 const MARGEM_TOPO_G = 40
 
-function carregarEstilos() {
+function carregarEstilosMedia() {
     if (!document.getElementById('placas-main-style')) {
         const link = document.createElement('link')
         link.id = 'placas-main-style'
@@ -66,7 +66,7 @@ function quebrarPorMarca(descricao, marca) {
 }
 
 async function carregarPlacasMedia() {
-    carregarEstilos()
+    carregarEstilosMedia()
     setActive('btn-placas-media')
     setConteudo(`
         <div class="pg-wrapper" style="max-width:1200px; margin:0 auto;">

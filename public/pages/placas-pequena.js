@@ -59,7 +59,7 @@ ${CSS_PLACA_PEQUENA}
 }
 `
 
-function carregarEstilos() {
+function carregarEstilosPequena() {
     if (!document.getElementById('placas-main-style')) {
         const link = document.createElement('link')
         link.id = 'placas-main-style'
@@ -181,7 +181,7 @@ function quebrarPorMarca(descricao, marca) {
 }
 
 async function carregarPlacasPequena() {
-    carregarEstilos()
+    carregarEstilosPequena()
     setActive('btn-placas-pequena')
     setConteudo(`
         <div class="pg-wrapper" style="max-width:1200px; margin:0 auto;">
