@@ -14,11 +14,11 @@ declare global {
     placasSalvas: PlacaSalva[]
     paginaPlacas: number
     paginaPlacasAmarela: number
-    paginaPlacasGrande: number
+    paginaPlacasMedia: number
     fetchTodasPlacasSalvas: (tipo: string) => void
     renderizarPlacas: (tipo: string) => void
     renderizarPlacasAmarela: () => void
-    renderizarPlacasGrande: () => void
+    renderizarPlacasMedia: () => void
     salvarERenderizar: (tipo: string) => void
     abrirBuscaNome: (tipo: string) => void
     imprimirTudo: () => void

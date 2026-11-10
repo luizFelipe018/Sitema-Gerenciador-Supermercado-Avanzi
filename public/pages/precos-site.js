@@ -174,7 +174,7 @@ function renderizarResultadosPs() {
                         <input type="checkbox" id="ps-check-all" style="accent-color:var(--brand-2);"> selecionar todos
                     </label>
                     <button id="ps-btn-atualizar-erp" class="ds-btn ds-btn-sm" type="button" title="Atualiza o preco_venda no ERP com o preço do site">Atualizar preço no ERP</button>
-                    <button id="ps-btn-criar-placas" class="ds-btn ds-btn-sm ds-btn-primary" type="button" title="Adiciona os selecionados como placas modelo Grande">
+                    <button id="ps-btn-criar-placas" class="ds-btn ds-btn-sm ds-btn-primary" type="button" title="Adiciona os selecionados como placas modelo Média">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2"/><line x1="12" y1="7" x2="12" y2="17"/><line x1="7" y1="10.5" x2="17" y2="10.5"/></svg>
                         Criar placas
                     </button>
@@ -239,7 +239,7 @@ async function atualizarPrecosErpPs() {
     buscarPs()
 }
 
-/* ── criar placas (modelo Grande) com o preço do site ── */
+/* ── criar placas (modelo Média) com o preço do site ── */
 async function criarPlacasPs() {
     const sel = psSelecionados()
     if (!sel.length) return alert('Selecione pelo menos um produto.')
@@ -251,7 +251,7 @@ async function criarPlacasPs() {
     try {
         let atuais = []
         try {
-            const rAtual = await fetch(API + '/registros-placas?tipo=grande', { headers: authHeaders() })
+            const rAtual = await fetch(API + '/registros-placas?tipo=media', { headers: authHeaders() })
             atuais = await rAtual.json()
             if (!Array.isArray(atuais)) atuais = []
         } catch { atuais = [] }
@@ -284,11 +284,11 @@ async function criarPlacasPs() {
         const res = await fetch(API + '/registros-placas', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', ...authHeaders() },
-            body: JSON.stringify({ tipo: 'grande', placas: todas })
+            body: JSON.stringify({ tipo: 'media', placas: todas })
         })
         const d = await res.json()
         if (!res.ok) throw new Error(d.error || 'Erro ao salvar placas')
-        alert(`✓ ${dbPlacas.length} placa(s) criada(s) com o preço do site! Abra a aba Placa Grande para ver, revisar e imprimir.`)
+        alert(`✓ ${dbPlacas.length} placa(s) criada(s) com o preço do site! Abra a aba Placa Média para ver, revisar e imprimir.`)
     } catch (e) {
         alert('Erro ao criar placas: ' + e.message)
     }
@@ -350,7 +350,7 @@ async function adicionarLotePs() {
     try {
         let atuais = []
         try {
-            const rAtual = await fetch(API + '/registros-placas?tipo=grande', { headers: authHeaders() })
+            const rAtual = await fetch(API + '/registros-placas?tipo=media', { headers: authHeaders() })
             atuais = await rAtual.json()
             if (!Array.isArray(atuais)) atuais = []
         } catch { atuais = [] }
@@ -376,12 +376,12 @@ async function adicionarLotePs() {
         const res = await fetch(API + '/registros-placas', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', ...authHeaders() },
-            body: JSON.stringify({ tipo: 'grande', placas: todas })
+            body: JSON.stringify({ tipo: 'media', placas: todas })
         })
         const d = await res.json()
         if (!res.ok) throw new Error(d.error || 'Erro ao salvar placas')
 
-        elLog.insertAdjacentHTML('beforeend', `<div style="padding:12px 18px; font-size:12.5px; color:var(--ok); border-top:1px solid var(--border-soft);">✓ ${dbPlacas.length} placa(s) criada(s) com preço do site${naoAchou.length ? ` (${naoAchou.length} sem preço no site)` : ''}. Abra a aba Placa Grande para ver e imprimir.</div>`)
+        elLog.insertAdjacentHTML('beforeend', `<div style="padding:12px 18px; font-size:12.5px; color:var(--ok); border-top:1px solid var(--border-soft);">✓ ${dbPlacas.length} placa(s) criada(s) com preço do site${naoAchou.length ? ` (${naoAchou.length} sem preço no site)` : ''}. Abra a aba Placa Média para ver e imprimir.</div>`)
         document.getElementById('ps-lote').value = ''
     } catch (e) {
         elLog.insertAdjacentHTML('beforeend', `<div style="padding:12px 18px; font-size:12.5px; color:var(--danger); border-top:1px solid var(--border-soft);">Erro ao salvar placas: ${e.message}</div>`)

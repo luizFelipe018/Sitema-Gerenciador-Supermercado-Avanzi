@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
-   PLACAS MEDIA PACK — modelo Grande "SUPER OFERTA" + fardo/pack
-   Linha 1: descrição · Linha 2: marca (bem grande)
+   PLACAS MEDIA PACK — modelo Média "SUPER OFERTA" + fardo/pack
+   Linha 1: descrição · Linha 2: marca (bem media)
    Linha 3: pacote (ex.: "CX 12UN ECONOMICO") — define a quantidade
    Rodapé: preço unitário = preço do fardo ÷ quantidade do pack
    Segunda linha: R$ do LT/KG na mesma embalagem
@@ -189,7 +189,7 @@ async function carregarPlacasMediaPack() {
                         Importar
                     </button>
                 </div>
-                <p style="font-size:11px; color:rgba(255,255,255,0.3); margin:8px 0 0; border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;">Media Pack = placa grande + preço do fardo + preço por unidade + valor do fardo + valor do LT/KG no fardo.</p>
+                <p style="font-size:11px; color:rgba(255,255,255,0.3); margin:8px 0 0; border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;">Media Pack = placa média + preço do fardo + preço por unidade + valor do fardo + valor do LT/KG no fardo.</p>
                 <div class="bar pg-actions" style="margin-top:12px;">
                     <button id="btn-print-atual-mp" class="btn-sm">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
@@ -777,7 +777,7 @@ async function processarImportacaoMediaPack() {
                     }
                     contador++
                 } else {
-                    // produto não encontrado — gera a placa mesmo assim (como no Grande)
+                    // produto não encontrado — gera a placa mesmo assim (como no Média)
                     for (let i = 0; i < qtdGlobal; i++) {
                         plaquesSalvasMP.push(coreAplicarPresetPadrao({ descricao: colunas[0].trim(), codigo: '', ean: '', preco: precoUn, preco_info: precoUn.toFixed(2).replace('.', ','), quantidade_kg_l: 0, qtd_pack: qtdPack, fardo_preco: precoFardo, id_unico: Date.now() + Math.random() + i + contador }, 'media-pack'))
                     }

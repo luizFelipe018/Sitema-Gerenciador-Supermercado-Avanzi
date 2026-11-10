@@ -28,9 +28,9 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
             SELECT
                 SUM(sub.tipo_placa = 'branca')  AS branca,
                 SUM(sub.tipo_placa = 'amarela') AS amarela,
-                SUM(sub.tipo_placa = 'grande')  AS grande,
+                SUM(sub.tipo_placa = 'media')  AS media,
                 SUM(sub.tipo_placa = 'pequena') AS pequena,
-                SUM(sub.tipo_placa = 'a4')      AS a4,
+                SUM(sub.tipo_placa = 'grande')      AS grande,
                 COUNT(*)                        AS total
             FROM (
                 SELECT MAX(tipo_placa) AS tipo_placa

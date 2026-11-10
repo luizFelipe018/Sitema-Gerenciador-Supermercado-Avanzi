@@ -6,7 +6,7 @@ var placaClicadaPequena = null
 var placaClicadaElPequena = null
 var _salvandoPequena = false
 
-// A placa Placa Pequena e a MESMA placa Grande original (561x794px), so que reduzida por
+// A placa Placa Pequena e a MESMA placa Media original (561x794px), so que reduzida por
 // transform para caber na celula de 105mm x 148,5mm (396,85 x 561,26px).
 // Manter o layout interno em 561x794 preserva todas as metricas ja calibradas
 // (margin-top do texto, preco de 140px, padding-bottom, margem do rodape).
@@ -34,7 +34,7 @@ const CSS_PLACA_PEQUENA = `
 /* display:flow-root cria BFC e impede o colapso da margin-top do .pg-texto-wrapper.
    Sem isso os 200px "escapavam" para fora da placa e o texto subia para o topo,
    ficando por cima do banner SUPER OFERTA. */
-.placa-pequena .placa-grande-conteudo { display:flow-root; width:561px !important; height:794px !important; margin:0 !important; transform:scale(var(--k)); transform-origin:top left; outline:none !important; }
+.placa-pequena .placa-media-conteudo { display:flow-root; width:561px !important; height:794px !important; margin:0 !important; transform:scale(var(--k)); transform-origin:top left; outline:none !important; }
 /* Guias de corte: linha preta de 1px passando na metade da folha (vertical e
    horizontal), dividindo as 4 placas pequena para recorte. Nao altera o
    tamanho das placas nem a quantidade de paginas. */
@@ -74,7 +74,7 @@ function carregarEstilos() {
 #container-placas-pequena { display:flex; flex-wrap:wrap; gap:0; justify-content:center; align-items:flex-start; }
 .folha-pequena-tela { --k:var(--k-pequena-tela, ${K_TELA_PEQUENA}); display:grid; grid-template-columns:repeat(2, calc(561px * var(--k))); grid-template-rows:repeat(2, calc(794px * var(--k))); gap:0; margin:0 auto 16px; background:#fff; box-sizing:border-box; box-shadow:0 2px 12px rgba(0,0,0,0.15); }
 .folha-pequena-tela .placa-pequena { width:100%; height:100%; }
-.placa-grande-conteudo * { color:#000 !important; }
+.placa-media-conteudo * { color:#000 !important; }
 /* Zoom de visualização: escala a folha inteira na tela, sem afetar a impressão. */
 #container-placas-pequena { --k-pequena-tela:${K_TELA_PEQUENA}; }
 .folha-pequena-tela { transform-origin: top center; }
@@ -449,7 +449,7 @@ function montarPlacaPequenaHTML(p) {
     const FOOTER_PAD_PEQUENA = 16
 
     return `
-        <div id="placa-grande-conteudo" class="placa-grande-conteudo" style="width:561px; height:794px; margin:0; position:relative; box-sizing:border-box; font-family:'Arial Black',Arial,sans-serif; font-weight:900; background-image:url('assets/MODELOS PLACAS 2026.png'); background-size:100% 100%; background-position:center; background-repeat:no-repeat;">
+        <div id="placa-pequena-conteudo" class="placa-pequena-conteudo" style="width:561px; height:794px; margin:0; position:relative; box-sizing:border-box; font-family:'Arial Black',Arial,sans-serif; font-weight:900; background-image:url('assets/MODELOS PLACAS 2026.png'); background-size:100% 100%; background-position:center; background-repeat:no-repeat;">
             <div class="pg-texto-wrapper" style="width:100%; display:flex; flex-direction:column; align-items:center; padding-bottom:110px; margin-top:${212 + MARGEM_TOPO_PEQUENA}px;">
                 <div class="pg-linha1-wrapper" style="width:100%; text-align:center; margin-top:30px; height:${M.m1.altura}px;">
                     <div class="pg-linha1" data-field="linha1" style="font-size:${linha1FontSize}px; font-weight:bold; line-height:${LH_L1}; text-transform:uppercase; white-space:nowrap; overflow:hidden; position:relative; top:${M.m1.deslocamento}px; transform:scaleY(${ESCALA_Y_PEQUENA});">${linha1}</div>
@@ -537,7 +537,7 @@ function renderizarPlacasPequena() {
         container.innerHTML = `
             <div class="es">
                 <svg width="40" height="40" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:12px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-                <p class="es-p">Nenhuma placa grande adicionada</p>
+                <p class="es-p">Nenhuma placa pequena adicionada</p>
                 <p class="es-sub">Digite um código e preço acima para começar</p>
             </div>`
         return
@@ -782,7 +782,7 @@ async function salvarPlacasPequena() {
             atualizarStatusBancoPequena(`✓ ${plaquesSalvasPequena.length} placa(s) salva(s) no servidor`)
         }
     } catch (e) {
-        console.error('Erro ao salvar placas grandes 4:', e)
+        console.error('Erro ao salvar placas pequenas:', e)
         coreCachePendente('pequena', true)
         alert('Erro ao salvar no servidor: ' + e.message +
             '\n\nSuas placas continuam salvas neste computador e serão reenviadas quando o servidor voltar.')
@@ -1040,7 +1040,7 @@ function vincularEventosPlacasPequena() {
     document.getElementById('btn-pag-ant-pequena').onclick      = () => mudarPaginaPlacasPequena(-1)
     document.getElementById('btn-pag-prox-pequena').onclick     = () => mudarPaginaPlacasPequena(1)
     document.getElementById('btn-limpar-pequena').onclick       = () => {
-        if (confirm('Limpar todas as placas grandes?')) { plaquesSalvasPequena = []; salvarERenderizarPequena() }
+        if (confirm('Limpar todas as placas pequenas?')) { plaquesSalvasPequena = []; salvarERenderizarPequena() }
     }
 
     eanInput.addEventListener('keyup', (e) => {

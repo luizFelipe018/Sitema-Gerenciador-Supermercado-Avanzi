@@ -36,16 +36,16 @@ export function isGerente() {
 }
 
 export const PERMISSOES = {
-    placas: ['atendente', 'gerente', 'administrador'],
-    placasGrande: ['atendente', 'gerente', 'administrador'],
-    placasPequena: ['atendente', 'gerente', 'administrador'],
-    placasA4: ['atendente', 'gerente', 'administrador'],
+    'placas': ['atendente', 'gerente', 'administrador'],
+    'placas-media': ['atendente', 'gerente', 'administrador'],
+    'placas-pequena': ['atendente', 'gerente', 'administrador'],
+    'placas-grande': ['atendente', 'gerente', 'administrador'],
     produtos: ['atendente', 'gerente', 'administrador'],
     imagens: ['atendente', 'gerente', 'administrador'],
-    buscaRapida: ['atendente', 'gerente', 'administrador'],
-    tercaPizza: ['gerente', 'administrador'],
+    'busca-rapida': ['atendente', 'gerente', 'administrador'],
+    'terca-pizza': ['gerente', 'administrador'],
     cardapio: ['gerente', 'administrador'],
-    importarCardapio: ['gerente', 'administrador'],
+    'importar-cardapio': ['gerente', 'administrador'],
     importar: ['gerente', 'administrador'],
     listas: ['atendente', 'gerente', 'administrador'],
     admin: ['administrador'],
@@ -54,11 +54,11 @@ export const PERMISSOES = {
     atalhos: ['gerente', 'administrador'],
     textos: ['gerente', 'administrador'],
     capitalize: ['gerente', 'administrador'],
-    calcKglt: ['atendente', 'gerente', 'administrador'],
+    'calc-kglt': ['atendente', 'gerente', 'administrador'],
     dashboard: ['gerente', 'administrador'],
     cotacao: ['gerente', 'administrador'],
-    relatorioPlacas: ['gerente', 'administrador'],
-    gerenciadorPlacas: ['gerente', 'administrador'],
+    'relatorio-placas': ['gerente', 'administrador'],
+    'gerenciador-placas': ['gerente', 'administrador'],
 }
 
 export function podeAcessar(pagina) {

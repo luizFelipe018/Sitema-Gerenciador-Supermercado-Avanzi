@@ -27,8 +27,8 @@ describe('POST /log-placas', () => {
 
   it('deve inserir registros e retornar IDs', async () => {
     const placas = [
-      { descricao: 'Arroz', codigo: '__test__001', ean: '1234567890123', preco: 5.00, tipo_placa: 'grande4' },
-      { descricao: 'Feijao', codigo: '__test__002', ean: null, preco: 8.00, tipo_placa: 'grande4' }
+      { descricao: 'Arroz', codigo: '__test__001', ean: '1234567890123', preco: 5.00, tipo_placa: 'pequena' },
+      { descricao: 'Feijao', codigo: '__test__002', ean: null, preco: 8.00, tipo_placa: 'pequena' }
     ]
 
     const res = await request(app)
@@ -76,7 +76,7 @@ describe('POST /log-placas/imprimir', () => {
   it('deve marcar registros como impressos', async () => {
     const [ins] = await db.query(
       `INSERT INTO log_placas (descricao, codigo, ean, preco, tipo_placa, impressa) VALUES ?`,
-      [[['Arroz','__test__001','123',5.00,'grande4',0], ['Feijao','__test__002',null,8.00,'grande4',0]]]
+      [[['Arroz','__test__001','123',5.00,'pequena',0], ['Feijao','__test__002',null,8.00,'pequena',0]]]
     )
     const ids = [ins.insertId, ins.insertId + 1]
 
@@ -110,7 +110,7 @@ describe('POST /registros-placas', () => {
     const res = await request(app)
       .post('/registros-placas')
       .set('Authorization', `Bearer ${token}`)
-      .send({ tipo: 'grande4', placas })
+      .send({ tipo: 'pequena', placas })
 
     expect(res.status).toBe(200)
     expect(res.body.ok).toBe(true)
@@ -120,7 +120,7 @@ describe('POST /registros-placas', () => {
 
     const [registros] = await db.query(
       'SELECT * FROM registros_placas WHERE usuario = ? AND tipo_placa = ? ORDER BY ordem ASC',
-      ['__test__', 'grande4']
+      ['__test__', 'pequena']
     )
     expect(registros.length).toBe(2)
     expect(registros[0].descricao).toBe('Arroz')
@@ -134,16 +134,16 @@ describe('POST /registros-placas', () => {
     await request(app)
       .post('/registros-placas')
       .set('Authorization', `Bearer ${token}`)
-      .send({ tipo: 'grande4', placas: p1 })
+      .send({ tipo: 'pequena', placas: p1 })
 
     await request(app)
       .post('/registros-placas')
       .set('Authorization', `Bearer ${token}`)
-      .send({ tipo: 'grande4', placas: p2 })
+      .send({ tipo: 'pequena', placas: p2 })
 
     const [restantes] = await db.query(
       'SELECT * FROM registros_placas WHERE usuario = ? AND tipo_placa = ?',
-      ['__test__', 'grande4']
+      ['__test__', 'pequena']
     )
     expect(restantes.length).toBe(1)
     expect(restantes[0].descricao).toBe('Leite')
@@ -153,7 +153,7 @@ describe('POST /registros-placas', () => {
     const res = await request(app)
       .post('/registros-placas')
       .set('Authorization', `Bearer ${token}`)
-      .send({ tipo: 'grande4', placas: [] })
+      .send({ tipo: 'pequena', placas: [] })
 
     expect(res.status).toBe(200)
     expect(res.body.ok).toBe(true)
@@ -169,8 +169,8 @@ describe('GET /registros-placas', () => {
     await db.query(
       `INSERT INTO registros_placas (usuario, descricao, codigo, ean, preco, tipo_placa, ordem) VALUES ?`,
       [[
-        ['__test__', 'Arroz', '__test__001', '123', 5.00, 'grande4', 0],
-        ['__test__', 'Leite', '__test__003', '234', 4.50, 'grande', 0]
+        ['__test__', 'Arroz', '__test__001', '123', 5.00, 'pequena', 0],
+        ['__test__', 'Leite', '__test__003', '234', 4.50, 'media', 0]
       ]]
     )
   })
@@ -191,12 +191,12 @@ describe('GET /registros-placas', () => {
 
   it('deve filtrar por tipo', async () => {
     const res = await request(app)
-      .get('/registros-placas?tipo=grande')
+      .get('/registros-placas?tipo=media')
       .set('Authorization', `Bearer ${token}`)
 
     expect(res.status).toBe(200)
     expect(res.body.length).toBe(1)
-    expect(res.body[0].tipo_placa).toBe('grande')
+    expect(res.body[0].tipo_placa).toBe('media')
   })
 })
 
@@ -206,7 +206,7 @@ describe('DELETE /registros-placas/:id', () => {
   it('deve excluir um registro', async () => {
     const [ins] = await db.query(
       `INSERT INTO registros_placas (usuario, descricao, codigo, ean, preco, tipo_placa, ordem) VALUES (?,?,?,?,?,?,?)`,
-      ['__test__', 'Excluir', '__test__999', null, 1.00, 'grande4', 0]
+      ['__test__', 'Excluir', '__test__999', null, 1.00, 'pequena', 0]
     )
 
     const res = await request(app)
@@ -226,18 +226,18 @@ describe('DELETE /registros-placas/limpar/:tipo', () => {
   it('deve limpar registros do tipo', async () => {
     await db.query(
       `INSERT INTO registros_placas (usuario, descricao, codigo, ean, preco, tipo_placa, ordem) VALUES (?,?,?,?,?,?,?)`,
-      ['__test__', 'Limpar', '__test__000', null, 1.00, 'grande', 0]
+      ['__test__', 'Limpar', '__test__000', null, 1.00, 'media', 0]
     )
 
     const res = await request(app)
-      .delete('/registros-placas/limpar/grande')
+      .delete('/registros-placas/limpar/media')
       .set('Authorization', `Bearer ${token}`)
 
     expect(res.status).toBe(200)
 
     const [rows] = await db.query(
       'SELECT id FROM registros_placas WHERE usuario = ? AND tipo_placa = ?',
-      ['__test__', 'grande']
+      ['__test__', 'media']
     )
     expect(rows.length).toBe(0)
   })

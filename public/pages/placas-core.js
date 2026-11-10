@@ -78,7 +78,7 @@ function corePrintFolha(conteudo, css, opts) {
             <style>${css}</style>
             <style>@page { margin:0; size:${opts?.paperSize || 'A4 portrait'}; }
             body { margin:0; padding:0; display:flex; flex-wrap:wrap; }
-            .folha,.folha-grande { page-break-after:always; break-inside:avoid; }</style>
+            .folha,.folha-media,.folha-grande,.folha-pequena { page-break-after:always; break-inside:avoid; }</style>
         </head><body>${conteudo}</body></html>
     `)
     w.document.close()

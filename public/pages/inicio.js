@@ -26,7 +26,7 @@ function carregarInicio() {
 
         <!-- Ações rápidas -->
         <div class="ds-grid ds-grid-4" style="margin-bottom:28px">
-            ${acaoInicio('Gerar placas', 'Placa Pequena, grande e A4', 'btn-placas-menu', '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>')}
+            ${acaoInicio('Gerar placas', 'Placa Pequena, Placa Média e Placa Grande', 'btn-placas-menu', '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>')}
             ${acaoInicio('Busca rápida', 'Localizar por EAN ou nome', 'btn-busca-rapida', '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>')}
             ${acaoInicio('Importar produtos', 'Planilha do fornecedor', 'btn-importar', '<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>')}
             ${acaoInicio('Listas de preço', 'Gerar e exportar XLSX', 'btn-listas', '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>')}
@@ -78,13 +78,13 @@ function carregarInicio() {
                         </div>
                         <div class="ds-tile-item">
                             <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--warn);margin-right:6px"></span>
-                            <span class="ds-tile-label" style="font-size:11px">A4</span>
-                            <span class="ds-tile-value" id="dv-placas-a4" style="font-size:11px; font-weight:600">—</span>
+                            <span class="ds-tile-label" style="font-size:11px">Grande</span>
+                            <span class="ds-tile-value" id="dv-placas-grande" style="font-size:11px; font-weight:600">—</span>
                         </div>
                         <div class="ds-tile-item">
                             <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--info);margin-right:6px"></span>
-                            <span class="ds-tile-label" style="font-size:11px">Grande</span>
-                            <span class="ds-tile-value" id="dv-placas-grande" style="font-size:11px; font-weight:600">—</span>
+                            <span class="ds-tile-label" style="font-size:11px">Média</span>
+                            <span class="ds-tile-value" id="dv-placas-media" style="font-size:11px; font-weight:600">—</span>
                         </div>
                     </div>
                 </div>
@@ -196,8 +196,8 @@ async function carregarDadosDashboard() {
 
         // Tipos de placa
         el('dv-placas-pequena').textContent = (d.placasMes?.pequena || 0).toLocaleString('pt-BR')
-        el('dv-placas-a4').textContent = (d.placasMes?.a4 || 0).toLocaleString('pt-BR')
         el('dv-placas-grande').textContent = (d.placasMes?.grande || 0).toLocaleString('pt-BR')
+        el('dv-placas-media').textContent = (d.placasMes?.media || 0).toLocaleString('pt-BR')
 
         // Gráficos
         renderGraficoDias(d.placasDias || [])
@@ -212,7 +212,7 @@ async function carregarDadosDashboard() {
         console.warn('[Início] ' + msg)
         const top = el('dv-top-produtos')
         if (top) top.innerHTML = `<div style="text-align:center; padding:32px 16px; color:var(--text-3); font-size:12.5px">${msg}<br><button class="ds-btn ds-btn-sm" style="margin-top:12px" onclick="carregarInicio()">Tentar novamente</button></div>`
-        ;['dv-total-produtos','dv-placas-total','dv-sem-ean','dv-listas-mes','dv-resumo-imagem','dv-resumo-nao-verificados','dv-resumo-impressas','dv-resumo-geradas','dv-placas-pequena','dv-placas-a4','dv-placas-grande'].forEach(id => {
+        ;['dv-total-produtos','dv-placas-total','dv-sem-ean','dv-listas-mes','dv-resumo-imagem','dv-resumo-nao-verificados','dv-resumo-impressas','dv-resumo-geradas','dv-placas-pequena','dv-placas-grande','dv-placas-media'].forEach(id => {
             const node = el(id)
             if (node) node.textContent = '—'
         })
@@ -323,9 +323,9 @@ function renderGraficoTipos(dados) {
     chartTipos = new Chart(ctx.getContext('2d'), {
         type: 'doughnut',
         data: {
-            labels: ['Placa Pequena', 'Grande', 'A4'],
+            labels: ['Placa Pequena', 'Média', 'Placa Grande'],
             datasets: [{
-                data: [dados.pequena || 0, dados.grande || 0, dados.a4 || 0],
+                data: [dados.pequena || 0, dados.media || 0, dados.grande || 0],
                 backgroundColor: ['#e11d48', '#3b82f6', '#f59e0b'],
                 hoverBackgroundColor: ['#f43f5e', '#60a5fa', '#fbbf24'],
                 borderWidth: 2,

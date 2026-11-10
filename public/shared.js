@@ -89,18 +89,18 @@ window.isGerente = function() {
 // Permissões por página/recurso
 window.PERMISSOES = {
     // Páginas básicas - todos acessam
-    placas: ['atendente', 'gerente', 'administrador'],
-    placasGrande: ['atendente', 'gerente', 'administrador'],
-    placasPequena: ['atendente', 'gerente', 'administrador'],
-    placasA4: ['atendente', 'gerente', 'administrador'],
+    'placas': ['atendente', 'gerente', 'administrador'],
+    'placas-media': ['atendente', 'gerente', 'administrador'],
+    'placas-pequena': ['atendente', 'gerente', 'administrador'],
+    'placas-grande': ['atendente', 'gerente', 'administrador'],
 produtos: ['atendente', 'gerente', 'administrador'],
     imagens: ['atendente', 'gerente', 'administrador'],
-    buscaRapida: ['atendente', 'gerente', 'administrador'],
+    'busca-rapida': ['atendente', 'gerente', 'administrador'],
     
     // Páginas de ofertas - gerente e admin
-    tercaPizza: ['gerente', 'administrador'],
+    'terca-pizza': ['gerente', 'administrador'],
     cardapio: ['gerente', 'administrador'],
-    importarCardapio: ['gerente', 'administrador'],
+    'importar-cardapio': ['gerente', 'administrador'],
     
     // Utilitários - gerente e admin
     importar: ['gerente', 'administrador'],
@@ -115,13 +115,13 @@ produtos: ['atendente', 'gerente', 'administrador'],
     capitalize: ['gerente', 'administrador'],
     
     // Calc KG/LT - todos
-    calcKglt: ['atendente', 'gerente', 'administrador'],
+    'calc-kglt': ['atendente', 'gerente', 'administrador'],
     
     // Dashboard - gerente e admin
     dashboard: ['gerente', 'administrador'],
     cotacao: ['gerente', 'administrador'],
-    relatorioPlacas: ['gerente', 'administrador'],
-    gerenciadorPlacas: ['gerente', 'administrador'],
+    'relatorio-placas': ['gerente', 'administrador'],
+    'gerenciador-placas': ['gerente', 'administrador'],
 
     // Auditoria - gerente e admin (controle de quem fez as placas)
     auditoria: ['gerente', 'administrador'],

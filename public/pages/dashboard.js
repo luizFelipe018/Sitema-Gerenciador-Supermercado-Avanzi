@@ -4,8 +4,8 @@
 
 const D3_COLORS = {
     pequena:  '#e11d48',
-    grande:   '#3b82f6',
-    a4:       '#f59e0b',
+    media:   '#3b82f6',
+    grande:       '#f59e0b',
     azul:     '#3b82f6',
     verde:    '#22c55e',
     roxo:     '#a855f7',
@@ -718,8 +718,8 @@ function dashRenderizar(d) {
 
     const placas = {
         pequena: num(d.placasMes?.pequena),
+        media: num(d.placasMes?.media),
         grande: num(d.placasMes?.grande),
-        a4: num(d.placasMes?.a4),
         total: num(d.placasMes?.total)
     }
     const impressas = num(d.impressasMes?.impressas)
@@ -789,7 +789,7 @@ function dashRenderizar(d) {
                 sub: `${impressas.toLocaleString('pt-BR')} impressas`,
                 value: placas.total,
                 percent: pctImpressas,
-                color: D3_COLORS.grande,
+                color: D3_COLORS.media,
                 glow: 'rgba(225,29,72,0.4)'
             })}
             ${dashKpi({
@@ -880,8 +880,8 @@ function dashCardPlacasTipo(placas) {
     const total = placas.total
     const segs = [
         { label: 'Placa Pequena', value: placas.pequena, color: D3_COLORS.pequena },
-        { label: 'A4', value: placas.a4, color: D3_COLORS.a4 },
-        { label: 'Grande', value: placas.grande, color: D3_COLORS.grande }
+        { label: 'Grande', value: placas.grande, color: D3_COLORS.grande },
+        { label: 'Placa Média', value: placas.media, color: D3_COLORS.media }
     ]
     const pct = v => total > 0 ? (v / total) * 100 : 0
 
@@ -1034,8 +1034,8 @@ function dashTop10(produtos) {
     const max = Math.max(...produtos.map(p => Number(p.total) || 0), 1)
     const tipoMap = {
         pequena: [D3_COLORS.pequena, 'rgba(225,29,72,0.15)', 'Placa Pequena'],
-        a4:      [D3_COLORS.a4, 'rgba(245,158,11,0.15)', 'A4'],
-        grande:  [D3_COLORS.grande, 'rgba(59,130,246,0.15)', 'Grande']
+        grande:      [D3_COLORS.grande, 'rgba(245,158,11,0.15)', 'Grande'],
+        media:  [D3_COLORS.media, 'rgba(59,130,246,0.15)', 'Média']
     }
 
     const rows = produtos.map((p, i) => {

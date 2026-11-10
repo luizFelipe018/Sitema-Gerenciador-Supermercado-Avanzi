@@ -1,10 +1,10 @@
-ï»¿const DIAS_SEMANA = ['Domingo', 'Segunda-feira', 'TerÃ§a-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'SÃ¡bado']
+const DIAS_SEMANA = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado']
 const TOPICOS = ['tipo_arroz', 'tipo_feijao', 'carnes', 'guarnicoes', 'massas']
 const TOPICOS_LABEL = {
     tipo_arroz: 'Tipo de Arroz',
-    tipo_feijao: 'Tipo de FeijÃ£o',
+    tipo_feijao: 'Tipo de Feijão',
     carnes: 'Carnes',
-    guarnicoes: 'GuarniÃ§Ãµes',
+    guarnicoes: 'Guarnições',
     massas: 'Massas'
 }
 const TOPICOS_ICON = {
@@ -66,7 +66,7 @@ function renderizarPagina() {
         <div class="dash-glass dash-animate" style="padding:20px; margin-bottom:20px;">
             <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
                 <div style="display:flex; align-items:center; gap:12px;">
-                    <span style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.4);">CardÃ¡pio Semanal</span>
+                    <span style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.4);">Cardápio Semanal</span>
                     <button id="ic-semana-ant" style="padding:8px 12px; border:none; border-radius:8px; font-size:12px; font-weight:600; color:rgba(255,255,255,0.6); cursor:pointer; background:rgba(255,255,255,0.05); transition:all 0.3s; display:flex; align-items:center; gap:4px;"
                         onmouseenter="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'"
                         onmouseleave="this.style.background='rgba(255,255,255,0.05)';this.style.color='rgba(255,255,255,0.6)'">
@@ -77,7 +77,7 @@ function renderizarPagina() {
                     <button id="ic-semana-prox" style="padding:8px 12px; border:none; border-radius:8px; font-size:12px; font-weight:600; color:rgba(255,255,255,0.6); cursor:pointer; background:rgba(255,255,255,0.05); transition:all 0.3s; display:flex; align-items:center; gap:4px;"
                         onmouseenter="this.style.background='rgba(255,255,255,0.1)';this.style.color='#fff'"
                         onmouseleave="this.style.background='rgba(255,255,255,0.05)';this.style.color='rgba(255,255,255,0.6)'">
-                        PrÃ³ximo
+                        Próximo
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
                     </button>
                 </div>
@@ -109,7 +109,7 @@ function renderizarPagina() {
         <div id="ic-art-section" class="dash-glass dash-animate" style="padding:20px;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
                 <svg width="16" height="16" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                <span style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Gerar Arte do CardÃ¡pio</span>
+                <span style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Gerar Arte do Cardápio</span>
             </div>
             <div id="ic-dias-arte" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px;"></div>
             <div style="display:flex; gap:10px; align-items:start; flex-wrap:wrap;">
@@ -154,7 +154,7 @@ function renderizarPagina() {
         </div>
 
         <div id="ic-status" style="font-size:12px; color:rgba(255,255,255,0.3); margin-top:14px; text-align:center; min-height:18px;"></div>
-    `, 'Importar CardÃ¡pio')
+    `, 'Importar Cardápio')
 
     document.getElementById('ic-semana-ant').onclick = () => {
         const d = getWeekStart(icSemanaAtual)
@@ -228,7 +228,7 @@ function renderizarCalendario() {
     let html = `<div style="overflow-x:auto;"><div style="display:grid; grid-template-columns:110px repeat(7,1fr); gap:2px; min-width:900px;">`
 
     html += `<div style="padding:10px; text-align:center; border-radius:8px 0 0 0; background:rgba(0,0,0,0.3);">
-        <span style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">TÃ³pico</span>
+        <span style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Tópico</span>
     </div>`
 
     dias.forEach((d, i) => {
@@ -423,7 +423,7 @@ function icGerarArte() {
     btnSalvar.style.opacity = '1'
 
     msg.style.color = '#22c55e'
-    msg.textContent = `âœ… Arte de ${dados.dia} gerada!`
+    msg.textContent = `? Arte de ${dados.dia} gerada!`
 }
 
 async function icSalvarPNG() {
@@ -451,7 +451,7 @@ async function icSalvarPNG() {
     }
 
     msg.style.color = 'rgba(255,255,255,0.4)'
-    msg.textContent = 'Gerando imagem 1080Ã—1350...'
+    msg.textContent = 'Gerando imagem 1080×1350...'
 
     if (!window.html2canvas) {
         await new Promise((resolve, reject) => {
@@ -488,7 +488,7 @@ async function icSalvarPNG() {
         link.click()
 
         msg.style.color = '#22c55e'
-        msg.textContent = 'âœ… Salvo em 1080Ã—1350!'
+        msg.textContent = '? Salvo em 1080×1350!'
     } catch (e) {
         console.error(e)
         msg.style.color = '#ef4444'
@@ -521,7 +521,7 @@ async function carregarSemana() {
 
         if (!rows.length) {
             status.style.color = 'rgba(255,255,255,0.3)'
-            status.textContent = 'Nenhum cardÃ¡pio encontrado para esta semana.'
+            status.textContent = 'Nenhum cardápio encontrado para esta semana.'
             return
         }
 
@@ -541,7 +541,7 @@ async function carregarSemana() {
         renderizarCalendario()
 
         status.style.color = '#22c55e'
-        status.textContent = `âœ… CardÃ¡pio carregado (${rows.length} dia(s))!`
+        status.textContent = `? Cardápio carregado (${rows.length} dia(s))!`
     } catch (e) {
         status.style.color = '#ef4444'
         status.textContent = `Erro ao conectar: ${e.message}`
@@ -586,7 +586,7 @@ async function salvarSemana() {
         }
 
         status.style.color = '#22c55e'
-        status.textContent = 'âœ… CardÃ¡pio salvo com sucesso!'
+        status.textContent = '? Cardápio salvo com sucesso!'
     } catch (e) {
         status.style.color = '#ef4444'
         status.textContent = `Erro ao conectar: ${e.message}`

@@ -196,19 +196,23 @@ function authHeaders() {
     return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
 }
 
-function fecharModaisGrande() {
-    document.getElementById('modal-busca-g').style.display = 'none'
-    document.getElementById('modal-import-g').style.display = 'none'
-    document.getElementById('log-erros-g').style.display = 'none'
+function fecharModaisMedia() {
+    const ids = ['modal-busca-media', 'modal-import-media', 'log-erros-media', 'modal-busca-grande', 'modal-import-grande', 'log-erros-grande', 'modal-busca-pequena', 'modal-import-pequena', 'log-erros-pequena', 'modal-busca-media-pack', 'modal-import-media-pack', 'log-erros-media-pack']
+    for (const id of ids) {
+        const el = document.getElementById(id)
+        if (el) el.style.display = 'none'
+    }
 }
 
 // ── FECHAR MODAIS ─────────────────────────────────────
-document.getElementById('fechar-busca-g').onclick = () => { document.getElementById('modal-busca-g').style.display = 'none' }
-document.getElementById('fechar-import-g').onclick = () => { document.getElementById('modal-import-g').style.display = 'none' }
+for (const [btn, modal] of [['fechar-busca-media', 'modal-busca-media'], ['fechar-import-media', 'modal-import-media'], ['fechar-busca-grande', 'modal-busca-grande'], ['fechar-import-grande', 'modal-import-grande'], ['fechar-busca-pequena', 'modal-busca-pequena'], ['fechar-import-pequena', 'modal-import-pequena']]) {
+    const b = document.getElementById(btn)
+    if (b) b.addEventListener('click', () => { document.getElementById(modal).style.display = 'none' })
+}
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-        fecharModaisGrande()
+        fecharModaisMedia()
         document.getElementById('contextMenu').style.display = 'none'
         if (popupBuscaAberto) fecharPopupBuscaGlobal()
     }
@@ -407,11 +411,11 @@ document.getElementById('btn-produtos').addEventListener('click', () => {
     carregarProdutos()
 })
 
-document.getElementById('btn-placas-grande').addEventListener('click', () => {
+document.getElementById('btn-placas-media').addEventListener('click', () => {
     abrirSubmenuPlacas()
     document.getElementById('submenu-modelos').classList.add('open')
     document.getElementById('btn-modelos-menu').classList.add('open2')
-    carregarPlacasGrande()
+    carregarPlacasMedia()
 })
 
 document.getElementById('btn-placas-media-pack').addEventListener('click', () => {
@@ -428,11 +432,11 @@ document.getElementById('btn-placas-pequena').addEventListener('click', () => {
     carregarPlacasPequena()
 })
 
-document.getElementById('btn-placas-a4').addEventListener('click', () => {
+document.getElementById('btn-placas-grande').addEventListener('click', () => {
     abrirSubmenuPlacas()
     document.getElementById('submenu-modelos').classList.add('open')
     document.getElementById('btn-modelos-menu').classList.add('open2')
-    carregarPlacasA4()
+    carregarPlacasGrande()
 })
 
 document.getElementById('btn-arte-semanal')?.addEventListener('click', () => {
@@ -677,10 +681,10 @@ aplicarPermissoesMenu()
 // ── MENU CONTEXTO (excluir/duplicar placa) ────────────
 function executarContexto(fn) {
     const abaAtiva = document.querySelector('.submenu-btn.active, .submenu3-btn.active')?.id
-    if (abaAtiva === 'btn-placas-grande') fn('Grande')
+    if (abaAtiva === 'btn-placas-media') fn('Media')
     else if (abaAtiva === 'btn-placas-media-pack') fn('MediaPack')
     else if (abaAtiva === 'btn-placas-pequena') fn('Pequena')
-    else if (abaAtiva === 'btn-placas-a4') fn('A4')
+    else if (abaAtiva === 'btn-placas-grande') fn('Grande')
     else fn('')
     document.getElementById('contextMenu').style.display = 'none'
 }
@@ -704,7 +708,7 @@ document.getElementById('ctx-padrao-novas').onclick = () => executarContexto(suf
 })
 
 document.addEventListener('click', (e) => {
-    if (!e.target.closest('.placa') && !e.target.closest('.placa-grande') && !e.target.closest('.placa-pequena')) {
+    if (!e.target.closest('.placa') && !e.target.closest('.placa-media') && !e.target.closest('.placa-pequena')) {
         document.getElementById('contextMenu').style.display = 'none'
     }
     if (popupBuscaAberto && !e.target.closest('.modal-box')) {
