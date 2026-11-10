@@ -7,11 +7,23 @@ const app = express()
 
 // Permite o Electron (file://) falar com a API via http://localhost:3000
 // e navegadores de outras origens — sem isso o webSecurity precisa ficar desativado.
+// COOP/COEP (apenas em HTML) habilita contexto cross-origin isolated —
+// desbloqueia SharedArrayBuffer para o WASM usar TODAS as threads (3-5x mais rápido).
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*')
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     if (req.method === 'OPTIONS') return res.sendStatus(204)
+    next()
+})
+
+// COOP/COEP somente para arquivos HTML — mantém imagens/CDNs externos funcionando normalmente.
+// 'credentialless' é aceito por Chromium moderno (Electron) e não exige CORP dos recursos.
+app.use((req, res, next) => {
+    if (req.path === '/' || req.path.endsWith('.html') || req.path === '') {
+        res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
+        res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless')
+    }
     next()
 })
 
