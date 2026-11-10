@@ -12,6 +12,9 @@ const authMiddleware = require('../middlewares/authMiddleware')
 
 const SITE_BASE = 'https://lojasuperavanzi.com.br'
 const SITEMAP_URL = `${SITE_BASE}/sitemap.xml`
+const SEARCH_ENGINE = 'https://sense.osuper.com.br/279/1369/v2'
+const SITE_ORIGIN = SITE_BASE
+const SITE_REFERER = `${SITE_BASE}/`
 
 async function getPastaImagens() {
     try {
@@ -20,6 +23,49 @@ async function getPastaImagens() {
         if (rows[0] && rows[0].valor) return rows[0].valor
     } catch {}
     return process.env.PASTA_IMAGENS || 'E:\\Banco de Imagens'
+}
+
+/* ── GET JSON na API de busca do site (SKU == código do ERP) ── */
+function httpGetJson(url, timeoutMs = 12000) {
+    return new Promise((resolve, reject) => {
+        let resolvido = false
+        const falhar = (e) => { if (!resolvido) { resolvido = true; reject(e) } }
+        const concluir = (v) => { if (!resolvido) { resolvido = true; resolve(v) } }
+
+        const req = https.get(url, {
+            headers: {
+                'Origin': SITE_ORIGIN,
+                'Referer': SITE_REFERER,
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ERP-Avanzi',
+                'Accept': 'application/json'
+            }
+        }, (res) => {
+            if (res.statusCode !== 200) {
+                res.resume()
+                return falhar(new Error(`HTTP ${res.statusCode}`))
+            }
+            let data = ''
+            res.setEncoding('utf8')
+            res.on('data', c => { data += c })
+            res.on('aborted', () => falhar(new Error('conexão abortada')))
+            res.on('end', () => { try { concluir(JSON.parse(data)) } catch (e) { falhar(new Error('JSON inválido')) } })
+        })
+        req.on('error', falhar)
+        req.setTimeout(timeoutMs, () => { req.destroy(); falhar(new Error('timeout')) })
+    })
+}
+
+/* Busca EXATA pelo SKU (código do ERP) no site — caminho sem ambiguidade p/ baixar as fotos */
+async function buscarPorSkuExact(codigo) {
+    try {
+        const arr = await httpGetJson(`${SEARCH_ENGINE}/instant_search?search=${encodeURIComponent(codigo)}`)
+        if (!Array.isArray(arr) || !arr.length) return null
+        const p = arr[0]
+        if (!p || !p.image) return null
+        return { id: String(p.id || ''), name: p.name || '', image: p.image }
+    } catch (e) {
+        return null
+    }
 }
 
 /* ── util: GET https com texto ── */
@@ -91,11 +137,18 @@ async function getIndiceSite(force = false) {
         return siteIndexCache.itens
     }
     const xml = await httpGetText(SITEMAP_URL)
-    const itens = [...xml.matchAll(/<loc>(https:\/\/lojasuperavanzi\.com\.br\/produtos\/(\d+)\/([^<]+))<\/loc>/g)].map(m => ({
-        url: m[1],
-        id: m[2],
-        nome: m[3].replace(/-/g, ' ').trim()
-    }))
+    const itens = []
+    for (const b of xml.matchAll(/<url>([\s\S]*?)<\/url>/g)) {
+        const mLoc = b[1].match(/<loc>(https:\/\/lojasuperavanzi\.com\.br\/produtos\/(\d+)\/([^<]+))<\/loc>/)
+        if (!mLoc) continue
+        const mImg = b[1].match(/<image:loc>([^<]+)<\/image:loc>/)
+        itens.push({
+            url: mLoc[1],
+            id: mLoc[2],
+            nome: mLoc[3].replace(/-/g, ' ').trim(),
+            imagem: mImg ? mImg[1] : null
+        })
+    }
     // índice invertido por token p/ match rápido
     const porToken = new Map()
     itens.forEach((item, i) => {
@@ -253,9 +306,44 @@ async function buscarImagemSitePorCodigo(codigo) {
     const cache = resultadoCache.get(String(codigo))
     if (cache && Date.now() - cache.ts < 12 * 60 * 60 * 1000) return { ...cache, cache: true }
 
+    // 1) SKU exato (== código do ERP) — caminho sem ambiguidade
+    const sku = await buscarPorSkuExact(String(codigo))
+    if (sku) {
+        const r = {
+            ok: true,
+            codigo: prod.codigo,
+            descricao: prod.descricao,
+            match: sku.name,
+            score: 1,
+            url_site: null,
+            imagem_url: sku.image,
+            origem: 'sku',
+            proxy: `/off-image?url=${encodeURIComponent(sku.image)}`
+        }
+        resultadoCache.set(String(codigo), { ...r, ts: Date.now() })
+        return r
+    }
+
     const match = await buscarMatchSite(prod.descricao)
     if (!match) {
         const r = { ok: false, codigo: prod.codigo, descricao: prod.descricao, motivo: 'sem correspondência no site' }
+        resultadoCache.set(String(codigo), { ...r, ts: Date.now() })
+        return r
+    }
+
+    // imagem direto do sitemap (sem raspar a página) quando disponível
+    if (match.imagem) {
+        const r = {
+            ok: true,
+            codigo: prod.codigo,
+            descricao: prod.descricao,
+            match: match.nome,
+            score: match.score,
+            url_site: match.url,
+            imagem_url: match.imagem,
+            origem: 'sitemap',
+            proxy: `/off-image?url=${encodeURIComponent(match.imagem)}`
+        }
         resultadoCache.set(String(codigo), { ...r, ts: Date.now() })
         return r
     }
@@ -363,6 +451,45 @@ router.post('/imagens-site/salvar-lote', authMiddleware, async (req, res) => {
     }
 })
 
+/* POST /imagens-site/salvar-jpeg {codigo, jpeg} — grava JPEG (dataURL base64) com o nome EXATO do ERP na pasta de imagens */
+router.post('/imagens-site/salvar-jpeg', authMiddleware, async (req, res) => {
+    try {
+        const codigo = String(req.body?.codigo || '').trim()
+        const jpeg = String(req.body?.jpeg || '')
+        if (!codigo || !jpeg) return res.status(400).json({ error: 'Informe codigo e jpeg' })
+
+        const db = require('../config/database')
+        const [rows] = await db.query('SELECT descricao FROM produtos WHERE codigo = ? LIMIT 1', [codigo])
+        if (!rows[0]) return res.status(404).json({ error: `Produto ${codigo} não encontrado no ERP` })
+
+        const descricao = String(rows[0].descricao || '').trim()
+        if (!descricao) return res.status(404).json({ error: `Produto ${codigo} sem descrição no ERP` })
+
+        // nome EXATO do ERP (preserva maiúsculas/acentos), sanitizado p/ sistema de arquivos
+        const seguro = descricao
+            .replace(/[\\/:*?"<>|]/g, '-')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 120)
+        const nomeArquivo = seguro + '.jpeg'
+
+        const pasta = await getPastaImagens()
+        try { fs.mkdirSync(pasta, { recursive: true }) } catch (e) {
+            return res.status(500).json({ error: `pasta de imagens inacessível (${pasta}): ${e.message}` })
+        }
+
+        const limpo = jpeg.replace(/^data:image\/jpe?g;base64,/i, '')
+        const buf = Buffer.from(limpo, 'base64')
+        if (!buf.length) return res.status(400).json({ error: 'JPEG inválido (base64 vazio)' })
+
+        const destino = path.join(pasta, nomeArquivo)
+        fs.writeFileSync(destino, buf)
+        res.json({ salvo: true, arquivo: destino, nome: nomeArquivo, descricao, bytes: buf.length })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
 /* GET /imagens-site/sem-imagem — produtos do ERP sem imagem local (p/ importar em lote) */
 router.get('/imagens-site/sem-imagem', authMiddleware, async (req, res) => {
     try {
@@ -380,7 +507,11 @@ router.get('/imagens-site/sem-imagem', authMiddleware, async (req, res) => {
         }
         walk(pasta)
         const [rows] = await db.query('SELECT codigo, descricao, ean FROM produtos ORDER BY descricao')
-        const sem = rows.filter(p => !nomes.has((String(p.descricao || '').trim().toUpperCase() + '.png').toLowerCase()))
+        const exts = ['.png', '.jpeg', '.jpg', '.webp']
+        const sem = rows.filter(p => {
+            const base = String(p.descricao || '').trim().toUpperCase()
+            return !exts.some(ext => nomes.has((base + ext).toLowerCase()))
+        })
         res.json({ totalProdutos: rows.length, semImagem: sem.length, produtos: sem.slice(0, parseInt(req.query.limit) || 500) })
     } catch (err) {
         res.status(500).json({ error: err.message })

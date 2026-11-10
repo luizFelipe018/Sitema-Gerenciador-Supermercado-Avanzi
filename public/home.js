@@ -508,6 +508,13 @@ document.getElementById('btn-conversor-webp').addEventListener('click', () => {
     carregarConversorWebp()
 })
 
+document.getElementById('btn-baixar-site').addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    abrirSubmenuImagens()
+    carregarBaixarSite()
+})
+
 document.getElementById('btn-imagens-site').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
