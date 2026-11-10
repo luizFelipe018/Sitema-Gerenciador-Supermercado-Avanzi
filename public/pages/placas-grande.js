@@ -132,6 +132,10 @@ async function carregarPlacasGrande() {
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                         Imprimir Tudo
                     </button>
+                    <button id="btn-predefinicao-grande" class="btn-sm" title="Aplica a predefinição da placa selecionada (ou do padrão do modelo) em TODAS as placas da fila e define como padrão das novas">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                        Predefinição
+                    </button>
 
                     <div class="frc6" style="margin-left:8px;">
                         <button id="btn-pag-ant-grande" class="btn-g">
@@ -679,6 +683,21 @@ async function onSalvarPredefPadraoGrande() {
     toast('As novas placas Grande já vão nascer com esta predefinição', 'ok')
 }
 
+/** Aplica a predefinição em TODAS as placas da fila e a define como padrão das novas. */
+async function onAplicarPredefinicaoGrande() {
+    if (!placasSalvasGrande.length) {
+        toast('Não há placas na fila para aplicar a predefinição', 'aviso')
+        return
+    }
+    const n = coreAplicarPresetEmTodas(placasSalvasGrande, 'grande', placaClicadaGrande)
+    if (!n) {
+        aviso('Nenhuma predefinição para aplicar. Ajuste o texto de uma placa (tamanhos/posições) primeiro — ou salve um padrão.', { titulo: 'Predefinição' })
+        return
+    }
+    await salvarERenderizarGrande()
+    toast(`Predefinição aplicada em ${n} placa(s) — as próximas já nascem com ela`, 'ok')
+}
+
 function vincularEventosPlacasGrande() {
     const eanInput = document.getElementById('ean-input-grande')
     if (!eanInput) return
@@ -709,6 +728,7 @@ function vincularEventosPlacasGrande() {
     }
 
     document.getElementById('btn-print-tudo-grande').onclick = imprimirTudoGrande
+    document.getElementById('btn-predefinicao-grande').onclick = onAplicarPredefinicaoGrande
     document.getElementById('btn-pag-ant-grande').onclick = () => mudarPaginaPlacasGrande(-1)
     document.getElementById('btn-pag-prox-grande').onclick = () => mudarPaginaPlacasGrande(1)
     document.getElementById('btn-limpar-grande').onclick = () => {

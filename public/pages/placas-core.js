@@ -284,3 +284,30 @@ function coreVincularPrecoSite(chkId, labelId, eanInputId, precoInputId) {
         }
     })
 }
+
+/* Aplica UMA predefinição em TODAS as placas da fila e a salva como padrão do
+   modelo (as próximas placas já nascem com ela). Fonte, em ordem de prioridade:
+   a placa selecionada com ajustes; senão, a 1ª placa da fila com ajustes;
+   senão, o padrão já salvo do modelo no localStorage.
+   Retorna a quantidade de placas afetadas (0 = nada para aplicar). */
+function coreAplicarPresetEmTodas(placas, tipo, selecionada) {
+    let fontePreset = null
+    if (selecionada && selecionada._fs && Object.keys(selecionada._fs).length) {
+        fontePreset = selecionada._fs
+    } else {
+        const comAjuste = (placas || []).find(p => p && p._fs && Object.keys(p._fs).length)
+        if (comAjuste) fontePreset = comAjuste._fs
+        else fontePreset = coreLerPresetPadrao(tipo)
+    }
+    if (!fontePreset) return 0
+    const modelo = JSON.parse(JSON.stringify(fontePreset))
+    let aplicadas = 0
+    ;(placas || []).forEach(p => {
+        if (!p) return
+        p._fs = JSON.parse(JSON.stringify(modelo))
+        aplicadas++
+    })
+    // passa a ser o padrão das próximas placas do modelo
+    coreSalvarPresetPadrao(tipo, modelo)
+    return aplicadas
+}
