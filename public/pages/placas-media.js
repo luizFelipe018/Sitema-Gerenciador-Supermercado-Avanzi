@@ -33,7 +33,12 @@ function carregarEstilosMedia() {
     if (!document.getElementById('placas-media-guide')) {
         const style = document.createElement('style')
         style.id = 'placas-media-guide'
-        style.textContent = '#container-placas-g { display:flex; flex-wrap:wrap; gap:12px; } .placa-media-conteudo { outline:1px dashed rgba(255,0,0,0.25); outline-offset:-1px; transform:scale(0.45); transform-origin:top left; } .placa-media-conteudo * { color:#000 !important; }'
+        style.textContent = '#container-placas-g { display:flex; justify-content:center; align-items:flex-start; gap:0px; padding:10px 0; } ' +
+            '#container-placas-g .folha-media { position:relative; display:flex; flex-direction:row; width:297mm; height:210mm; margin:0 auto 16px; background:#fff; box-sizing:border-box; gap:0; box-shadow:0 2px 12px rgba(0,0,0,0.15); zoom:0.6; } ' +
+            '#container-placas-g .folha-media::after { content:""; position:absolute; left:calc(50% - 0.5px); top:0; width:1px; height:100%; background:#000; z-index:5; pointer-events:none; } ' +
+            '#container-placas-g .placa-media { width:50%; height:100%; display:grid; place-items:end center; border:none; padding:0; background:transparent; box-sizing:border-box; cursor:default; } ' +
+            '#container-placas-g .placa-media .placa-media-conteudo { margin:0 auto !important; } ' +
+            '#container-placas-g .placa-media-conteudo * { color:#000 !important; }'
         document.head.appendChild(style)
     }
 }
@@ -326,9 +331,12 @@ function renderizarPlacasMedia() {    const container = document.getElementById(
         return
     }
 
+    const folha = document.createElement('div')
+    folha.className = 'folha-media'
+
     lista.forEach(p => {
         const div = document.createElement('div')
-        div.style.cssText = 'background:#fff; overflow:hidden; display:inline-flex; flex:1;'
+        div.className = 'placa-media'
         div.innerHTML = montarPlacaMediaHTML(p)
 
         // clique na placa (fora dos textos) seleciona a placa do menu de contexto
@@ -490,9 +498,10 @@ function renderizarPlacasMedia() {    const container = document.getElementById(
             }
         }
 
-        container.appendChild(div)
+        folha.appendChild(div)
     })
 
+    container.appendChild(folha)
 }
 
 async function onExcluirPlacaMedia() {
