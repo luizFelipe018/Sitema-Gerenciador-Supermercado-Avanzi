@@ -284,9 +284,9 @@ async function rfRemoverFundoDe(f) {
     f.error = null
     rfRender()
 
-    // caminho absoluto para a pasta do modelo — funciona em http:// e file://
-    const dirBase = window.location.href.slice(0, window.location.href.lastIndexOf('/') + 1)
-    const publicPath = new URL('vendor/imgly/1.7.0/dist/', dirBase).href
+    // publicPath: em Electron a página é file:// e fetch(file://) é bloqueado — use a mesma API que o resto do app (http://localhost:3000)
+    const baseApi = (typeof API === 'string' && API) ? API.replace(/\/$/, '') : (window.location.protocol === 'file:' ? 'http://localhost:3000' : window.location.origin)
+    const publicPath = baseApi + '/vendor/imgly/1.7.0/dist/'
 
     const mod = await rfCarregarLib()
     const blob = await mod.removeBackground(f.file, {
