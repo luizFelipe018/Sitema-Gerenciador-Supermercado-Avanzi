@@ -20,7 +20,7 @@ function createWindow() {
         }
     })
 
-    win.loadFile('public/login.html')
+    win.loadURL('http://localhost:3000')
     return win
 }
 
