@@ -31,7 +31,7 @@ function carregarEstoquePlacas() {
                             style="width:100%; padding:10px 14px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; font-size:13px; color:#fafafa; background:#252525; outline:none; transition:border-color 0.3s; box-sizing:border-box;"
                             onfocus="this.style.borderColor='rgba(181,21,21,0.4)'"
                             onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
-                        <div id="ep-sugestoes" style="position:absolute; top:100%; left:0; right:0; z-index:50; background:#1a1a1a; border:1px solid rgba(255,255,255,0.08); border-radius:0 0 10px 10px; max-height:200px; overflow-y:auto; display:none; box-shadow:0 8px 32px rgba(0,0,0,0.4);"></div>
+                        <div id="ep-sugestoes" style="position:absolute; top:100%; left:0; right:0; z-index:50; background:var(--surface-2); border:1px solid var(--border); border-radius:0 0 10px 10px; max-height:200px; overflow-y:auto; display:none; box-shadow:var(--shadow-md);"></div>
                     </div>
                     <div>
                         <label style="font-size:11px; font-weight:600; color:rgba(255,255,255,0.35); display:block; margin-bottom:4px;">Preço (R$)</label>
@@ -221,12 +221,12 @@ async function epBuscarNome(q, input, dropdown) {
     if (!itens.length) { dropdown.style.display = 'none'; return }
 
     dropdown.innerHTML = itens.slice(0, 12).map(item => `
-        <div style="padding:8px 14px; cursor:pointer; font-size:12px; color:rgba(255,255,255,0.7); border-bottom:1px solid rgba(255,255,255,0.04); display:flex; align-items:center; justify-content:space-between;"
-            onmouseenter="this.style.background='rgba(181,21,21,0.1)'"
+        <div style="padding:8px 14px; cursor:pointer; font-size:12px; color:var(--text-2); border-bottom:1px solid var(--border-soft); display:flex; align-items:center; justify-content:space-between;"
+            onmouseenter="this.style.background='var(--brand-soft)'"
             onmouseleave="this.style.background='transparent'"
             data-nome="${item.nome.replace(/"/g, '&quot;')}" data-preco="${item.preco || ''}">
             <span>${item.nome}</span>
-            ${item.preco ? '<span style="font-weight:700; color:rgba(181,21,21,0.8); font-size:11px;">R$ '+parseFloat(item.preco).toFixed(2).replace('.',',')+'</span>' : ''}
+            ${item.preco ? '<span style="font-weight:700; color:var(--brand-text); font-size:11px;">R$ '+parseFloat(item.preco).toFixed(2).replace('.',',')+'</span>' : ''}
         </div>
     `).join('')
     dropdown.style.display = 'block'

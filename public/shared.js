@@ -174,7 +174,7 @@ window.buscarFotoProduto = async function(termo) {
         console.log('[OpenFoodFacts] Erro:', e.message)
         return null
     }
-}
+};
 
 // Buscar foto por código de barras (EAN)
 window.buscarFotoPorEAN = async function(ean) {
@@ -191,4 +191,88 @@ window.buscarFotoPorEAN = async function(ean) {
         console.log('[OpenFoodFacts] Erro:', e.message)
         return null
     }
-}
+};
+;// -- Aviso no tema do app (substitui o alert nativo) --
+/* Popup de aviso com o tema do app (substitui as janelas cinza do Windows).
+   window.alert(msg)          -> modal centralizado, botao "Entendi" (fire-and-forget)
+   window.aviso(msg, opts)    -> mesmo modal, retorna Promise; opts: { titulo, tipo, okText }
+   window.avisoConfirmacao(msg, opts) -> modal com Sim/Não; retorna Promise<boolean> */
+(function () {
+    function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[<>&"']/g, function (c) {
+            return { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' }[c]
+        })
+    }
+
+    var ICONES = {
+        aviso: '<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+        ok:    '<circle cx="12" cy="12" r="10"/><polyline points="9 12 11.5 14.5 15 10"/>',
+        erro:  '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
+        info:  '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+        pergunta: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>'
+    }
+
+    var fila = []
+    var aberto = false
+
+    function montarModal(mensagem, opts, confirmar) {
+        return new Promise(function (resolve) {
+            fila.push({ mensagem: mensagem, opts: opts || {}, confirmar: confirmar, resolve: resolve })
+            if (!aberto) proximoDaFila()
+        })
+    }
+
+    function proximoDaFila() {
+        var item = fila.shift()
+        if (!item) { aberto = false; return }
+        aberto = true
+
+        var opts = item.opts
+        var tipo = opts.tipo || 'aviso'
+        if (!ICONES[tipo]) tipo = 'aviso'
+        var titulo = opts.titulo || (item.confirmar ? 'Confirmação' : 'Aviso')
+        var okText = opts.okText || (item.confirmar ? 'Sim' : 'Entendi')
+        var cancelText = opts.cancelText || 'Não'
+        var idIcone = tipo === 'aviso' ? '' : ' is-' + tipo
+
+        var backdrop = document.createElement('div')
+        backdrop.className = 'ds-aviso-backdrop'
+        backdrop.innerHTML =
+            '<div class="ds-aviso" role="alertdialog" aria-modal="true" aria-label="' + escapeHtml(titulo) + '">' +
+                '<div class="ds-aviso-head">' +
+                    '<div class="ds-aviso-icon' + idIcone + '"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">' + ICONES[tipo] + '</svg></div>' +
+                    '<div class="ds-aviso-titulo">' + escapeHtml(titulo) + '</div>' +
+                '</div>' +
+                '<div class="ds-aviso-body">' + escapeHtml(item.mensagem) + '</div>' +
+                '<div class="ds-aviso-foot">' +
+                    (item.confirmar ? '<button type="button" class="ds-btn" data-acao="cancelar">' + escapeHtml(cancelText) + '</button>' : '') +
+                    '<button type="button" class="ds-btn ds-btn-primary" data-acao="ok">' + escapeHtml(okText) + '</button>' +
+                '</div>' +
+            '</div>'
+
+        function fechar(resultado) {
+            document.removeEventListener('keydown', onKey, true)
+            backdrop.remove()
+            item.resolve(resultado)
+            proximoDaFila()
+        }
+        function onKey(e) {
+            if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); fechar(item.confirmar ? false : undefined) }
+            else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); fechar(item.confirmar ? true : undefined) }
+        }
+
+        backdrop.querySelector('[data-acao="ok"]').addEventListener('click', function () { fechar(item.confirmar ? true : undefined) })
+        var btnCancelar = backdrop.querySelector('[data-acao="cancelar"]')
+        if (btnCancelar) btnCancelar.addEventListener('click', function () { fechar(false) })
+        backdrop.addEventListener('mousedown', function (e) { if (e.target === backdrop) fechar(item.confirmar ? false : undefined) })
+        document.addEventListener('keydown', onKey, true)
+
+        document.body.appendChild(backdrop)
+        backdrop.querySelector('[data-acao="ok"]').focus()
+    }
+
+    window.aviso = function (mensagem, opts) { return montarModal(mensagem, opts, false) }
+    window.avisoConfirmacao = function (mensagem, opts) { return montarModal(mensagem, opts || {}, true) }
+    // Substitui o alert nativo (janela sem tema) pelo modal do app
+    window.alert = function (msg) { window.aviso(msg) }
+})();

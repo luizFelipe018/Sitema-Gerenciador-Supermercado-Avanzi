@@ -1075,6 +1075,78 @@ body.theme-light ::-webkit-scrollbar-thumb { background: #d5d8de; background-cli
     to { opacity: 1; transform: none; }
 }
 
+/* ── aviso modal (substitui o alert nativo) ────────────────── */
+.ds-aviso-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    animation: dsAvisoFade .18s var(--ease-out);
+}
+.ds-aviso {
+    width: 100%;
+    max-width: 440px;
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    animation: dsAvisoIn .22s var(--ease-out);
+}
+.ds-aviso-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 18px 0;
+}
+.ds-aviso-icon {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--r-md);
+    background: var(--warn-soft);
+    color: var(--warn);
+}
+.ds-aviso-icon.is-ok { background: var(--ok-soft); color: var(--ok); }
+.ds-aviso-icon.is-erro { background: var(--danger-soft); color: var(--danger); }
+.ds-aviso-icon.is-info { background: var(--info-soft); color: var(--info); }
+.ds-aviso-icon.is-pergunta { background: var(--info-soft); color: var(--info); }
+.ds-aviso-titulo {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-1);
+}
+.ds-aviso-body {
+    padding: 10px 18px 16px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-2);
+    white-space: pre-line;
+    word-break: break-word;
+}
+.ds-aviso-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 14px;
+    border-top: 1px solid var(--border-soft);
+    background: var(--surface-2);
+}
+@keyframes dsAvisoFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dsAvisoIn {
+    from { opacity: 0; transform: translateY(10px) scale(.96); }
+    to { opacity: 1; transform: none; }
+}
+
 /* ── separador */
 /* ── Listas: item da lista lateral ──────────────────────── */
 .ds-lista-item {

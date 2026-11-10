@@ -243,82 +243,46 @@ async function registrarLogPlacas(placas) {
 
 function registrarImpressaoPlacas() {
     const ids = [...(window._ultimasPlacasGeradas || [])]
-    setTimeout(() => {
-        // Sempre mostra o popup ao imprimir
-        const overlay = document.createElement('div')
-        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:9999;display:flex;align-items:center;justify-content:center;'
-
-        const box = document.createElement('div')
-        box.style.cssText = 'background:#fff;border-radius:16px;padding:28px 32px;width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.3);text-align:center;'
-
-        const icone = document.createElement('div')
-        icone.style.cssText = 'font-size:40px;margin-bottom:12px;'
-        icone.textContent = '🖨️'
-
-        const titulo = document.createElement('h3')
-        titulo.style.cssText = 'font-size:16px;font-weight:700;color:#111827;margin-bottom:8px;'
-        titulo.textContent = 'A impressão foi concluída?'
-
-        const descricao = document.createElement('p')
-        descricao.style.cssText = 'font-size:13px;color:#6b7280;margin-bottom:24px;'
-        descricao.textContent = 'Confirme para registrar as placas como impressas no relatório.'
-
-        const botoes = document.createElement('div')
-        botoes.style.cssText = 'display:flex;gap:10px;'
-
-        const btnSim = document.createElement('button')
-        btnSim.style.cssText = 'flex:1;padding:10px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;'
-        btnSim.textContent = '✅ Sim, foi impressa'
-
-        const btnNao = document.createElement('button')
-        btnNao.style.cssText = 'flex:1;padding:10px;background:#f3f4f6;color:#374151;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;'
-        btnNao.textContent = '❌ Não'
-
-        btnNao.onclick = () => document.body.removeChild(overlay)
-
-        btnSim.onclick = async () => {
-            document.body.removeChild(overlay)
-            try {
-                let idsParaMarcar = ids
-                // Fallback: if no accumulated IDs, auto-log current plaques
-                if (!idsParaMarcar.length && window._placasAtuais && window._placasAtuais.length) {
-                    const logPlacas = window._placasAtuais.map(p => ({
-                        descricao: p.descricao || '',
-                        codigo: p.codigo || null,
-                        ean: p.ean || null,
-                        preco: p.preco || 0,
-                        tipo_placa: p.tipo_placa || 'pequena'
-                    }))
-                    const res = await fetch(API+'/log-placas', {
-                        method: 'POST',
-                        headers: authHeaders(),
-                        body: JSON.stringify(logPlacas)
-                    })
-                    const data = await res.json()
-                    if (data.ids && data.ids.length) idsParaMarcar = data.ids
-                }
-                if (idsParaMarcar.length) {
-                    await fetch(API+'/log-placas/imprimir', {
-                        method: 'POST',
-                        headers: authHeaders(),
-                        body: JSON.stringify({ ids: idsParaMarcar })
-                    })
-                }
-                window._ultimasPlacasGeradas = []
-                console.log('[PLACAS] Marcadas como impressas:', idsParaMarcar)
-            } catch (e) {
-                console.warn('Erro ao registrar impressão:', e)
+    // Sempre mostra o popup ao imprimir (modal no tema do app)
+    setTimeout(async () => {
+        const sim = await window.avisoConfirmacao('Confirme para registrar as placas como impressas no relatório.', {
+            titulo: 'A impressão foi concluída?',
+            tipo: 'pergunta',
+            okText: 'Sim, foi impressa',
+            cancelText: 'Não'
+        })
+        if (!sim) return
+        try {
+            let idsParaMarcar = ids
+            // Fallback: if no accumulated IDs, auto-log current plaques
+            if (!idsParaMarcar.length && window._placasAtuais && window._placasAtuais.length) {
+                const logPlacas = window._placasAtuais.map(p => ({
+                    descricao: p.descricao || '',
+                    codigo: p.codigo || null,
+                    ean: p.ean || null,
+                    preco: p.preco || 0,
+                    tipo_placa: p.tipo_placa || 'pequena'
+                }))
+                const res = await fetch(API+'/log-placas', {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    body: JSON.stringify(logPlacas)
+                })
+                const data = await res.json()
+                if (data.ids && data.ids.length) idsParaMarcar = data.ids
             }
+            if (idsParaMarcar.length) {
+                await fetch(API+'/log-placas/imprimir', {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    body: JSON.stringify({ ids: idsParaMarcar })
+                })
+            }
+            window._ultimasPlacasGeradas = []
+            console.log('[PLACAS] Marcadas como impressas:', idsParaMarcar)
+        } catch (e) {
+            console.warn('Erro ao registrar impressão:', e)
         }
-
-        botoes.appendChild(btnSim)
-        botoes.appendChild(btnNao)
-        box.appendChild(icone)
-        box.appendChild(titulo)
-        box.appendChild(descricao)
-        box.appendChild(botoes)
-        overlay.appendChild(box)
-        document.body.appendChild(overlay)
     }, 500)
 }
 

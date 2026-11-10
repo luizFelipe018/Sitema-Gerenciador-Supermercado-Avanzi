@@ -361,11 +361,11 @@ function renderizarPlacasMedia() {    const container = document.getElementById(
                     if (!p._fs) p._fs = {}
                     const atual = parseInt(el.style.fontSize) || 20
                     const popup = document.createElement('div')
-                    popup.style.cssText = 'position:fixed;z-index:9999;display:flex;align-items:center;gap:6px;background:#1a1a1a;border:1px solid #444;border-radius:8px;padding:4px 8px;box-shadow:0 4px 20px rgba(0,0,0,0.6);user-select:none;'
+                    popup.style.cssText = 'position:fixed;z-index:9999;display:flex;align-items:center;gap:6px;background:var(--surface-2);border:1px solid var(--border-strong);border-radius:8px;padding:4px 8px;box-shadow:var(--shadow-lg);user-select:none;'
                     popup.style.top = (e.clientY - 40) + 'px'
                     popup.style.left = (e.clientX - 60) + 'px'
                     const span = document.createElement('span')
-                    span.style.cssText = 'color:#fff;font-size:13px;min-width:32px;text-align:center;'
+                    span.style.cssText = 'color:var(--text-1);font-size:13px;min-width:32px;text-align:center;'
                     span.textContent = atual
                     const btnMenos = document.createElement('button')
                     btnMenos.textContent = '−'
@@ -386,10 +386,10 @@ function renderizarPlacasMedia() {    const container = document.getElementById(
 
                     if (field === 'linha3') {
                         const gapSpan = document.createElement('span')
-                        gapSpan.style.cssText = 'color:#888;font-size:11px;margin:0 2px;'
+                        gapSpan.style.cssText = 'color:var(--text-3);font-size:11px;margin:0 2px;'
                         gapSpan.textContent = '↕'
                         const dragHandle = document.createElement('div')
-                        dragHandle.style.cssText = 'width:20px;height:20px;background:rgba(255,255,255,0.1);border-radius:4px;cursor:ns-resize;display:flex;align-items:center;justify-content:center;font-size:12px;color:#aaa;'
+                        dragHandle.style.cssText = 'width:20px;height:20px;background:var(--surface-3);border:1px solid var(--border-strong);border-radius:4px;cursor:ns-resize;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-2);'
                         dragHandle.textContent = '⡇'
                         let dragStart = null, gapIni = null
                         dragHandle.onmousedown = (ev) => {
