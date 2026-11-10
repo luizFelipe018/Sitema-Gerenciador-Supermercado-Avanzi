@@ -34,6 +34,7 @@ app.use(require('./routes/admin'))
 app.use(require('./routes/database'))
 app.use(require('./routes/arte'))
 app.use(require('./routes/imagensSite'))
+app.use(require('./routes/precosSite'))
 app.use('/marcas', require('./routes/marcas'))
 
 app.use(express.static(path.join(__dirname, '..', 'public')))
