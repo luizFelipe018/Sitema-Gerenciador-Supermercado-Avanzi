@@ -45,6 +45,10 @@ function carregarConversorWebp() {
                             Converter todas
                         </button>
                         <button id="cw-btn-download-all" class="ds-btn" type="button">Baixar todas</button>
+                        <button id="cw-btn-save-all" class="ds-btn" type="button" title="Escolher a pasta uma vez e salvar todas as imagens da fila nela (sobrescreve arquivos com o mesmo nome)">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                            Escolher pasta e salvar
+                        </button>
                         <button id="cw-btn-clear" class="ds-btn ds-btn-danger" type="button">Limpar</button>
                     </div>
                 </div>
@@ -72,6 +76,7 @@ function carregarConversorWebp() {
     document.getElementById('cw-btn-convert').onclick = cwConvertAll
     document.getElementById('cw-btn-clear').onclick = cwClear
     document.getElementById('cw-btn-download-all').onclick = cwDownloadAll
+    document.getElementById('cw-btn-save-all').onclick = cwSaveAllToFolder
 
     cwRender()
 }
@@ -87,7 +92,7 @@ function cwAdd(files) {
 }
 
 function cwClear() {
-    cwFiles.forEach(f => { URL.revokeObjectURL(f.url); if (f.webpUrl) URL.revokeObjectURL(f.webpUrl) })
+    cwFiles.forEach(f => { URL.revokeObjectURL(f.url); if (f.webpUrl) URL.revokeObjectURL(f.webpUrl); f.webpBlob = null })
     cwFiles = []
     cwRender()
 }
@@ -134,7 +139,7 @@ function cwRender() {
         btn.onclick = () => {
             const id = btn.dataset.id
             const idx = cwFiles.findIndex(f => f.id === id)
-            if (idx >= 0) { const f = cwFiles[idx]; URL.revokeObjectURL(f.url); if (f.webpUrl) URL.revokeObjectURL(f.webpUrl); cwFiles.splice(idx, 1) }
+            if (idx >= 0) { const f = cwFiles[idx]; URL.revokeObjectURL(f.url); if (f.webpUrl) URL.revokeObjectURL(f.webpUrl); f.webpBlob = null; cwFiles.splice(idx, 1) }
             cwRender()
         }
     })
@@ -173,6 +178,7 @@ async function cwConvertAll() {
         try {
             const blob = await cwFileToWebP(f.url, quality)
             if (f.webpUrl) URL.revokeObjectURL(f.webpUrl)
+            f.webpBlob = blob
             f.webpUrl = URL.createObjectURL(blob)
             f.webpSize = blob.size
             f.status = 'convertido'
@@ -209,5 +215,49 @@ async function cwDownloadAll() {
         }
     } catch (e) {
         alert('Erro ao baixar: ' + e.message)
+    }
+}
+
+async function cwSaveAllToFolder() {
+    // Converte o que estiver pendente antes de salvar a fila inteira
+    if (cwFiles.some(f => f.status !== 'convertido')) await cwConvertAll()
+    const converted = cwFiles.filter(f => f.webpBlob || f.webpUrl)
+    if (!converted.length) return alert('Adicione imagens primeiro.')
+
+    // Navegador sem suporte à escolha de pasta: cai no download tradicional
+    if (typeof window.showDirectoryPicker !== 'function') {
+        alert('Este navegador não permite escolher a pasta. Usando o download tradicional (o navegador pode pedir o local de cada arquivo).')
+        return cwDownloadAll()
+    }
+
+    let dirHandle
+    try {
+        dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' })
+    } catch (e) {
+        return // cancelado pelo usuário na janela de pasta
+    }
+
+    const nomeWebp = (name) => name.replace(/\.[^.]+$/, '') + '.webp'
+    let salvos = 0
+    const erros = []
+    for (const f of converted) {
+        const filename = nomeWebp(f.name)
+        try {
+            const fileHandle = await dirHandle.getFileHandle(filename, { create: true })
+            const writable = await fileHandle.createWritable()
+            const blob = f.webpBlob || await (await fetch(f.webpUrl)).blob()
+            await writable.write(blob)
+            await writable.close()
+            salvos++
+        } catch (e) {
+            erros.push(filename + ': ' + (e.message || e))
+            console.error('Erro ao salvar', filename, e)
+        }
+    }
+
+    if (erros.length) {
+        alert(`${salvos} imagem(ns) salva(s) na pasta escolhida.\n\nFalharam ${erros.length}:\n` + erros.slice(0, 5).join('\n'))
+    } else {
+        alert(`${salvos} imagem(ns) salva(s) na pasta escolhida.`)
     }
 }
