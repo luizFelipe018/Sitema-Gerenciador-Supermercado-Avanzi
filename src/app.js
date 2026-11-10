@@ -19,8 +19,10 @@ app.use((req, res, next) => {
 
 // COOP/COEP somente para arquivos HTML — mantém imagens/CDNs externos funcionando normalmente.
 // 'credentialless' é aceito por Chromium moderno (Electron) e não exige CORP dos recursos.
+// usa req.originalUrl porque req.path pode ser vazio com arquivos estáticos em Express 5
 app.use((req, res, next) => {
-    if (req.path === '/' || req.path.endsWith('.html') || req.path === '') {
+    const url = (req.originalUrl || req.url || '').split('?')[0]
+    if (url === '/' || url.endsWith('.html')) {
         res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
         res.setHeader('Cross-Origin-Embedder-Policy', 'credentialless')
     }
