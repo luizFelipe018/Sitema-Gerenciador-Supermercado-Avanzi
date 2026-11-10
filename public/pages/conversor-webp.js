@@ -97,6 +97,12 @@ function cwClear() {
     cwRender()
 }
 
+// Remove a última extensão do nome (1.jpg → 1) e aplica .webp
+function cwNomeWebp(name) {
+    const base = String(name || '').replace(/\.[^.\/\\]+$/, '')
+    return (base || String(name || 'imagem')) + '.webp'
+}
+
 function cwFmt(bytes) {
     if (bytes == null) return '—'
     if (bytes < 1024) return bytes + ' B'
@@ -131,7 +137,7 @@ function cwRender() {
                 <div style="font-size:12.5px; font-weight:600; color:var(--text-1); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${f.name}</div>
                 <div style="font-size:11px; color:var(--text-3); margin-top:3px;">${cwFmt(f.size)}${f.webpSize ? ' → <b style="color:var(--ok)">' + cwFmt(f.webpSize) + '</b>' : ''} · <span>${f.status}</span>${f.error ? ' · <span style="color:var(--danger)">' + f.error + '</span>' : ''}</div>
             </div>
-            ${f.webpUrl ? `<a class="ds-btn ds-btn-sm" href="${f.webpUrl}" download="${f.name.replace(/\.png$/i, '')}.webp">Baixar</a>` : '<span class="ds-badge">Aguardando</span>'}
+            ${f.webpUrl ? `<a class="ds-btn ds-btn-sm" href="${f.webpUrl}" download="${cwNomeWebp(f.name)}">Baixar</a>` : '<span class="ds-badge">Aguardando</span>'}
             <button class="ds-icon-btn cw-remove" data-id="${f.id}" title="Remover" type="button">✕</button>
         </div>
     `).join('')
@@ -199,7 +205,7 @@ async function cwDownloadAll() {
     if (converted.length === 1) {
         const a = document.createElement('a')
         a.href = converted[0].webpUrl
-        a.download = converted[0].name.replace(/\.png$/i, '') + '.webp'
+        a.download = cwNomeWebp(converted[0].name)
         a.click()
         return
     }
@@ -207,7 +213,7 @@ async function cwDownloadAll() {
         for (const f of converted) {
             const a = document.createElement('a')
             a.href = f.webpUrl
-            a.download = f.name.replace(/\.png$/i, '') + '.webp'
+            a.download = cwNomeWebp(f.name)
             document.body.appendChild(a)
             a.click()
             a.remove()
@@ -237,11 +243,10 @@ async function cwSaveAllToFolder() {
         return // cancelado pelo usuário na janela de pasta
     }
 
-    const nomeWebp = (name) => name.replace(/\.[^.]+$/, '') + '.webp'
     let salvos = 0
     const erros = []
     for (const f of converted) {
-        const filename = nomeWebp(f.name)
+        const filename = cwNomeWebp(f.name)
         try {
             const fileHandle = await dirHandle.getFileHandle(filename, { create: true })
             const writable = await fileHandle.createWritable()
