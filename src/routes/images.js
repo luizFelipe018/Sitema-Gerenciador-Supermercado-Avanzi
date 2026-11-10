@@ -220,20 +220,45 @@ router.get('/imagens/auditar', authMiddleware, async (req, res) => {
 })
 
 router.get('/off-image', (req, res) => {
-    const { url } = req.query
+    let url = String(req.query.url || '')
     if (!url) return res.status(400).json({ error: 'URL obrigatória' })
 
-    try {
-        https.get(url, (imgRes) => {
+    // o site bloqueia requisições sem User-Agent (Cloudflare): mandamos um UA de browser
+    const headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
+        'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+        'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
+        'Referer': 'https://lojasuperavanzi.com.br/'
+    }
+
+    const buscar = (u, redirects = 0) => {
+        let alvo
+        try {
+            // http:// vira https:// (o site redireciona para TLS de qualquer forma)
+            u = String(u).replace(/^http:\/\//i, 'https://')
+            alvo = new URL(u)
+        } catch {
+            return res.status(400).json({ error: 'URL inválida' })
+        }
+        https.get({ hostname: alvo.hostname, path: alvo.pathname + alvo.search, headers }, (imgRes) => {
+            if (imgRes.statusCode >= 300 && imgRes.statusCode < 400 && imgRes.headers.location && redirects < 5) {
+                imgRes.resume()
+                return buscar(imgRes.headers.location, redirects + 1)
+            }
             if (imgRes.statusCode !== 200) {
-                return res.status(404).json({ error: 'Imagem não encontrada' })
+                imgRes.resume()
+                return res.status(404).json({ error: `Imagem não encontrada (HTTP ${imgRes.statusCode})` })
             }
             res.setHeader('Content-Type', imgRes.headers['content-type'] || 'image/jpeg')
             res.setHeader('Cache-Control', 'public, max-age=86400')
             imgRes.pipe(res)
         }).on('error', (e) => {
-            res.status(500).json({ error: e.message })
+            if (!res.headersSent) res.status(500).json({ error: e.message })
         })
+    }
+
+    try {
+        buscar(url)
     } catch (err) {
         res.status(500).json({ error: err.message })
     }

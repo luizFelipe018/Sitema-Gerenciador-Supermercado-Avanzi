@@ -107,8 +107,8 @@ function bsImagemParaJpeg(blob) {
 
 /* ── processa um produto: acha no site → baixa → converte → salva ── */
 async function bsProcessarProduto(p) {
-    // 1) localiza no site (SKU == código do ERP)
-    const r = await fetch(API + '/imagens-site/buscar?codigo=' + encodeURIComponent(p.codigo), { headers: authHeaders() })
+    // 1) localiza no site (SKU == código do ERP) — no-store para decidir na hora, nunca cache antigo
+    const r = await fetch(API + '/imagens-site/buscar?codigo=' + encodeURIComponent(p.codigo) + '&_=' + Date.now(), { headers: authHeaders(), cache: 'no-store' })
     const info = await r.json()
     if (!info.ok || !info.proxy) {
         return { codigo: p.codigo, descricao: p.descricao, ok: false, motivo: info.motivo || 'sem foto no site' }

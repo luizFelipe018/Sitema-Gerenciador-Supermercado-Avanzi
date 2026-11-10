@@ -331,6 +331,13 @@ async function buscarImagemSitePorCodigo(codigo) {
         return r
     }
 
+    // correspondência aproximada fraca (<85%) → não salva foto possivelmente errada
+    if (match.score < 0.85) {
+        const r = { ok: false, codigo: prod.codigo, descricao: prod.descricao, match: match.nome, score: match.score, motivo: `correspondência fraca no site (${Math.round(match.score * 100)}%) — nada salvo` }
+        resultadoCache.set(String(codigo), { ...r, ts: Date.now() })
+        return r
+    }
+
     // imagem direto do sitemap (sem raspar a página) quando disponível
     if (match.imagem) {
         const r = {
