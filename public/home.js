@@ -554,14 +554,6 @@ document.getElementById('btn-gerenciador-placas').addEventListener('click', () =
     carregarGerenciadorPlacas()
 })
 
-document.getElementById('btn-estoque-placas').addEventListener('click', () => {
-    submenuPlacas.classList.remove('open')
-    btnPlacasMenu.classList.remove('open')
-    submenuImagens.classList.remove('open')
-    btnImagensMenu.classList.remove('open')
-    carregarEstoquePlacas()
-})
-
 document.getElementById('btn-importar-cardapio').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
