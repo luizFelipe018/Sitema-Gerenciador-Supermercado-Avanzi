@@ -38,40 +38,69 @@ function setupAutoUpdate(mainWin) {
         try { if (!mainWin.isDestroyed()) mainWin.setTitle(`Super Avanzi ERP — baixando atualização ${p}%`) } catch {}
     }
 
+    // Modal no TEMA do app (mesma janela da página). Se o modal não estiver
+    // disponível na página, cai no dialog nativo do Windows como fallback.
+    async function modalNoTema({ titulo, mensagem, okText, cancelText, confirmar, tipo }) {
+        const notas = String(mensagem || '').replace(/<[^>]*>/g, ' ')
+            .replace(/\r\n|\r/g, '\n')      // normaliza quebras de linha
+            .replace(/[ \t]+/g, ' ')        // colapsa espaços em branco horizontais
+            .replace(/\n{3,}/g, '\n\n')     // no máximo 1 linha em branco entre parágrafos
+            .trim()
+        const msg = notas.length > 650 ? notas.slice(0, 650).trim() + '…' : notas
+        const opts = { titulo, tipo: tipo || 'info', okText, cancelText }
+        const fn = confirmar ? 'avisoConfirmacao' : 'aviso'
+        try {
+            const ok = await mainWin.webContents.executeJavaScript(
+                `window.${fn} ? window.${fn}(${JSON.stringify(msg)}, ${JSON.stringify(opts)}) : '__sem_modal__'`, true)
+            if (ok === '__sem_modal__') throw new Error('modal do app indisponível na página')
+            return confirmar ? ok === true : true
+        } catch (e) {
+            console.warn('[autoUpdater] Modal do app indisponível, usando dialog nativo:', e && e.message ? e.message : e)
+            const res = await dialog.showMessageBox(mainWin, {
+                type: tipo === 'erro' ? 'error' : 'info',
+                title: titulo,
+                message: titulo,
+                detail: msg,
+                buttons: confirmar ? [okText || 'Baixar', cancelText || 'Agora não'] : [okText || 'Entendi'],
+                defaultId: 0
+            })
+            return confirmar ? res.response === 0 : true
+        }
+    }
+
     autoUpdater.on('checking-for-update', () => {
         console.log('[autoUpdater] Verificando atualização...')
     })
 
-    autoUpdater.on('update-available', (info) => {
+    autoUpdater.on('update-available', async (info) => {
         const releaseNotes = typeof info.releaseNotes === 'string'
-            ? info.releaseNotes.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+            ? info.releaseNotes
             : (info.releaseNotes ? String(info.releaseNotes) : 'Clique em Baixar para atualizar o Super Avanzi ERP.')
-        dialog.showMessageBox(mainWin, {
-            type: 'info',
-            title: 'Atualização disponível',
-            message: `Versão ${info.version} disponível. Baixar agora?`,
-            detail: releaseNotes,
-            buttons: ['Baixar', 'Agora não'],
-            defaultId: 0
-        }).then((res) => {
-            if (res.response === 0) autoUpdater.downloadUpdate()
-        }).catch((e) => console.error('[autoUpdater] Falha no diálogo:', e && e.message ? e.message : e))
+        const baixar = await modalNoTema({
+            titulo: 'Atualização disponível',
+            mensagem: `Versão ${info.version} disponível.\n\n${releaseNotes}`,
+            okText: 'Baixar',
+            cancelText: 'Agora não',
+            confirmar: true,
+            tipo: 'info'
+        })
+        if (baixar) autoUpdater.downloadUpdate()
     })
 
     autoUpdater.on('update-not-available', () => {
         console.log('[autoUpdater] Você já está na versão mais recente.')
     })
 
-    autoUpdater.on('error', (err) => {
+    autoUpdater.on('error', async (err) => {
         const msg = (err && (err.message || err)) || 'Erro desconhecido'
         console.error('[autoUpdater] Erro na atualização:', msg)
-        dialog.showMessageBox({
-            type: 'error',
-            title: 'Falha ao atualizar',
-            message: 'Não foi possível baixar a atualização.',
-            detail: String(msg),
-            buttons: ['Entendi']
-        }).catch(() => {})
+        await modalNoTema({
+            titulo: 'Falha ao atualizar',
+            mensagem: 'Não foi possível baixar a atualização.\n\n' + String(msg),
+            okText: 'Entendi',
+            confirmar: false,
+            tipo: 'erro'
+        })
     })
 
     autoUpdater.on('download-progress', (progress) => {
@@ -80,18 +109,17 @@ function setupAutoUpdate(mainWin) {
         console.log(`[autoUpdater] Baixando: ${p}% (${(progress.bytesPerSecond / 1024).toFixed(0)} KB/s)`)
     })
 
-    autoUpdater.on('update-downloaded', (info) => {
+    autoUpdater.on('update-downloaded', async (info) => {
         textoProgresso(100)
-        dialog.showMessageBox(mainWin, {
-            type: 'info',
-            title: 'Atualização baixada',
-            message: `Versão ${info.version} baixada e pronta para instalar.`,
-            detail: 'Clique em Fechar e instalar para reiniciar o app.',
-            buttons: ['Fechar e instalar', 'Depois'],
-            defaultId: 0
-        }).then((res) => {
-            if (res.response === 0) autoUpdater.quitAndInstall()
-        }).catch(() => {})
+        const fechar = await modalNoTema({
+            titulo: 'Atualização baixada',
+            mensagem: `Versão ${info.version} baixada e pronta para instalar.\n\nClique em Fechar e instalar para reiniciar o app com a nova versão.`,
+            okText: 'Fechar e instalar',
+            cancelText: 'Depois',
+            confirmar: true,
+            tipo: 'ok'
+        })
+        if (fechar) autoUpdater.quitAndInstall()
     })
 
     // Checagem inicial + a cada 4h com o app aberto

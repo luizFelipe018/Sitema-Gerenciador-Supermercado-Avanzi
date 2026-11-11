@@ -1167,6 +1167,8 @@ body.theme-light .sidebar nav:hover::-webkit-scrollbar-thumb { background: #b9be
     color: var(--text-2);
     white-space: pre-line;
     word-break: break-word;
+    max-height: 300px;
+    overflow-y: auto;
 }
 .ds-aviso-foot {
     display: flex;
