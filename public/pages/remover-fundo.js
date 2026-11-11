@@ -66,6 +66,29 @@ function carregarRemoverFundo() {
                 <p style="font-size:11px; color:var(--text-3); margin:0; line-height:1.6;">
                     ⚠️ A primeira imagem demora mais: o modelo de IA (~42 MB) é baixado uma vez pelo navegador da loja e fica guardado em cache — depois é rápido. Rode uma imagem de teste antes de fazer a loja inteira.
                 </p>
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; border:1px solid var(--ok-soft); background:var(--ok-soft); border-radius:var(--r-md); padding:12px 14px;">
+                    <svg width="18" height="18" fill="none" stroke="var(--ok)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="flex:0 0 auto"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                    <div style="flex:1; min-width:200px;">
+                        <div style="font-size:13px; font-weight:700; color:var(--text-1);">Processar pasta inteira (para muitas fotos)</div>
+                        <div style="font-size:11px; color:var(--text-3); margin-top:2px; line-height:1.5;">Escolha a pasta (ex.: <code>D:\imagens site</code>) e o ERP processa TODAS as imagens nela, salvando na subpasta <code>sem_fundo\</code> com o mesmo nome.</div>
+                    </div>
+                    <button id="rf-btn-pasta" class="ds-btn ds-btn-primary" type="button" style="flex:0 0 auto;">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                        Escolher pasta e processar
+                    </button>
+                    <button id="rf-btn-pasta-parar" class="ds-btn ds-btn-danger" type="button" style="display:none; flex:0 0 auto;">Parar</button>
+                </div>
+                <div id="rf-pasta-progresso" style="display:none;">
+                    <div style="display:flex; justify-content:space-between; gap:10px; font-size:11px; color:var(--text-3); margin-bottom:6px;">
+                        <span id="rf-pasta-txt">Preparando…</span>
+                        <span id="rf-pasta-num">0/0</span>
+                    </div>
+                    <div style="height:10px; border-radius:99px; background:var(--border-soft); overflow:hidden;">
+                        <div id="rf-pasta-bar" style="height:100%; width:0%; background:linear-gradient(90deg,var(--brand-2),var(--ok)); transition:width .2s;"></div>
+                    </div>
+                    <div id="rf-pasta-resumo" style="font-size:11px; color:var(--text-3); margin-top:6px;"></div>
+                </div>
+                <div id="rf-pasta-log" style="max-height:240px; overflow-y:auto; display:none;"></div>
             </div>
             <div id="rf-list" style="display:flex; flex-direction:column; border-top:1px solid var(--border)"></div>
         </div>
@@ -90,6 +113,8 @@ function carregarRemoverFundo() {
     document.getElementById('rf-btn-save-all').onclick = rfSaveAllToFolder
     document.getElementById('rf-btn-clear').onclick = rfClear
     document.getElementById('rf-btn-preparar').onclick = rfPrepararModelo
+    document.getElementById('rf-btn-pasta').onclick = rfProcessarPasta
+    document.getElementById('rf-btn-pasta-parar').onclick = () => { rfPastaParar = true }
 
     rfChecarModelo()
     rfRender()
@@ -391,4 +416,131 @@ async function rfSaveAllToFolder() {
     } else {
         alert(`${salvos} imagem(ns) salva(s) na pasta escolhida.`)
     }
+}
+
+/* ── PROCESSAR PASTA INTEIRA — opera em massa sobre uma pasta ── */
+let rfPastaParar = false
+let rfPastaLogFile = null // null para mostrar tudo
+
+async function rfPastaLog(texto, ok) {
+    const log = document.getElementById('rf-pasta-log')
+    if (!log) return
+    const item = document.createElement('div')
+    item.style.cssText = 'display:flex; gap:10px; align-items:center; padding:6px 14px; border-bottom:1px solid var(--border-soft); font-size:12px;'
+    item.innerHTML = `
+        <span style="width:16px; text-align:center; color:${ok ? 'var(--ok)' : 'var(--danger)'}">${ok ? '✓' : '✕'}</span>
+        <span style="flex:1; color:var(--text-1); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${rfEscape(texto)}</span>`
+    log.insertBefore(item, log.firstChild)
+    if (log.children.length > 80) log.removeChild(log.lastChild)
+}
+
+function rfPastaAtualizarUI(i, total, nome, msg) {
+    const txt = document.getElementById('rf-pasta-txt')
+    const num = document.getElementById('rf-pasta-num')
+    const bar = document.getElementById('rf-pasta-bar')
+    if (txt) txt.textContent = (msg || 'Processando') + ': ' + (nome || '').slice(0, 60)
+    if (num) num.textContent = i + '/' + total
+    if (bar) bar.style.width = Math.round((i / total) * 100) + '%'
+}
+
+async function rfPastaProcessarComProgresso(item, dirDestino, publicPath, model, i, total) {
+    // atualiza UI antes de começar
+    rfPastaAtualizarUI(i, total, item.name, 'Processando')
+    try {
+        // pular se já existe no destino
+        const nomeFinal = item.name.replace(/\.[^.]+$/, '') + '.png'
+        try {
+            await dirDestino.getFileHandle(nomeFinal, { create: false })
+            rfPastaLog(item.name + ' — já existe no destino, pulando', true)
+            return { ok: true, pulada: true }
+        } catch { /* não existe, processar */ }
+
+        const arquivo = await item.entry.getFile()
+        const mod = await rfCarregarLib()
+        const blob = await mod.removeBackground(arquivo, { publicPath, model, device: 'cpu', proxyToWorker: false })
+        const fileHandle = await dirDestino.getFileHandle(nomeFinal, { create: true })
+        const writable = await fileHandle.createWritable()
+        await writable.write(blob)
+        await writable.close()
+        rfPastaLog(item.name + ' → salva como ' + nomeFinal, true)
+        return { ok: true, pulada: false }
+    } catch (e) {
+        rfPastaLog(item.name + ' — erro: ' + (e.message || e), false)
+        return { ok: false, error: e.message || String(e) }
+    }
+}
+
+async function rfProcessarPasta() {
+    if (typeof window.showDirectoryPicker !== 'function') {
+        alert('Este aplicativo não aceita selecionar pasta. Use o Chrome ou o Electron recente.')
+        return
+    }
+    if (!rfModeloPronto) {
+        aviso('O modelo de IA ainda não está disponível. Clique em "Preparar modelo de IA" e aguarde a conclusão.', { titulo: 'Processar pasta' })
+        return
+    }
+    if (rfBusy) return
+
+    let dirOrigem
+    try {
+        dirOrigem = await window.showDirectoryPicker({ id: 'rf-pasta' })
+    } catch (e) { return /* cancelou */ }
+
+    let dirDestino
+    try {
+        dirDestino = await dirOrigem.getDirectoryHandle('sem_fundo', { create: true })
+    } catch (e) {
+        alert('Não consegui criar a pasta ' + dirOrigem.name + '\\sem_fundo. Verifique se a pasta é editável.')
+        return
+    }
+
+    // listar imagens (somente na raiz, não recursivo)
+    const itens = []
+    try {
+        for await (const entry of dirOrigem.values()) {
+            if (entry.kind === 'file' && /\.(png|jpe?g|webp|bmp)$/i.test(entry.name)) {
+                itens.push({ entry, name: entry.name })
+            }
+        }
+    } catch (e) {
+        alert('Erro ao listar a pasta: ' + (e.message || e))
+        return
+    }
+    if (!itens.length) { alert('Nenhuma imagem encontrada em ' + dirOrigem.name); return }
+
+    const ok = confirm('Encontrei ' + itens.length + ' imagens em "' + dirOrigem.name + '".\nVou remover o fundo de TODAS e salvar na pasta "' + dirOrigem.name + '\\\\sem_fundo\\\\" com o mesmo nome (.png).\n\nEstimativa: ~4 segundos por foto.\n\nContinuar?')
+    if (!ok) return
+
+    rfBusy = true
+    rfPastaParar = false
+    const btnPasta = document.getElementById('rf-btn-pasta')
+    const btnParar = document.getElementById('rf-btn-pasta-parar')
+    const prog = document.getElementById('rf-pasta-progresso')
+    const log = document.getElementById('rf-pasta-log')
+    const resumo = document.getElementById('rf-pasta-resumo')
+    if (btnPasta) btnPasta.disabled = true
+    if (btnParar) btnParar.style.display = ''
+    if (prog) prog.style.display = ''
+    if (log) { log.style.display = ''; log.innerHTML = '' }
+    if (resumo) resumo.textContent = ''
+
+    const baseApi = (typeof API === 'string' && API) ? API.replace(/\/$/, '') : (window.location.protocol === 'file:' ? 'http://localhost:3000' : window.location.origin)
+    const publicPath = baseApi + '/vendor/imgly/1.7.0/dist/'
+    const model = 'small'
+
+    let okCount = 0, errCount = 0, puladas = 0
+    for (let i = 0; i < itens.length; i++) {
+        if (rfPastaParar) break
+        const item = itens[i]
+        const r = await rfPastaProcessarComProgresso(item, dirDestino, publicPath, model, i + 1, itens.length)
+        if (r.ok) { if (r.pulada) puladas++; else okCount++ } else { errCount++ }
+    }
+
+    if (prog) prog.style.display = ''
+    rfPastaAtualizarUI(itens.length, itens.length, '', rfPastaParar ? 'Interrompido' : 'Concluído')
+    if (resumo) resumo.textContent = '✓ ' + okCount + ' OK · ' + puladas + ' já existiam · ' + errCount + ' erro(s) · ' + itens.length + ' total'
+    if (btnPasta) btnPasta.disabled = false
+    if (btnParar) btnParar.style.display = 'none'
+    rfBusy = false
+    rfPastaLog(rfPastaParar ? 'Interrompido pelo usuário' : 'Processamento concluído', !rfPastaParar && errCount === 0)
 }
