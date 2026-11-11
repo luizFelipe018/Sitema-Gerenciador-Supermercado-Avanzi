@@ -40,7 +40,6 @@ export const PERMISSOES = {
     'placas-media': ['atendente', 'gerente', 'administrador'],
     'placas-pequena': ['atendente', 'gerente', 'administrador'],
     'placas-grande': ['atendente', 'gerente', 'administrador'],
-    produtos: ['atendente', 'gerente', 'administrador'],
     imagens: ['atendente', 'gerente', 'administrador'],
     'busca-rapida': ['atendente', 'gerente', 'administrador'],
     'terca-pizza': ['gerente', 'administrador'],

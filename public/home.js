@@ -360,14 +360,6 @@ document.getElementById('btn-inicio').addEventListener('click', () => {
 })
 
 
-document.getElementById('btn-produtos').addEventListener('click', () => {
-    submenuPlacas.classList.remove('open')
-    btnPlacasMenu.classList.remove('open')
-    submenuImagens.classList.remove('open')
-    btnImagensMenu.classList.remove('open')
-    carregarProdutos()
-})
-
 document.getElementById('btn-placas-media').addEventListener('click', () => {
     abrirSubmenuPlacas()
     document.getElementById('submenu-modelos').classList.add('open')
