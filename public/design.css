@@ -213,6 +213,17 @@ body.theme-light ::-webkit-scrollbar-thumb { background: #d5d8de; background-cli
     height: 38px !important;
     border-radius: var(--r-md) !important;
     box-shadow: 0 4px 14px -4px var(--brand-soft-2) !important;
+    /* Tailwind não carrega nesta máquina — garantir o centralizado em CSS puro */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+/* linha logo + textos (sem Tailwind, virava display:block e empilhava) */
+.sidebar > div:first-of-type > .relative {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
 }
 .sidebar .w-11.h-11 svg { width: 19px; height: 19px; }
 
