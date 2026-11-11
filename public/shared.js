@@ -112,11 +112,6 @@ window.PERMISSOES = {
     atalhos: ['gerente', 'administrador'],
     textos: ['gerente', 'administrador'],
     capitalize: ['gerente', 'administrador'],
-    
-    
-    // Relatório de placas - gerente e admin
-    'relatorio-placas': ['gerente', 'administrador'],
-    'gerenciador-placas': ['gerente', 'administrador'],
 }
 
 window.podeAcessar = function(pagina) {

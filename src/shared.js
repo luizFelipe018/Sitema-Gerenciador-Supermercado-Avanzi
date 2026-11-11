@@ -53,8 +53,6 @@ export const PERMISSOES = {
     atalhos: ['gerente', 'administrador'],
     textos: ['gerente', 'administrador'],
     capitalize: ['gerente', 'administrador'],
-    'relatorio-placas': ['gerente', 'administrador'],
-    'gerenciador-placas': ['gerente', 'administrador'],
 }
 
 export function podeAcessar(pagina) {

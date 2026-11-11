@@ -397,11 +397,6 @@ document.getElementById('btn-arte-semanal')?.addEventListener('click', () => {
     carregarArteSemanal()
 })
 
-document.getElementById('btn-relatorio-placas').addEventListener('click', () => {
-    abrirSubmenuPlacas()
-    carregarRelatorioPlacas()
-})
-
 document.getElementById('btn-cardapio').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
@@ -528,14 +523,6 @@ document.getElementById('btn-marcas-massa')?.addEventListener('click', () => {
     submenuImagens.classList.remove('open')
     btnImagensMenu.classList.remove('open')
     if (typeof carregarMarcasMassa === 'function') carregarMarcasMassa()
-})
-
-document.getElementById('btn-gerenciador-placas').addEventListener('click', () => {
-    submenuPlacas.classList.remove('open')
-    btnPlacasMenu.classList.remove('open')
-    submenuImagens.classList.remove('open')
-    btnImagensMenu.classList.remove('open')
-    carregarGerenciadorPlacas()
 })
 
 document.getElementById('btn-importar-cardapio').addEventListener('click', () => {
