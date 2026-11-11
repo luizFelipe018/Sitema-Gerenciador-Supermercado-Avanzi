@@ -243,7 +243,7 @@ function montarPlacaMediaHTML(p) {
 
     return `
         <div id="placa-media-conteudo" class="placa-media-conteudo" style="width:561px; height:794px; margin:0 auto 88px; position:relative; box-sizing:border-box; font-family:'Arial Black',Arial,sans-serif; font-weight:900; background-image:url('assets/MODELOS PLACAS 2026.png'); background-size:100% 100%; background-position:center; background-repeat:no-repeat;">
-            <div class="pg-texto-wrapper" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:2mm; line-height:1.7; padding-bottom:110px; margin-top:${200 + MARGEM_TOPO_G}px;">
+            <div class="pg-texto-wrapper" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:2mm; line-height:1.15; padding-bottom:110px; margin-top:${200 + MARGEM_TOPO_G}px;">
                 <div class="pg-linha1-wrapper" style="width:100%; text-align:center; margin-top:30px;">
                     <div class="pg-linha1" data-field="linha1" style="font-size:${linha1FontSize}px; font-weight:bold; text-transform:uppercase; white-space:nowrap; overflow:hidden; transform:scaleY(1.3);">${linha1}</div>
                 </div>
