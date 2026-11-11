@@ -114,8 +114,6 @@ produtos: ['atendente', 'gerente', 'administrador'],
     textos: ['gerente', 'administrador'],
     capitalize: ['gerente', 'administrador'],
     
-    // Calc KG/LT - todos
-    'calc-kglt': ['atendente', 'gerente', 'administrador'],
     
     // Relatório de placas - gerente e admin
     'relatorio-placas': ['gerente', 'administrador'],

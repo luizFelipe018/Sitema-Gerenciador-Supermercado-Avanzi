@@ -54,7 +54,6 @@ export const PERMISSOES = {
     atalhos: ['gerente', 'administrador'],
     textos: ['gerente', 'administrador'],
     capitalize: ['gerente', 'administrador'],
-    'calc-kglt': ['atendente', 'gerente', 'administrador'],
     'relatorio-placas': ['gerente', 'administrador'],
     'gerenciador-placas': ['gerente', 'administrador'],
 }

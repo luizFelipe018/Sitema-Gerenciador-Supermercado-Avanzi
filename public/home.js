@@ -522,14 +522,6 @@ document.getElementById('btn-imagens-site').addEventListener('click', () => {
     carregarImagensSite()
 })
 
-document.getElementById('btn-precos-site').addEventListener('click', () => {
-    submenuPlacas.classList.remove('open')
-    btnPlacasMenu.classList.remove('open')
-    submenuImagens.classList.remove('open')
-    btnImagensMenu.classList.remove('open')
-    carregarPrecosSite()
-})
-
 document.getElementById('btn-busca-rapida').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
@@ -580,14 +572,6 @@ document.getElementById('btn-feriados').addEventListener('click', () => {
     carregarFeriados()
 })
 
-
-document.getElementById('btn-calc-kglt').addEventListener('click', () => {
-    submenuPlacas.classList.remove('open')
-    btnPlacasMenu.classList.remove('open')
-    submenuImagens.classList.remove('open')
-    btnImagensMenu.classList.remove('open')
-    carregarCalcKglt()
-})
 
 document.getElementById('btn-admin').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
