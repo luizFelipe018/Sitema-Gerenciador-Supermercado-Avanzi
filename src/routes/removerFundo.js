@@ -128,6 +128,142 @@ async function iniciarDownload() {
     }
 }
 
+// ── REMOÇÃO DE FUNDO EM LOTE (Python + rembg) ──
+// Processa MUITAS imagens de uma vez via Python (muito mais rápido que WASM no navegador).
+// O status é consultado por polling (mesma estrutura do /remover-fundo/status).
+const progressoNativo = {
+    ativo: false,
+    pasta: '',
+    destino: '',
+    total: 0,
+    processados: 0,
+    sucesso: 0,
+    puladas: 0,
+    erros: 0,
+    atual: '',
+    concluido: false,
+    erro: null,
+    logs: []
+}
+const EXTS_IMAGEM = /\.(png|jpe?g|webp|bmp)$/i
+
+function logNativo(texto, ok) {
+    progressoNativo.logs.push({ texto, ok, ts: Date.now() })
+    if (progressoNativo.logs.length > 120) progressoNativo.logs = progressoNativo.logs.slice(-80)
+}
+
+function contarImagens(pasta) {
+    let n = 0
+    try {
+        const itens = fs.readdirSync(pasta, { withFileTypes: true })
+        for (const item of itens) {
+            if (item.isFile() && EXTS_IMAGEM.test(item.name)) n++
+        }
+    } catch {}
+    return n
+}
+
+async function executarPythonRemoverFundo(src, dst) {
+    return new Promise((resolve, reject) => {
+        const { execFile } = require('child_process')
+        const pythonExe = path.join(__dirname, '..', '..', 'python312', 'python.exe')
+        const script = path.join(__dirname, '..', '..', 'tools', 'remover-fundo.py')
+        if (!fs.existsSync(pythonExe) || !fs.existsSync(script)) return reject(new Error('Python/rembg ou script não encontrados em python312/tools'))
+        execFile(pythonExe, [script, src, dst], {
+            timeout: 5 * 60 * 1000,  // 5 min por foto (generoso)
+            maxBuffer: 1024 * 1024
+        }, (err, stdout, stderr) => {
+            if (err) return reject(new Error(stderr?.trim() || err.message))
+            resolve()
+        })
+    })
+}
+
+async function iniciarProcessarPasta(pasta) {
+    if (progressoNativo.ativo) return
+    progressoNativo.ativo = true
+    progressoNativo.pasta = pasta
+    progressoNativo.destino = path.join(pasta, 'sem_fundo')
+    progressoNativo.total = 0
+    progressoNativo.processados = 0
+    progressoNativo.sucesso = 0
+    progressoNativo.puladas = 0
+    progressoNativo.erros = 0
+    progressoNativo.atual = ''
+    progressoNativo.concluido = false
+    progressoNativo.erro = null
+    progressoNativo.logs.length = 0
+    logNativo('Iniciando processamento na pasta ' + pasta, true)
+    try {
+        fs.mkdirSync(progressoNativo.destino, { recursive: true })
+        const itens = []
+        const entradas = fs.readdirSync(pasta, { withFileTypes: true })
+        for (const ent of entradas) {
+            if (ent.isFile() && EXTS_IMAGEM.test(ent.name)) itens.push(ent.name)
+        }
+        progressoNativo.total = itens.length
+        logNativo('Total de imagens: ' + itens.length, true)
+
+        for (let i = 0; i < itens.length; i++) {
+            const nome = itens[i]
+            const src = path.join(pasta, nome)
+            const dst = path.join(progressoNativo.destino, nome.replace(/\.[^.]+$/, '') + '.png')
+            progressoNativo.atual = nome
+            // pular se já existe no destino
+            if (fs.existsSync(dst)) {
+                progressoNativo.puladas++
+                progressoNativo.processados++
+                logNativo('pulada (já existe): ' + nome, true)
+                continue
+            }
+            try {
+                await executarPythonRemoverFundo(src, dst)
+                progressoNativo.sucesso++
+                logNativo('OK: ' + nome, true)
+            } catch (e) {
+                progressoNativo.erros++
+                logNativo('ERRO ' + nome + ': ' + (e.message || e), false)
+            }
+            progressoNativo.processados++
+        }
+        progressoNativo.atual = ''
+        progressoNativo.concluido = true
+        logNativo('Concluído: ' + progressoNativo.sucesso + ' ok · ' + progressoNativo.puladas + ' puladas · ' + progressoNativo.erros + ' erros', true)
+    } catch (e) {
+        progressoNativo.erro = e.message || String(e)
+        logNativo('Falha geral: ' + progressoNativo.erro, false)
+    } finally {
+        progressoNativo.ativo = false
+    }
+}
+
+router.get('/remover-fundo/progresso-nativo', authMiddleware, (req, res) => {
+    res.setHeader('Cache-Control', 'no-store')
+    res.json({ ...progressoNativo, logs: progressoNativo.logs.slice(-60) })
+})
+
+router.post('/remover-fundo/processar-pasta', authMiddleware, (req, res) => {
+    const pasta = (req.body && typeof req.body.pasta === 'string' && req.body.pasta.trim()) || 'D:\\imagens site'
+    const pastaAbs = path.resolve(pasta)
+    if (!fs.existsSync(pastaAbs) || !fs.statSync(pastaAbs).isDirectory()) {
+        return res.status(400).json({ error: 'Pasta não existe ou não é um diretório: ' + pastaAbs })
+    }
+    const total = contarImagens(pastaAbs)
+    if (!total) {
+        return res.status(400).json({ error: 'Nenhuma imagem encontrada em ' + pastaAbs })
+    }
+    if (progressoNativo.ativo) {
+        return res.json({ ok: true, jaEmAndamento: true, total })
+    }
+    iniciarProcessarPasta(pastaAbs)
+    res.json({ ok: true, iniciado: true, total, destino: path.join(pastaAbs, 'sem_fundo') })
+})
+
+router.post('/remover-fundo/cancelar-pasta', authMiddleware, (req, res) => {
+    progressoNativo.ativo = false
+    res.json({ ok: true, cancelado: true })
+})
+
 router.get('/remover-fundo/status', authMiddleware, (req, res) => {
     res.setHeader('Cache-Control', 'no-store')
     res.json({ ...progresso, pronto: modeloPronto() || progresso.pronto, baixando })

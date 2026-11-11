@@ -66,17 +66,43 @@ function carregarRemoverFundo() {
                 <p style="font-size:11px; color:var(--text-3); margin:0; line-height:1.6;">
                     ⚠️ A primeira imagem demora mais: o modelo de IA (~42 MB) é baixado uma vez pelo navegador da loja e fica guardado em cache — depois é rápido. Rode uma imagem de teste antes de fazer a loja inteira.
                 </p>
-                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; border:1px solid var(--ok-soft); background:var(--ok-soft); border-radius:var(--r-md); padding:12px 14px;">
-                    <svg width="18" height="18" fill="none" stroke="var(--ok)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="flex:0 0 auto"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
-                    <div style="flex:1; min-width:200px;">
-                        <div style="font-size:13px; font-weight:700; color:var(--text-1);">Processar pasta inteira (para muitas fotos)</div>
-                        <div style="font-size:11px; color:var(--text-3); margin-top:2px; line-height:1.5;">Escolha a pasta (ex.: <code>D:\imagens site</code>) e o ERP processa TODAS as imagens nela, salvando na subpasta <code>sem_fundo\</code> com o mesmo nome.</div>
+                <!-- Processamento em massa via Python (rápido) -->
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; border:1px solid var(--brand-soft); background:var(--brand-soft); border-radius:var(--r-md); padding:12px 14px;">
+                    <svg width="18" height="18" fill="none" stroke="var(--brand-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="flex:0 0 auto"><path d="M12 2l2.4 7.6L22 12l-7.6 2.4L12 22l-2.4-7.6L2 12l7.6-2.4L12 2z"/></svg>
+                    <div style="flex:1; min-width:240px;">
+                        <div style="font-size:13px; font-weight:700; color:var(--text-1);">Processar em massa via Python (recomendado)</div>
+                        <div style="font-size:11px; color:var(--text-3); margin-top:2px; line-height:1.5;">Remoção de fundo nativa, ~1 segundo por foto. Aponta a pasta e deixa rodar — pode ficar minimizada, o ERP processa tudo e salva na subpasta <code>sem_fundo\</code>.</div>
+                        <input id="rf-pasta-input" type="text" value="D:\imagens site" style="width:100%; max-width:420px; padding:8px 11px; border-radius:8px; border:1px solid var(--border); background:var(--surface-2); color:var(--text-1); font-size:12px; margin-top:6px; outline:none; box-sizing:border-box;" placeholder="Ex.: D:\imagens site">
                     </div>
-                    <button id="rf-btn-pasta" class="ds-btn ds-btn-primary" type="button" style="flex:0 0 auto;">
-                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+                    <button id="rf-btn-python-pasta" class="ds-btn ds-btn-primary" type="button" style="flex:0 0 auto;">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        Processar em massa
+                    </button>
+                    <button id="rf-btn-python-parar" class="ds-btn ds-btn-danger" type="button" style="display:none; flex:0 0 auto;">Parar</button>
+                </div>
+                <div id="rf-python-progresso" style="display:none;">
+                    <div style="display:flex; justify-content:space-between; gap:10px; font-size:11px; color:var(--text-3); margin-bottom:6px;">
+                        <span id="rf-python-txt">Processando via Python…</span>
+                        <span id="rf-python-num">0/0</span>
+                    </div>
+                    <div style="height:10px; border-radius:99px; background:var(--border-soft); overflow:hidden;">
+                        <div id="rf-python-bar" style="height:100%; width:0%; background:linear-gradient(90deg,var(--brand-2),var(--ok)); transition:width .2s;"></div>
+                    </div>
+                    <div id="rf-python-resumo" style="font-size:11px; color:var(--text-3); margin-top:6px;"></div>
+                    <div id="rf-python-log" style="max-height:220px; overflow-y:auto; margin-top:8px; border:1px solid var(--border-soft); border-radius:8px;"></div>
+                </div>
+                <!-- Processamento em massa via navegador (sem Python) -->
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; border:1px solid var(--border-soft); background:var(--surface-2); border-radius:var(--r-md); padding:10px 14px;">
+                    <svg width="16" height="16" fill="none" stroke="var(--text-2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="flex:0 0 auto"><path d="M3 12a9 9 0 009 9 9 9 0 109-9 9 9 0 00-9 9 9 9 0 01-9-9 9 9 0 019-9 9 9 0 01-9 9z"/></svg>
+                    <div style="flex:1; min-width:200px; font-size:11px; color:var(--text-3);">
+                        <div style="font-size:12px; font-weight:600; color:var(--text-2);">Processar via navegador (mais lento)</div>
+                        Aponta a pasta na caixa de seleção — usável se o Python falhar. A remoção acontece no navegador.
+                    </div>
+                    <button id="rf-btn-pasta" class="ds-btn ds-btn-sm" type="button" style="flex:0 0 auto;">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
                         Escolher pasta e processar
                     </button>
-                    <button id="rf-btn-pasta-parar" class="ds-btn ds-btn-danger" type="button" style="display:none; flex:0 0 auto;">Parar</button>
+                    <button id="rf-btn-pasta-parar" class="ds-btn ds-btn-sm ds-btn-danger" type="button" style="display:none; flex:0 0 auto;">Parar</button>
                 </div>
                 <div id="rf-pasta-progresso" style="display:none;">
                     <div style="display:flex; justify-content:space-between; gap:10px; font-size:11px; color:var(--text-3); margin-bottom:6px;">
@@ -115,6 +141,8 @@ function carregarRemoverFundo() {
     document.getElementById('rf-btn-preparar').onclick = rfPrepararModelo
     document.getElementById('rf-btn-pasta').onclick = rfProcessarPasta
     document.getElementById('rf-btn-pasta-parar').onclick = () => { rfPastaParar = true }
+    document.getElementById('rf-btn-python-pasta').onclick = rfProcessarPastaNativa
+    document.getElementById('rf-btn-python-parar').onclick = rfCancelarPastaNativa
 
     rfChecarModelo()
     rfRender()
@@ -543,4 +571,76 @@ async function rfProcessarPasta() {
     if (btnParar) btnParar.style.display = 'none'
     rfBusy = false
     rfPastaLog(rfPastaParar ? 'Interrompido pelo usuário' : 'Processamento concluído', !rfPastaParar && errCount === 0)
+}
+
+/* ── Processamento em massa via Python (rembg) ── */
+let rfPollingTimer = null
+
+async function rfProcessarPastaNativa() {
+    const input = document.getElementById('rf-pasta-input')
+    const pasta = (input?.value || '').trim() || 'D:\\imagens site'
+    if (!confirm(`Vou processar TODAS as imagens de:\n${pasta}\n\nSalvando na subpasta sem_fundo\\ (com o mesmo nome).\nModelo leve u2netp — ~1 segundo por foto.\n\nContinuar?`)) return
+
+    // dispara o processo no servidor
+    const r = await fetch(API + '/remover-fundo/processar-pasta', {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pasta })
+    })
+    if (!r.ok) {
+        const body = await r.json().catch(() => ({}))
+        return alert(body.error || 'Falha ao iniciar processamento em massa.')
+    }
+    const d = await r.json()
+    if (d.jaEmAndamento) return alert('Já existe um processamento em andamento. Acompanhe a barra abaixo.')
+
+    // exibe o bloco de progresso
+    document.getElementById('rf-python-progresso').style.display = ''
+    document.getElementById('rf-python-log').innerHTML = ''
+    document.getElementById('rf-python-resumo').textContent = ''
+    document.getElementById('rf-btn-python-pasta').style.display = 'none'
+    document.getElementById('rf-btn-python-parar').style.display = ''
+    if (rfPollingTimer) clearInterval(rfPollingTimer)
+    rfPollingTimer = setInterval(rfTickNativo, 700)
+}
+
+async function rfTickNativo() {
+    const txt = document.getElementById('rf-python-txt')
+    const num = document.getElementById('rf-python-num')
+    const bar = document.getElementById('rf-python-bar')
+    const resumo = document.getElementById('rf-python-resumo')
+    const logBox = document.getElementById('rf-python-log')
+
+    const r = await fetch(API + '/remover-fundo/progresso-nativo', { headers: authHeaders(), cache: 'no-store' }).catch(() => null)
+    if (!r || !r.ok) return
+    const d = await r.json()
+
+    if (logBox) {
+        logBox.innerHTML = (d.logs || []).slice(-30).map(l => `
+            <div style="display:flex; gap:8px; align-items:center; padding:4px 10px; border-bottom:1px solid var(--border-soft); font-size:11px;">
+                <span style="width:14px; text-align:center; color:${l.ok ? 'var(--ok)' : 'var(--danger)'}">${l.ok ? '✓' : '✕'}</span>
+                <span style="flex:1; color:var(--text-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${rfEscape(l.texto)}</span>
+            </div>`).join('') || '<div style="padding:10px; font-size:11px; color:var(--text-3);">Aguardando...</div>'
+    }
+    if (txt) txt.textContent = d.concluido ? 'Concluído!' : (d.ativo ? ('Processando: ' + (d.atual || '')) : 'Parado')
+    if (num) num.textContent = `${d.processados || 0}/${d.total || 0}`
+    if (bar && d.total > 0) bar.style.width = Math.round(((d.processados || 0) / d.total) * 100) + '%'
+    if (resumo) resumo.textContent = `${d.sucesso || 0} ok · ${d.puladas || 0} já existiam · ${d.erros || 0} erros · ${d.processados || 0}/${d.total || 0}`
+
+    if (d.concluido || d.erro) {
+        clearInterval(rfPollingTimer); rfPollingTimer = null
+        document.getElementById('rf-btn-python-pasta').style.display = ''
+        document.getElementById('rf-btn-python-parar').style.display = 'none'
+        if (d.erro) alert('Erro no processamento:\n\n' + d.erro)
+        else if (d.concluido) alert(`Processamento concluído!\n\n✓ ${d.sucesso} pronto(s) · ${d.puladas} já existiam · ${d.erros} erro(s)\n\nAs fotos estão em ${d.destino}`)
+    }
+}
+
+async function rfCancelarPastaNativa() {
+    if (!confirm('Interromper o processamento em massa? Os que já foram processados ficam salvos — pode retomar depois.')) return
+    await fetch(API + '/remover-fundo/cancelar-pasta', {
+        method: 'POST',
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+        body: '{}'
+    })
 }
