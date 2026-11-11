@@ -503,6 +503,10 @@ function renderizarPlacasMediaPack() {
                         p.fardo_preco = Math.round(novo * qtdPack * 100) / 100
                         p.preco = Math.round((p.fardo_preco / qtdPack) * 100) / 100
                         p.preco_info = p.preco.toFixed(2).replace('.', ',')
+                        // Recalcula o texto "Nessa embalagem o UN sai R$ X,XX" com o novo preco
+                        if (typeof coreRodapePareceAutomatico === 'function' && p._fs && coreRodapePareceAutomatico(p._fs.fardoInfo)) {
+                            delete p._fs.fardoInfo
+                        }
                     } else if (field === 'linha1' || field === 'linha2' || field === 'linha3'
                         || field === 'fardoTitulo' || field === 'fardoInfo') {
                         const partes = quebrarPorMarcaMP(p.descricao || '', p.marca || '')

@@ -56,6 +56,14 @@ function coreParsePreco(raw) {
     return Math.round(parseFloat(raw.replace(',', '.')) * 100) / 100
 }
 
+// Verdadeiro quando o texto do rodape (ou fardoInfo) parece ser o texto
+// CALCULADO automaticamente ("... SAI A R$ X,XX" / "... sai R$ X,XX").
+// Permite recalcular a linha ao mudar o preco sem apagar textos livres
+// digitados pelo usuario (ex.: "PROMOCAO ESPECIAL").
+function coreRodapePareceAutomatico(texto) {
+    return !!texto && /\bsai\s+(a\s+)?R\$/i.test(String(texto))
+}
+
 function coreNomeArte(descricao, marca) {
     if (!marca) return descricao || ''
     const idx = descricao.toUpperCase().indexOf(marca.toUpperCase())
@@ -220,7 +228,7 @@ function coreMudarPagina(state, v) {
     return Math.max(0, Math.min((state.pagina ?? 0) + v, total - 1))
 }
 
-// -- Preço do site (lojasuperavanzi.com.br) --
+// -- Preï¿½o do site (lojasuperavanzi.com.br) --
 const PRECO_SITE_KEY = '' + 'placas_preco_site'
 
 function corePrecoSiteAtivo() {

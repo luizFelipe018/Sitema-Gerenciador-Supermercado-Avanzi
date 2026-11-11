@@ -476,7 +476,7 @@ function montarPlacaPequenaHTML(p) {
             <div class="pg-rodape-wrapper" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:1mm; position:absolute; bottom:0; left:0; padding-bottom:${FOOTER_PAD_PEQUENA}px;">
                 <div class="pg-preco-wrapper" style="width:100%; display:flex; align-items:flex-end; justify-content:center; transform:scaleY(1.3);">
                     <span class="pg-preco-simbolo" style="font-size:20px; font-weight:bold; margin-right:2px; margin-bottom:20px; line-height:1;">R$</span>
-                    <span class="pg-preco-valor" data-ajuste="preco" style="font-size:${precoFontSize}px; font-weight:900; line-height:1;">${reaisExib},${centsExib}</span>
+                    <span class="pg-preco-valor" data-field="preco" data-ajuste="preco" style="font-size:${precoFontSize}px; font-weight:900; line-height:1; cursor:pointer;">${reaisExib},${centsExib}</span>
                     ${fracionar
                         ? `<span class="pg-preco-unidade" style="font-size:16px; font-weight:bold; display:flex; flex-direction:column; align-items:center; line-height:1.15; margin-bottom:16px; margin-left:3px;">
                             <span>A CADA</span>
@@ -712,6 +712,11 @@ function renderizarPlacasPequena() {
                         p.preco = parseFloat(v.replace(',', '.'))
                         const qtdKgL = parseFloat(p.quantidade_kg_l)
                         p.preco_info = qtdKgL > 0 ? (p.preco / qtdKgL).toFixed(2).replace('.', ',') : p.preco.toFixed(2)
+                        // Recalcula a linha "NESTA EMBALAGEM..." com o novo preco:
+                        // preserva textos livres, sobrescreve o calculado antigo
+                        if (typeof coreRodapePareceAutomatico === 'function' && p._fs && coreRodapePareceAutomatico(p._fs.rodape)) {
+                            delete p._fs.rodape
+                        }
                     } else if (field === 'linha1') {
                         const partes = quebrarPorMarca(p.descricao, p.marca)
                         p.descricao = v.toUpperCase() + (partes.linha2 ? ' ' + partes.linha2 + (partes.linha3 ? ' ' + partes.linha3 : '') : '')
