@@ -248,7 +248,7 @@ function montarPlacaMediaHTML(p) {
                     <div class="pg-linha1" data-field="linha1" style="font-size:${linha1FontSize}px; font-weight:bold; text-transform:uppercase; white-space:nowrap; overflow:hidden; transform:scaleY(1.3);">${linha1}</div>
                 </div>
 
-                <div class="pg-linha2-wrapper" style="width:90%; text-align:center; display:flex; align-items:center; justify-content:center;">
+                <div class="pg-linha2-wrapper" style="width:90%; text-align:center; display:flex; align-items:center; justify-content:center; margin-top:14px;">
                     <div class="pg-linha2" data-field="linha2" style="font-size:${brandSz}px; font-weight:900; text-transform:uppercase; line-height:0.66; letter-spacing:2px; white-space:nowrap; width:100%; transform:scaleY(1.3);">${linha2}</div>
                 </div>
 
