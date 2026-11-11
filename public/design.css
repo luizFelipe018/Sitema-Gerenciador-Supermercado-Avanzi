@@ -222,6 +222,41 @@ body.theme-light ::-webkit-scrollbar-thumb { background: #d5d8de; background-cli
     gap: 20px !important;
 }
 
+/* rolagem do menu lateral — o nav é o único trecho com scroll vertical
+   (logo em cima, usuário embaixo, ambos fixos). ATENÇÃO: o Tailwind CDN
+   não é confiável nesta máquina (window.tailwind undefined quando cai a
+   internet), então o layout do sidebar NÃO pode depender de utilitárias
+   como flex/flex-1/h-screen/overflow-y-auto — está tudo aqui em CSS
+   definitivo. A scrollbar fica visível para sinalizar que há conteúdo
+   acima/abaixo. */
+.sidebar {
+    overflow: hidden !important;          /* só o nav rola */
+    display: flex !important;
+    flex-direction: column !important;
+}
+.sidebar nav {
+    flex: 1 1 0% !important;              /* encolhe e rola (era flex-1 via Tailwind) */
+    min-height: 0 !important;             /* flex: permite rolar em vez de estourar */
+    overflow-y: auto !important;
+    display: flex !important;
+    flex-direction: column;
+    padding: 12px 12px 26px !important;   /* mais fiozinho de respiro no fim da lista */
+    overscroll-behavior: contain;
+    scrollbar-width: thin;                /* Firefox */
+    scrollbar-color: var(--surface-3) transparent;
+}
+.sidebar nav > * { flex-shrink: 0; }      /* itens não encolhem: nav rola, não comprime */
+.sidebar nav::-webkit-scrollbar { width: 8px !important; }
+.sidebar nav::-webkit-scrollbar-track { background: transparent; }
+.sidebar nav::-webkit-scrollbar-thumb {
+    background: var(--surface-3);
+    border: none !important;               /* anula a borda transparente global */
+    border-radius: var(--r-full);
+}
+.sidebar nav:hover::-webkit-scrollbar-thumb { background: var(--border-strong); }
+body.theme-light .sidebar nav::-webkit-scrollbar-thumb { background: #cfd3da; }
+body.theme-light .sidebar nav:hover::-webkit-scrollbar-thumb { background: #b9bec8; }
+
 .cat-title {
     font-size: 9.5px !important;
     font-weight: 800 !important;
