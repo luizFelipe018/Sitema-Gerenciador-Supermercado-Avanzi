@@ -1178,6 +1178,19 @@ body.theme-light .sidebar nav:hover::-webkit-scrollbar-thumb { background: #b9be
     border-top: 1px solid var(--border-soft);
     background: var(--surface-2);
 }
+.ds-aviso-input {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-1);
+    font-size: 13px;
+    outline: none;
+    box-sizing: border-box;
+}
+.ds-aviso-input:focus { border-color: var(--brand-2); box-shadow: 0 0 0 3px var(--brand-soft); }
 @keyframes dsAvisoFade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes dsAvisoIn {
     from { opacity: 0; transform: translateY(10px) scale(.96); }

@@ -344,7 +344,8 @@ async function fmtBuscar() {
             btn.onmouseover = () => { btn.style.color = '#ef4444'; btn.style.background = 'rgba(239,68,68,0.1)' }
             btn.onmouseout = () => { btn.style.color = ''; btn.style.background = '' }
             btn.onclick = async () => {
-                if (!confirm('Excluir este formato?')) return
+                const okExcluir = await avisoConfirmacao('Excluir este formato?', { titulo: 'Excluir formato?', tipo: 'aviso', okText: 'Excluir', cancelText: 'Cancelar' })
+                if (!okExcluir) return
                 await fetch(API+`/formatos/${btn.getAttribute('data-id')}`, { method: 'DELETE', headers: authHeaders() })
                 fmtBuscar()
             }

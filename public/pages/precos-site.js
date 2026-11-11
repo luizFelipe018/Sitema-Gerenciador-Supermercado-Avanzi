@@ -219,7 +219,8 @@ async function atualizarPrecosErpPs() {
     const usarPromo = document.getElementById('ps-promo')?.checked ?? true
     const atualizavel = sel.filter(i => i.site && !i.site.erro)
     if (!atualizavel.length) return alert('Nenhum dos selecionados tem preço no site.')
-    if (!confirm(`Atualizar o preço no ERP de ${atualizavel.length} produto(s) com o preço do site?`)) return
+    const okAtualizar = await avisoConfirmacao(`Atualizar o preço no ERP de ${atualizavel.length} produto(s) com o preço do site?`, { titulo: 'Atualizar preços no ERP?', tipo: 'pergunta', okText: 'Atualizar', cancelText: 'Cancelar' })
+    if (!okAtualizar) return
 
     let ok = 0, falhas = 0
     for (const item of atualizavel) {

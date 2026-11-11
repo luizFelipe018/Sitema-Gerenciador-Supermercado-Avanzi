@@ -696,8 +696,10 @@ async function carregarDashboard() {
 }
 
 async function zerarDashboard() {
-    if (!confirm('Tem certeza? Isso vai apagar TODOS os registros de placas, logs e listas de preços.')) return
-    if (!confirm('Última confirmação: essa ação NÃO pode ser desfeita. Continuar?')) return
+    const ok1 = await avisoConfirmacao('Tem certeza? Isso vai apagar TODOS os registros de placas, logs e listas de preços.', { titulo: 'Zerar tudo?', tipo: 'aviso', okText: 'Apagar tudo', cancelText: 'Cancelar' })
+    if (!ok1) return
+    const ok2 = await avisoConfirmacao('Última confirmação: essa ação NÃO pode ser desfeita. Continuar?', { titulo: 'Tem certeza absoluta?', tipo: 'erro', okText: 'Apagar definitivamente', cancelText: 'Cancelar' })
+    if (!ok2) return
     try {
         const res = await fetch(API + '/dashboard/zerar', { method: 'DELETE', headers: authHeaders() })
         const data = await res.json()

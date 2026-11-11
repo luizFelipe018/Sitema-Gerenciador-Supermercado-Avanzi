@@ -175,7 +175,8 @@ function renderHistoricoListas(filtro = '') {
     el.querySelectorAll('.btn-excluir-lista').forEach(btn => {
         btn.onclick = async (e) => {
             e.stopPropagation()
-            if (!confirm('Excluir esta lista e todos os seus itens?')) return
+            const okExcluir = await avisoConfirmacao('Excluir esta lista e todos os seus itens?', { titulo: 'Excluir lista?', tipo: 'aviso', okText: 'Excluir', cancelText: 'Cancelar' })
+            if (!okExcluir) return
             const res = await fetch(API + `/listas/${btn.getAttribute('data-id')}`, { method: 'DELETE', headers: authHeaders() })
             if (res.ok) {
                 if (listaAtiva?.id === parseInt(btn.getAttribute('data-id'))) {
@@ -342,7 +343,8 @@ async function abrirLista(lista) {
         document.getElementById('btn-finalizar-lista')?.addEventListener('click', async () => {
             const itens = await carregarItensDaLista(lista.id)
             if (!itens.length) { toast('Adicione produtos antes de finalizar', 'aviso'); return }
-            if (!confirm(`Finalizar a lista com ${itens.length} item(ns)? Ela ficará somente leitura.`)) return
+            const okFinalizar = await avisoConfirmacao(`Finalizar a lista com ${itens.length} item(ns)? Ela ficará somente leitura.`, { titulo: 'Finalizar lista?', tipo: 'pergunta', okText: 'Finalizar', cancelText: 'Cancelar' })
+            if (!okFinalizar) return
             await fetch(API + `/listas/${lista.id}/finalizar`, { method: 'POST', headers: authHeaders() })
             toast('Lista finalizada', 'ok')
             lista.finalizada = true

@@ -107,8 +107,9 @@ function carregarDadosSalvos() {
     } catch { return null }
 }
 
-function limparTercaPizza() {
-    if (!confirm('Limpar data, lista e preview da arte?')) return
+async function limparTercaPizza() {
+    const okLimpar = await avisoConfirmacao('Limpar data, lista e preview da arte?', { titulo: 'Limpar terça da pizza?', tipo: 'aviso', okText: 'Limpar', cancelText: 'Cancelar' })
+    if (!okLimpar) return
     localStorage.removeItem(TP_STORAGE_KEY)
     document.getElementById('tp-data').value  = ''
     document.getElementById('tp-lista').value = ''

@@ -731,9 +731,10 @@ function vincularEventosPlacasGrande() {
     document.getElementById('btn-predefinicao-grande').onclick = onAplicarPredefinicaoGrande
     document.getElementById('btn-pag-ant-grande').onclick = () => mudarPaginaPlacasGrande(-1)
     document.getElementById('btn-pag-prox-grande').onclick = () => mudarPaginaPlacasGrande(1)
-    document.getElementById('btn-limpar-grande').onclick = () => {
+    document.getElementById('btn-limpar-grande').onclick = async () => {
         if (!placasSalvasGrande.length) return
-        if (!confirm('Limpar todas as placas Grande?')) return
+        const okLimpar = await avisoConfirmacao('Limpar todas as placas Grande?', { titulo: 'Limpar placas?', tipo: 'aviso', okText: 'Limpar', cancelText: 'Cancelar' })
+        if (!okLimpar) return
         placasSalvasGrande = []
         salvarERenderizarGrande()
     }

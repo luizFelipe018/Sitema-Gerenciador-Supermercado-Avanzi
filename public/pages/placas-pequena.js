@@ -1077,8 +1077,9 @@ function vincularEventosPlacasPequena() {
     document.getElementById('btn-predefinicao-pequena').onclick = onAplicarPredefinicaoPequena
     document.getElementById('btn-pag-ant-pequena').onclick      = () => mudarPaginaPlacasPequena(-1)
     document.getElementById('btn-pag-prox-pequena').onclick     = () => mudarPaginaPlacasPequena(1)
-    document.getElementById('btn-limpar-pequena').onclick       = () => {
-        if (confirm('Limpar todas as placas pequenas?')) { plaquesSalvasPequena = []; salvarERenderizarPequena() }
+    document.getElementById('btn-limpar-pequena').onclick       = async () => {
+        const okLimpar = await avisoConfirmacao('Limpar todas as placas pequenas?', { titulo: 'Limpar placas?', tipo: 'aviso', okText: 'Limpar', cancelText: 'Cancelar' })
+        if (okLimpar) { plaquesSalvasPequena = []; salvarERenderizarPequena() }
     }
 
     coreVincularPrecoSite('chk-preco-site-pequena', 'label-preco-site-pequena', 'ean-input-pequena', 'preco-input-pequena')

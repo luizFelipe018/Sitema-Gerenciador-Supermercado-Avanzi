@@ -347,8 +347,8 @@ async function carregarListaUsuarios() {
         el.querySelectorAll('[data-acao="senha"]').forEach(btn => {
             btn.onclick = async () => {
                 const id = btn.dataset.id, usuario = btn.dataset.usuario
-                const senha = prompt('Nova senha para ' + usuario + ' (mínimo 4 caracteres):')
-                if (!senha) return
+                const senha = await avisoPrompt('Nova senha para ' + usuario, { titulo: 'Nova senha', tipo: 'pergunta', okText: 'Salvar', cancelText: 'Cancelar', placeholder: 'mínimo 4 caracteres' })
+                if (senha === null || senha === undefined) return
                 if (String(senha).length < 4) return alert('A senha precisa ter pelo menos 4 caracteres.')
                 const res = await fetch(API + '/usuarios/' + id + '/senha', { method: 'PUT', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ senha }) })
                 const j = await res.json().catch(() => ({}))
@@ -359,7 +359,8 @@ async function carregarListaUsuarios() {
         el.querySelectorAll('[data-acao="excluir"]').forEach(btn => {
             btn.onclick = async () => {
                 const id = btn.dataset.id, usuario = btn.dataset.usuario
-                if (!confirm('Excluir o usuário "' + usuario + '" definitivamente?')) return
+                const okExcluir = await avisoConfirmacao('Excluir o usuário "' + usuario + '" definitivamente?', { titulo: 'Excluir usuário?', tipo: 'aviso', okText: 'Excluir', cancelText: 'Cancelar' })
+                if (!okExcluir) return
                 const res = await fetch(API + '/usuarios/' + id, { method: 'DELETE', headers: authHeaders() })
                 const j = await res.json().catch(() => ({}))
                 if (res.ok) carregarListaUsuarios()
@@ -551,9 +552,10 @@ async function salvarPastaConfig(chave, inputId, msgId) {
 }
 
 // ── FERRAMENTAS ────────────────────────────────────────
-function admExecutarBackup() {
+async function admExecutarBackup() {
     const box = document.getElementById('adm-ferramenta-resultado')
-    if (!confirm('Fazer backup AGORA? O arquivo .sql será salvo em data/backups/ desta pasta do projeto (~poucos MB). Pode levar alguns segundos.')) return
+    const okBackup = await avisoConfirmacao('Fazer backup AGORA? O arquivo .sql será salvo em data/backups/ desta pasta do projeto (~poucos MB). Pode levar alguns segundos.', { titulo: 'Fazer backup?', tipo: 'pergunta', okText: 'Fazer backup', cancelText: 'Cancelar' })
+    if (!okBackup) return
     box.style.display = ''
     box.innerHTML = '<div style="color:var(--text-3);">Fazendo backup…</div>'
     fetch(API + '/backup', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: '{}' })

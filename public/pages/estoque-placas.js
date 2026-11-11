@@ -333,21 +333,21 @@ function epRenderizarEstoque() {
 
     // Action buttons
     container.querySelectorAll('.ep-action-in').forEach(btn => {
-        btn.onclick = () => {
-            const qtd = prompt('Quantidade a adicionar:', '1')
-            if (qtd && parseInt(qtd) > 0) epAcaoRapida(btn.dataset.id, 'entrada', parseInt(qtd))
+        btn.onclick = async () => {
+            const qtd = await avisoPrompt('Quantidade a adicionar:', { titulo: 'Adicionar ao estoque', tipo: 'pergunta', okText: 'Adicionar', cancelText: 'Cancelar', valorInicial: '1', placeholder: '1' })
+            if (qtd && parseInt(qtd, 10) > 0) epAcaoRapida(btn.dataset.id, 'entrada', parseInt(qtd, 10))
         }
     })
     container.querySelectorAll('.ep-action-out').forEach(btn => {
-        btn.onclick = () => {
-            const qtd = prompt('Quantidade a remover:', '1')
-            if (qtd && parseInt(qtd) > 0) epAcaoRapida(btn.dataset.id, 'saida', parseInt(qtd))
+        btn.onclick = async () => {
+            const qtd = await avisoPrompt('Quantidade a remover:', { titulo: 'Remover do estoque', tipo: 'pergunta', okText: 'Remover', cancelText: 'Cancelar', valorInicial: '1', placeholder: '1' })
+            if (qtd && parseInt(qtd, 10) > 0) epAcaoRapida(btn.dataset.id, 'saida', parseInt(qtd, 10))
         }
     })
     container.querySelectorAll('.ep-action-del').forEach(btn => {
-        btn.onclick = () => {
-            if (confirm('Excluir "'+btn.dataset.nome+'" do estoque?'))
-                epAcaoRapida(btn.dataset.id, 'excluir')
+        btn.onclick = async () => {
+            const okExcluir = await avisoConfirmacao('Excluir "' + btn.dataset.nome + '" do estoque?', { titulo: 'Excluir do estoque?', tipo: 'aviso', okText: 'Excluir', cancelText: 'Cancelar' })
+            if (okExcluir) epAcaoRapida(btn.dataset.id, 'excluir')
         }
     })
 }

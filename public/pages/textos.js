@@ -284,7 +284,8 @@ async function txtBuscar() {
             btn.onmouseover = () => { btn.style.color = '#ef4444'; btn.style.background = 'rgba(239,68,68,0.1)' }
             btn.onmouseout = () => { btn.style.color = ''; btn.style.background = '' }
             btn.onclick = async () => {
-                if (!confirm('Excluir este texto?')) return
+                const okExcluir = await avisoConfirmacao('Excluir este texto?', { titulo: 'Excluir texto?', tipo: 'aviso', okText: 'Excluir', cancelText: 'Cancelar' })
+                if (!okExcluir) return
                 const id = btn.getAttribute('data-id')
                 await fetch(API+`/textos/${id}`, { method:'DELETE', headers: authHeaders() })
                 await txtBuscar()

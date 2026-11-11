@@ -240,7 +240,8 @@ async function aplicarMarcasMassa() {
 
     const lista = regras.map(r => `• ${r.termo.trim().toUpperCase()} → ${r.marca.trim().toUpperCase()}`).join('\n')
     const msg = `Aplicar ${regras.length} regra(s) em massa?\n\n${lista}\n\n${apenasVazios ? 'Somente produtos SEM MARCA serão alterados.' : 'ATENÇÃO: marcas existentes serão SOBRESCRITAS.'}\n\nEssa ação não pode ser desfeita facilmente.`
-    if (!confirm(msg)) return
+    const okAplicar = await avisoConfirmacao(msg, { titulo: 'Aplicar marcas?', tipo: 'pergunta', okText: 'Aplicar', cancelText: 'Cancelar' })
+    if (!okAplicar) return
 
     const btn = document.getElementById('btn-mm-aplicar')
     const antigo = btn.innerHTML

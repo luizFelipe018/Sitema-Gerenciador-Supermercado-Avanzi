@@ -375,7 +375,7 @@ function imprimirArte() {
 async function salvarModeloArte() {
     if (_arteSalvando) return
     _arteSalvando = true
-    const nome = prompt('Nome do modelo (ex: Segunda do Pão):')
+    const nome = await avisoPrompt('Nome do modelo (ex: Segunda do Pão):', { titulo: 'Salvar modelo', tipo: 'pergunta', okText: 'Salvar', cancelText: 'Cancelar', placeholder: 'Segunda do Pão' })
     if (!nome) { _arteSalvando = false; return }
     try {
         await fetch(API + '/arte/salvar-modelo', {

@@ -183,7 +183,9 @@ window.buscarFotoPorEAN = async function(ean) {
 /* Popup de aviso com o tema do app (substitui as janelas cinza do Windows).
    window.alert(msg)          -> modal centralizado, botao "Entendi" (fire-and-forget)
    window.aviso(msg, opts)    -> mesmo modal, retorna Promise; opts: { titulo, tipo, okText }
-   window.avisoConfirmacao(msg, opts) -> modal com Sim/Não; retorna Promise<boolean> */
+   window.avisoConfirmacao(msg, opts) -> modal com Sim/Não; retorna Promise<boolean>
+   window.avisoPrompt(msg, opts)      -> modal com campo de texto; retorna Promise<string|null>
+                                        opts: { titulo, placeholder, valorInicial, tipo, okText, cancelText } */
 (function () {
     function escapeHtml(s) {
         return String(s == null ? '' : s).replace(/[<>&"']/g, function (c) {
@@ -209,18 +211,33 @@ window.buscarFotoPorEAN = async function(ean) {
         })
     }
 
+    function montarModalPrompt(mensagem, opts) {
+        return new Promise(function (resolve) {
+            fila.push({ mensagem: mensagem, opts: opts || {}, prompt: true, resolve: resolve })
+            if (!aberto) proximoDaFila()
+        })
+    }
+
     function proximoDaFila() {
         var item = fila.shift()
         if (!item) { aberto = false; return }
         aberto = true
 
         var opts = item.opts
-        var tipo = opts.tipo || 'aviso'
+        var isPrompt = !!item.prompt
+        var isConfirm = !isPrompt && !!item.confirmar
+        var tipo = opts.tipo || (isPrompt ? 'pergunta' : 'aviso')
         if (!ICONES[tipo]) tipo = 'aviso'
-        var titulo = opts.titulo || (item.confirmar ? 'Confirmação' : 'Aviso')
-        var okText = opts.okText || (item.confirmar ? 'Sim' : 'Entendi')
-        var cancelText = opts.cancelText || 'Não'
+        var titulo = opts.titulo || (isPrompt ? 'Informe' : (isConfirm ? 'Confirmação' : 'Aviso'))
+        var okText = opts.okText || (isPrompt ? 'OK' : (isConfirm ? 'Sim' : 'Entendi'))
+        var cancelText = opts.cancelText || (isPrompt ? 'Cancelar' : 'Não')
         var idIcone = tipo === 'aviso' ? '' : ' is-' + tipo
+        var placeholder = opts.placeholder || ''
+        var valorInicial = opts.valorInicial != null ? String(opts.valorInicial) : ''
+
+        var bodyHtml = '<div class="ds-aviso-body">' + escapeHtml(item.mensagem) +
+            (isPrompt ? '<input type="text" class="ds-aviso-input" id="ds-aviso-input" placeholder="' + escapeHtml(placeholder) + '" value="' + escapeHtml(valorInicial) + '" autocomplete="off" spellcheck="false" />' : '') +
+            '</div>'
 
         var backdrop = document.createElement('div')
         backdrop.className = 'ds-aviso-backdrop'
@@ -230,36 +247,47 @@ window.buscarFotoPorEAN = async function(ean) {
                     '<div class="ds-aviso-icon' + idIcone + '"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">' + ICONES[tipo] + '</svg></div>' +
                     '<div class="ds-aviso-titulo">' + escapeHtml(titulo) + '</div>' +
                 '</div>' +
-                '<div class="ds-aviso-body">' + escapeHtml(item.mensagem) + '</div>' +
+                bodyHtml +
                 '<div class="ds-aviso-foot">' +
-                    (item.confirmar ? '<button type="button" class="ds-btn" data-acao="cancelar">' + escapeHtml(cancelText) + '</button>' : '') +
+                    ((isConfirm || isPrompt) ? '<button type="button" class="ds-btn" data-acao="cancelar">' + escapeHtml(cancelText) + '</button>' : '') +
                     '<button type="button" class="ds-btn ds-btn-primary" data-acao="ok">' + escapeHtml(okText) + '</button>' +
                 '</div>' +
             '</div>'
 
+        function valorDoInput() {
+            var el = backdrop.querySelector('#ds-aviso-input')
+            return el ? el.value.trim() : ''
+        }
         function fechar(resultado) {
             document.removeEventListener('keydown', onKey, true)
             backdrop.remove()
             item.resolve(resultado)
             proximoDaFila()
         }
+        function cancelar() { fechar(isPrompt ? null : (isConfirm ? false : undefined)) }
+        function confirmar() {
+            if (isPrompt) { fechar(valorDoInput()); return }
+            fechar(isConfirm ? true : undefined)
+        }
         function onKey(e) {
-            if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); fechar(item.confirmar ? false : undefined) }
-            else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); fechar(item.confirmar ? true : undefined) }
+            if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); cancelar() }
+            else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); confirmar() }
         }
 
-        backdrop.querySelector('[data-acao="ok"]').addEventListener('click', function () { fechar(item.confirmar ? true : undefined) })
+        backdrop.querySelector('[data-acao="ok"]').addEventListener('click', confirmar)
         var btnCancelar = backdrop.querySelector('[data-acao="cancelar"]')
-        if (btnCancelar) btnCancelar.addEventListener('click', function () { fechar(false) })
-        backdrop.addEventListener('mousedown', function (e) { if (e.target === backdrop) fechar(item.confirmar ? false : undefined) })
+        if (btnCancelar) btnCancelar.addEventListener('click', cancelar)
+        backdrop.addEventListener('mousedown', function (e) { if (e.target === backdrop) cancelar() })
         document.addEventListener('keydown', onKey, true)
 
         document.body.appendChild(backdrop)
-        backdrop.querySelector('[data-acao="ok"]').focus()
+        var campo = backdrop.querySelector('#ds-aviso-input')
+        if (campo) { campo.focus(); campo.select() } else backdrop.querySelector('[data-acao="ok"]').focus()
     }
 
     window.aviso = function (mensagem, opts) { return montarModal(mensagem, opts, false) }
     window.avisoConfirmacao = function (mensagem, opts) { return montarModal(mensagem, opts || {}, true) }
+    window.avisoPrompt = function (mensagem, opts) { return montarModalPrompt(mensagem, opts || {}) }
     // Substitui o alert nativo (janela sem tema) pelo modal do app
     window.alert = function (msg) { window.aviso(msg) }
 })();

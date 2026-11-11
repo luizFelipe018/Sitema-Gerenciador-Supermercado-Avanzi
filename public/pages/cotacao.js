@@ -100,8 +100,8 @@ async function carregarCotacao() {
     }
 
     document.getElementById('cot-btn-carregar').onclick = carregarDados
-    document.getElementById('cot-btn-nova').onclick = () => {
-        const nome = prompt('Nome da nova lista de preços:')
+    document.getElementById('cot-btn-nova').onclick = async () => {
+        const nome = await avisoPrompt('Nome da nova lista de preços:', { titulo: 'Nova lista', tipo: 'pergunta', okText: 'Criar', cancelText: 'Cancelar', placeholder: 'Lista de preços' })
         if (!nome) return
         fetch(API+'/listas', {
             method: 'POST',

@@ -536,7 +536,7 @@ async function rfProcessarPasta() {
     }
     if (!itens.length) { alert('Nenhuma imagem encontrada em ' + dirOrigem.name); return }
 
-    const ok = confirm('Encontrei ' + itens.length + ' imagens em "' + dirOrigem.name + '".\nVou remover o fundo de TODAS e salvar na pasta "' + dirOrigem.name + '\\\\sem_fundo\\\\" com o mesmo nome (.png).\n\nEstimativa: ~4 segundos por foto.\n\nContinuar?')
+    const ok = await avisoConfirmacao('Encontrei ' + itens.length + ' imagens em "' + dirOrigem.name + '".\nVou remover o fundo de TODAS e salvar na pasta "' + dirOrigem.name + '\\\\sem_fundo\\\\" com o mesmo nome (.png).\n\nEstimativa: ~4 segundos por foto.\n\nContinuar?', { titulo: 'Processar a pasta inteira?', tipo: 'pergunta', okText: 'Continuar', cancelText: 'Cancelar' })
     if (!ok) return
 
     rfBusy = true
@@ -579,7 +579,7 @@ let rfPollingTimer = null
 async function rfProcessarPastaNativa() {
     const input = document.getElementById('rf-pasta-input')
     const pasta = (input?.value || '').trim() || 'D:\\imagens site'
-    if (!confirm(`Vou processar TODAS as imagens de:\n${pasta}\n\nSalvando na subpasta sem_fundo\\ (com o mesmo nome).\nModelo leve u2netp — ~1 segundo por foto.\n\nContinuar?`)) return
+    if (!(await avisoConfirmacao(`Vou processar TODAS as imagens de:\n${pasta}\n\nSalvando na subpasta sem_fundo\\ (com o mesmo nome).\nModelo leve u2netp — ~1 segundo por foto.\n\nContinuar?`, { titulo: 'Processamento em massa?', tipo: 'pergunta', okText: 'Continuar', cancelText: 'Cancelar' }))) return
 
     // dispara o processo no servidor
     const r = await fetch(API + '/remover-fundo/processar-pasta', {
@@ -637,7 +637,7 @@ async function rfTickNativo() {
 }
 
 async function rfCancelarPastaNativa() {
-    if (!confirm('Interromper o processamento em massa? Os que já foram processados ficam salvos — pode retomar depois.')) return
+    if (!(await avisoConfirmacao('Interromper o processamento em massa? Os que já foram processados ficam salvos — pode retomar depois.', { titulo: 'Interromper?', tipo: 'aviso', okText: 'Interromper', cancelText: 'Continuar' }))) return
     await fetch(API + '/remover-fundo/cancelar-pasta', {
         method: 'POST',
         headers: { ...authHeaders(), 'Content-Type': 'application/json' },

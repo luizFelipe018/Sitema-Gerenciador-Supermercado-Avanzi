@@ -855,8 +855,9 @@ function vincularEventosPlacasMedia() {
     document.getElementById('btn-predefinicao-g').onclick = onAplicarPredefinicaoMedia
     document.getElementById('btn-pag-ant-g').onclick      = () => mudarPaginaPlacasMedia(-1)
     document.getElementById('btn-pag-prox-g').onclick     = () => mudarPaginaPlacasMedia(1)
-    document.getElementById('btn-limpar-g').onclick       = () => {
-        if (confirm('Limpar todas as placas médias?')) { plaquesSalvasMedia = []; salvarERenderizarMedia() }
+    document.getElementById('btn-limpar-g').onclick       = async () => {
+        const okLimpar = await avisoConfirmacao('Limpar todas as placas médias?', { titulo: 'Limpar placas?', tipo: 'aviso', okText: 'Limpar', cancelText: 'Cancelar' })
+        if (okLimpar) { plaquesSalvasMedia = []; salvarERenderizarMedia() }
     }
 
     coreVincularPrecoSite('chk-preco-site-g', 'label-preco-site-g', 'ean-input-g', 'preco-input-g')

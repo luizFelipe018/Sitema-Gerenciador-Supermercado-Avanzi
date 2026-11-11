@@ -870,8 +870,9 @@ function vincularEventosPlacasMediaPack() {
     document.getElementById('btn-predefinicao-mp').onclick = onAplicarPredefinicaoMediaPack
     document.getElementById('btn-pag-ant-mp').onclick = () => mudarPaginaPlacasMediaPack(-1)
     document.getElementById('btn-pag-prox-mp').onclick = () => mudarPaginaPlacasMediaPack(1)
-    document.getElementById('btn-limpar-mp').onclick = () => {
-        if (confirm('Limpar todas as placas Media Pack?')) { plaquesSalvasMP = []; salvarERenderizarMediaPack() }
+    document.getElementById('btn-limpar-mp').onclick = async () => {
+        const okLimpar = await avisoConfirmacao('Limpar todas as placas Media Pack?', { titulo: 'Limpar placas?', tipo: 'aviso', okText: 'Limpar', cancelText: 'Cancelar' })
+        if (okLimpar) { plaquesSalvasMP = []; salvarERenderizarMediaPack() }
     }
 
     coreVincularPrecoSite('chk-preco-site-mp', 'label-preco-site-mp', 'ean-input-mp', 'preco-input-mp')
