@@ -117,14 +117,9 @@ produtos: ['atendente', 'gerente', 'administrador'],
     // Calc KG/LT - todos
     'calc-kglt': ['atendente', 'gerente', 'administrador'],
     
-    // Dashboard - gerente e admin
-    dashboard: ['gerente', 'administrador'],
-    cotacao: ['gerente', 'administrador'],
+    // Relatório de placas - gerente e admin
     'relatorio-placas': ['gerente', 'administrador'],
     'gerenciador-placas': ['gerente', 'administrador'],
-
-    // Auditoria - gerente e admin (controle de quem fez as placas)
-    auditoria: ['gerente', 'administrador'],
 }
 
 window.podeAcessar = function(pagina) {

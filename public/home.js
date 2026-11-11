@@ -359,13 +359,6 @@ document.getElementById('btn-inicio').addEventListener('click', () => {
     carregarInicio()
 })
 
-document.getElementById('btn-dashboard').addEventListener('click', () => {
-    submenuPlacas.classList.remove('open')
-    btnPlacasMenu.classList.remove('open')
-    submenuImagens.classList.remove('open')
-    btnImagensMenu.classList.remove('open')
-    carregarDashboard()
-})
 
 document.getElementById('btn-produtos').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
@@ -595,20 +588,6 @@ document.getElementById('btn-feriados').addEventListener('click', () => {
     carregarFeriados()
 })
 
-document.getElementById('btn-cotacao').addEventListener('click', () => {
-    submenuPlacas.classList.remove('open')
-    btnPlacasMenu.classList.remove('open')
-    submenuImagens.classList.remove('open')
-    btnImagensMenu.classList.remove('open')
-    carregarCotacao()
-})
-
-document.getElementById('btn-auditoria').addEventListener('click', () => {    submenuPlacas.classList.remove('open')
-    btnPlacasMenu.classList.remove('open')
-    submenuImagens.classList.remove('open')
-    btnImagensMenu.classList.remove('open')
-    carregarAuditoria()
-})
 
 document.getElementById('btn-calc-kglt').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
