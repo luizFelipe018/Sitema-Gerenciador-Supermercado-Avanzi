@@ -17,3 +17,6 @@ public/vendor/imgly/
 # ambientes locais de Python (comprados sob demanda para remover fundo em massa)
 # não vão para o Git — na loja, o instalador ou um script .bat instala na 1ª vez
 python312/
+
+# backups do banco gerados pelo painel de admin (arquivos .sql grandes, ficam na maquina da loja)
+data/backups/

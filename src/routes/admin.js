@@ -106,6 +106,51 @@ router.get('/saude', authMiddleware, somenteAdmin, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }) }
 })
 
+router.post('/backup', authMiddleware, somenteAdmin, async (req, res) => {
+    try {
+        const path = require('path')
+        const destinoDir = path.join(__dirname, '..', '..', 'data', 'backups')
+        const r = await require('../services/backup').fazerBackup(destinoDir)
+        res.json({ ok: true, arquivo: path.basename(r.arquivo), caminho: r.arquivo, tamanho: r.tamanho, tabelas: r.tabelas, linhas: r.linhas })
+    } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
+router.get('/alertas', authMiddleware, somenteAdmin, async (req, res) => {
+    const alertas = []
+    try {
+        const db = require('../config/database')
+        // Pasta de imagens configurada? Existe?
+        try {
+            const [rows] = await db.query("SELECT valor FROM configuracoes WHERE chave = 'pasta_imagens'")
+            const caminho = (rows[0] && rows[0].valor) ? rows[0].valor : (process.env.PASTA_IMAGENS || 'E:\\Banco de Imagens\\')
+            if (caminho) {
+                if (!require('fs').existsSync(caminho)) {
+                    alertas.push({ tipo: 'erro', titulo: 'Pasta de imagens não encontrada', detalhe: caminho })
+                }
+            } else {
+                alertas.push({ tipo: 'aviso', titulo: 'Pasta de imagens não configurada', detalhe: 'Configure em Admin → Configurações' })
+            }
+        } catch {}
+        // Último backup?
+        const path = require('path')
+        const fs = require('fs')
+        const backups = path.join(__dirname, '..', '..', 'data', 'backups')
+        try {
+            if (!fs.existsSync(backups)) fs.mkdirSync(backups, { recursive: true })
+            const files = fs.readdirSync(backups).filter(f => f.endsWith('.sql'))
+                .map(f => ({ name: f, mt: fs.statSync(path.join(backups, f)).mtime }))
+                .sort((a, b) => b.mt - a.mt)
+            if (!files.length) {
+                alertas.push({ tipo: 'aviso', titulo: 'Nenhum backup encontrado', detalhe: 'Clique em Infraestrutura → Fazer Backup Agora para criar o primeiro.' })
+            } else if ((Date.now() - files[0].mt.getTime()) > 7 * 24 * 3600 * 1000) {
+                alertas.push({ tipo: 'aviso', titulo: 'Backup antigo', detalhe: 'Último backup em ' + new Date(files[0].mt).toLocaleString('pt-BR') + ' (' + files[0].name + ')' })
+            }
+        } catch {}
+        // Inserir logs muito recentes? Sem erros prévios por ora
+        res.json({ alertas })
+    } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
 router.get('/usuarios', authMiddleware, async (req, res) => {
     try {
         const db = require('../config/database')
