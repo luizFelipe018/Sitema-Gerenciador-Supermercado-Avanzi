@@ -4,6 +4,26 @@ function carregarAdmin() {
     setActive('btn-admin')
     const cargoUsuario = window.getCargo()
     setConteudo(`
+        <!-- Saúde do Sistema -->
+        <div class="dash-glass dash-animate cd" style="margin-bottom:20px;">
+            <div class="ch" style="flex-wrap:wrap;gap:10px;">
+                <h3 class="h3">
+                    <svg style="width:16px; height:16px; vertical-align:middle; margin-right:6px; fill:var(--ok)" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    Saúde do Sistema
+                </h3>
+                <button id="saude-btn-atualizar" class="btn-gr">
+                    <svg style="width:12px; height:12px; vertical-align:middle; margin-right:4px; fill:currentColor;" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                    Atualizar
+                </button>
+            </div>
+            <div class="cb">
+                <div id="saude-kpis" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:10px;"></div>
+                <div id="saude-pasta" style="margin-top:12px; font-size:12px; color:var(--text-2); line-height:1.6;"></div>
+                <div id="saude-banco" style="margin-top:8px; font-size:12px; color:var(--text-2); line-height:1.6;"></div>
+                <div id="saude-logs" style="margin-top:12px;"></div>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
 
             <!-- Cadastrar usuário -->
@@ -222,12 +242,86 @@ function carregarAdmin() {
     vincularEventosAdmin()
 }
 
+// ── SAÚDE DO SISTEMA ────────────────────────────────────
+function formatMB(bytes) {
+    const mb = bytes / (1024 * 1024)
+    return mb >= 1024 ? (mb / 1024).toFixed(1) + ' GB' : Math.round(mb) + ' MB'
+}
+function formatUptime(seg) {
+    const h = Math.floor(seg / 3600); const min = Math.floor((seg % 3600) / 60); const s = Math.floor(seg % 60)
+    return `${h}h ${min}min ${s}s`
+}
+
+async function carregarSaude() {
+    const kpis = document.getElementById('saude-kpis')
+    const pastaEl = document.getElementById('saude-pasta')
+    const bancoEl = document.getElementById('saude-banco')
+    const logsEl = document.getElementById('saude-logs')
+    const btn = document.getElementById('saude-btn-atualizar')
+    if (btn) { btn.disabled = true; btn.textContent = 'Atualizando…' }
+    const kpi = (label, value, cor) => `
+        <div style="background:var(--surface-2); border:1px solid var(--border-soft); border-radius:var(--r-md); padding:12px 14px;">
+            <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-3);">${label}</div>
+            <div style="font-size:16px; font-weight:700; margin-top:4px; color:${cor || 'var(--text-1)'}">${value}</div>
+        </div>`
+    try {
+        const res = await fetch(API + '/saude', { headers: authHeaders() })
+        const d = await res.json()
+        if (!res.ok) throw new Error(d.error || 'Falha ao ler dados')
+
+        const bancoOk = d.banco && d.banco.conectado
+        kpis.innerHTML =
+            kpi('ERP', 'v' + (d.versao || '?')) +
+            kpi('Node.js', String(d.node || '').replace(/^v/, 'v')) +
+            kpi('Tempo ativo', formatUptime(d.uptimeSeg || 0)) +
+            kpi('Plataforma', (d.plataforma || '?').replace('win32', 'Windows')) +
+            kpi('Núcleos CPU', d.cpuNucleos || '?') +
+            kpi('Memória livre', (d.memoriaLivreMB || 0).toLocaleString('pt-BR') + ' MB')
+
+        const pasta = d.pastaImagens || {}
+        const pastaOK = pasta.existe
+        pastaEl.innerHTML =
+            `<svg style="width:13px; height:13px; vertical-align:middle; margin-right:5px; fill:${pastaOK ? 'var(--ok)' : 'var(--danger)'}" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>` +
+            `Pasta de imagens: <b style="color:${pastaOK ? 'var(--text-1)' : 'var(--danger)'}">${pastaOK ? 'OK' : 'não encontrada'}</b>` +
+            ` · ${pasta.caminho ? `<code style="color:var(--text-2);">${pasta.caminho}</code>` : ''}` +
+            (pastaOK ? ` · ${(pasta.arquivos || 0).toLocaleString('pt-BR')} arquivos${pasta.limitado ? ' (amostra)' : ''} · ${formatMB(pasta.bytesTotal || 0)}` : '')
+
+        const prodOK = typeof d.produtos === 'number'
+        bancoEl.innerHTML =
+            `<svg style="width:13px; height:13px; vertical-align:middle; margin-right:5px; fill:${bancoOk ? 'var(--ok)' : 'var(--danger)'}" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>` +
+            `Banco de dados: <b style="color:${bancoOk ? 'var(--text-1)' : 'var(--danger)'}">${bancoOk ? 'conectado' : 'ERRO' + (d.banco && d.banco.erro ? ' — ' + d.banco.erro : '')}</b>` +
+            (prodOK ? ` · <b style="color:var(--text-1)">${d.produtos.toLocaleString('pt-BR')}</b> produtos` : '')
+
+        if (Array.isArray(d.logs) && d.logs.length) {
+            logsEl.innerHTML = `
+                <div style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-3); margin-bottom:6px;">Últimas ações no sistema</div>
+                ${d.logs.map(l => `
+                    <div style="display:flex; gap:10px; align-items:baseline; padding:5px 10px; border-bottom:1px solid var(--border-soft); font-size:12px;">
+                        <span style="color:var(--text-3); white-space:nowrap; font-family:monospace; font-size:10.5px;">${(l.quando || '').toString().replace('T', ' ').slice(0, 16)}</span>
+                        <span style="color:var(--text-1); flex:0 0 auto; font-weight:600; min-width:80px;">${l.usuario || 'sistema'}</span>
+                        <span style="color:var(--text-2); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${l.descricao || l.acao || '—'}</span>
+                    </div>`).join('')}`
+        } else {
+            logsEl.innerHTML = '<div style="font-size:12px; color:var(--text-3);">Nenhum log registrado ainda.</div>'
+        }
+    } catch (e) {
+        kpis.innerHTML = `<div style="color:var(--danger); font-size:13px; grid-column:1/-1;">Erro ao ler dados do sistema: ${e.message || e}</div>`
+        pastaEl.innerHTML = ''; bancoEl.innerHTML = ''; logsEl.innerHTML = ''
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = `<svg style="width:12px; height:12px; vertical-align:middle; margin-right:4px; fill:currentColor;" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>Atualizar` }
+    }
+}
+
 // ── EVENTOS ADMIN ─────────────────────────────────────
 function vincularEventosAdmin() {
 
     // Carregar lista de usuários
     carregarListaUsuarios()
     document.getElementById('btn-recargar-usuarios')?.addEventListener('click', carregarListaUsuarios)
+
+    // Saúde do Sistema
+    document.getElementById('saude-btn-atualizar')?.addEventListener('click', carregarSaude)
+    carregarSaude()
 
     // Cadastrar usuário
     document.getElementById('admin-salvar').onclick = async () => {

@@ -26,6 +26,86 @@ router.post('/migrar-cargos', authMiddleware, async (req, res) => {
     }
 })
 
+router.get('/saude', authMiddleware, somenteAdmin, async (req, res) => {
+    try {
+        const path = require('path')
+        const fsp = require('fs/promises')
+        const fs = require('fs')
+        const os = require('os')
+        const db = require('../config/database')
+
+        const pkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'))
+
+        // Conexão do banco
+        let bancoOk = true
+        let dbErr = null
+        try { await db.query('SELECT 1') } catch (err) { bancoOk = false; dbErr = err.message }
+
+        // Estatística de produtos
+        let produtosTotal = null
+        if (bancoOk) {
+            try { const [[r]] = await db.query('SELECT COUNT(*) AS n FROM produtos'); produtosTotal = r.n } catch {}
+        }
+
+        // Pasta de imagens — rápido: alguns arquivos de topo, sem recursão pesada
+        let pastaInfo = { caminho: '—', existe: false, arquivos: 0, bytesTotal: 0, limitado: false }
+        try {
+            const [rows] = await db.query("SELECT valor FROM configuracoes WHERE chave = 'pasta_imagens'")
+            const caminho = (rows[0] && rows[0].valor) ? rows[0].valor : (process.env.PASTA_IMAGENS || 'E:\\Banco de Imagens\\')
+            if (caminho) {
+                pastaInfo.caminho = caminho
+                try {
+                    const st = await fsp.stat(caminho)
+                    pastaInfo.existe = st.isDirectory()
+                    if (pastaInfo.existe) {
+                        const exts = new Set(['.png', '.jpg', '.jpeg', '.webp'])
+                        let total = 0, bytes = 0, limitou = false
+                        async function walk(dir, depth) {
+                            if (depth > 2 || total >= 10000) { limitou = true; return }
+                            let es
+                            try { es = await fsp.readdir(dir, { withFileTypes: true }) } catch { return }
+                            for (const e of es) {
+                                if (e.isFile() && exts.has(path.extname(e.name).toLowerCase())) {
+                                    try { const s = await fsp.stat(path.join(dir, e.name)); bytes += s.size; total++ } catch {}
+                                } else if (e.isDirectory()) {
+                                    await walk(path.join(dir, e.name), depth + 1)
+                                }
+                            }
+                        }
+                        await walk(caminho, 0)
+                        pastaInfo.arquivos = total
+                        pastaInfo.bytesTotal = bytes
+                        pastaInfo.limitado = limitou
+                    }
+                } catch { pastaInfo.existe = false }
+            }
+        } catch {}
+
+        // Últimos logs do sistema
+        let logs = []
+        if (bancoOk) {
+            try {
+                const [rows] = await db.query('SELECT acao, descricao, usuario, criado_em FROM audit_logs ORDER BY criado_em DESC LIMIT 6')
+                logs = rows.map(r => ({ acao: r.acao, descricao: r.descricao, usuario: r.usuario, quando: r.criado_em }))
+            } catch {}
+        }
+
+        res.json({
+            versao: pkg.version,
+            node: process.version,
+            uptimeSeg: Math.floor(process.uptime()),
+            plataforma: os.platform() + ' (' + os.release() + ')',
+            cpuNucleos: os.cpus().length,
+            memoriaLivreMB: Math.round(os.freemem() / 1048576),
+            memoriaTotalMB: Math.round(os.totalmem() / 1048576),
+            banco: { conectado: bancoOk, erro: dbErr },
+            produtos: produtosTotal,
+            pastaImagens: pastaInfo,
+            logs
+        })
+    } catch (err) { res.status(500).json({ error: err.message }) }
+})
+
 router.get('/usuarios', authMiddleware, async (req, res) => {
     try {
         const db = require('../config/database')
