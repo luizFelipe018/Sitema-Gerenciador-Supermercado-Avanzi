@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" id="meta-csp"
-    content="default-src 'self' http://localhost:3000 http://192.168.3.26:3000; script-src 'self' https://cdn.tailwindcss.com 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; img-src 'self' https://superavanzi.com.br blob: data: https://images.openfoodfacts.org https://static.openfoodfacts.org; connect-src 'self' http://localhost:3000 http://192.168.3.26:3000; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com;">
+    content="default-src 'self' http://localhost:3000 http://192.168.3.26:3000; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https://superavanzi.com.br blob: data: https://images.openfoodfacts.org https://static.openfoodfacts.org; connect-src 'self' http://localhost:3000 http://192.168.3.26:3000; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com;">
     <title>Supermercado Avanzi</title>
     <meta name="theme-color" content="#b51515">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,13 +13,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <script>window.TAILWIND_CONFIG = { disableDevWarning: true }</script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: { extend: { colors: { red: { avanzi: '#b51515', dark: '#8a0f0f' } } } }
-        }
-    </script>
     <link rel="stylesheet" href="css/output.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>

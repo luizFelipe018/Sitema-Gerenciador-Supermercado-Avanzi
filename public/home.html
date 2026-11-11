@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy"
-    content="default-src 'self' https://images.openfoodfacts.org https://static.openfoodfacts.org http://localhost:3000 http://192.168.3.26:3000; script-src 'self' blob: https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com; img-src 'self' https://superavanzi.com.br https://staticimgly.com blob: data: http://localhost:3000 http://192.168.3.26:3000 https://images.openfoodfacts.org https://static.openfoodfacts.org http://*.openfoodfacts.org https://*.openfoodfacts.com; connect-src 'self' http://localhost:3000 http://192.168.3.26:3000 https://images.openfoodfacts.org https://static.openfoodfacts.org https://world.openfoodfacts.org https://brasilapi.com.br https://easyqrcode.app.br https://staticimgly.com blob: data:; worker-src 'self' blob:;">
+    content="default-src 'self' https://images.openfoodfacts.org https://static.openfoodfacts.org http://localhost:3000 http://192.168.3.26:3000; script-src 'self' blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com; img-src 'self' https://superavanzi.com.br https://staticimgly.com blob: data: http://localhost:3000 http://192.168.3.26:3000 https://images.openfoodfacts.org https://static.openfoodfacts.org http://*.openfoodfacts.org https://*.openfoodfacts.com; connect-src 'self' http://localhost:3000 http://192.168.3.26:3000 https://images.openfoodfacts.org https://static.openfoodfacts.org https://world.openfoodfacts.org https://brasilapi.com.br https://easyqrcode.app.br https://staticimgly.com blob: data:; worker-src 'self' blob:;">
     <script type="importmap">
         {"imports":{"onnxruntime-web":"https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort.bundle.min.mjs","onnxruntime-web/webgpu":"https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort.webgpu.bundle.min.mjs"}}
     </script>
@@ -16,13 +16,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <script>window.TAILWIND_CONFIG = { disableDevWarning: true }</script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: { extend: { colors: { red: { avanzi: '#b51515', dark: '#8a0f0f' } } } }
-        }
-    </script>
     <link rel="stylesheet" href="css/output.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
