@@ -1,4 +1,16 @@
-const API = localStorage.getItem('serverUrl') || (window.location.protocol === 'file:' ? 'http://localhost:3000' : window.location.origin)
+// Normaliza o endereço do servidor: aceita "192.168.2.93:3000" e devolve
+// "http://192.168.2.93:3000". Sem o protocolo, a URL virava um caminho relativo
+// e o Express respondia "Cannot GET /192.168.2.93:3000/home.html".
+function normalizarServerUrl(url) {
+    if (!url) return ''
+    var u = String(url).trim().replace(/\/+$/, '')
+    if (u && !/^https?:\/\//i.test(u)) u = 'http://' + u
+    return u
+}
+window.normalizarServerUrl = normalizarServerUrl
+
+const savedServerUrl = normalizarServerUrl(localStorage.getItem('serverUrl'))
+const API = savedServerUrl || (window.location.protocol === 'file:' ? 'http://localhost:3000' : window.location.origin)
 
 // ── Global fetch interceptor — catches 401 and redirects to login ──
 const _originalFetch = window.fetch

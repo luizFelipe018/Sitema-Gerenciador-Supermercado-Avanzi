@@ -22,7 +22,7 @@ function sessaoValida() {
 }
 
 if (sessaoValida()) {
-    window.location.href = window.location.protocol === 'file:' ? 'home.html' : (localStorage.getItem('serverUrl') || window.location.origin) + '/home.html'
+    window.location.href = window.location.protocol === 'file:' ? 'home.html' : (normalizarServerUrl(localStorage.getItem('serverUrl')) || window.location.origin) + '/home.html'
 }
 
 async function fazerLogin() {
@@ -80,6 +80,20 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') fazerLogin()
 })
 
+// ── Injeta o IP salvo do servidor na CSP antes de qualquer fetch ──
+// (sem isto, o fetch para o IP da máquina seria bloqueado pela CSP)
+;(function injetarServidorNaCsp() {
+    const u = normalizarServerUrl(localStorage.getItem('serverUrl'))
+    if (!u) return
+    const m = (u.match(/^https?:\/\/[^\/]+/) || [''])[0]
+    const meta = document.getElementById('meta-csp')
+    if (!meta || !m) return
+    var csp = meta.getAttribute('content')
+    if (csp && csp.indexOf(m) === -1) {
+        meta.setAttribute('content', csp.replace(/(connect-src[^;]*)/, '$1 ' + m))
+    }
+})()
+
 // ── Auto-detect server (Electron: tenta localhost, depois o IP da rede local) ──
 ;(async function autoDetectServer() {
     if (window.location.protocol !== 'file:') return
@@ -96,10 +110,11 @@ document.addEventListener('keydown', (e) => {
             return false
         }
     }
-    const savedUrl = localStorage.getItem('serverUrl')
+    const savedUrl = normalizarServerUrl(localStorage.getItem('serverUrl'))
     // Se já há um endereço salvo, valida ele (IP antigo salvo não pode travar o login)
     if (savedUrl) {
         if (await ok(savedUrl)) return
+        // IP salvo inválido: descarta e cai p/ a detecção automática
         localStorage.removeItem('serverUrl')
         erro.innerText = 'Endereço salvo indisponível, buscando servidor...'
         erro.style.color = '#facc15'
@@ -128,7 +143,7 @@ document.getElementById('btn-server-config-login').onclick = () => {
     const area = document.getElementById('server-config-area')
     area.style.display = area.style.display === 'none' ? 'block' : 'none'
     if (area.style.display === 'block') {
-        document.getElementById('input-server-url').value = localStorage.getItem('serverUrl') || ''
+        document.getElementById('input-server-url').value = normalizarServerUrl(localStorage.getItem('serverUrl')) || ''
         document.getElementById('input-server-url').focus()
     }
 }
@@ -148,13 +163,13 @@ document.getElementById('btn-localhost-server').onclick = () => {
 document.getElementById('btn-save-server').onclick = () => {
     const url = document.getElementById('input-server-url').value.trim()
     if (url) {
-        const clean = url.replace(/\/+$/, '')
+        const clean = normalizarServerUrl(url)
         localStorage.setItem('serverUrl', clean)
-        const origin = clean.match(/^https?:\/\/[^\/]+/)[0]
+        const origin = (clean.match(/^https?:\/\/[^\/]+/) || [''])[0]
         const meta = document.getElementById('meta-csp')
         if (meta) {
             let csp = meta.getAttribute('content')
-            if (csp.indexOf(origin) === -1) {
+            if (origin && csp.indexOf(origin) === -1) {
                 csp = csp.replace(/(connect-src[^;]*)/, '$1 ' + origin)
                 meta.setAttribute('content', csp)
             }
