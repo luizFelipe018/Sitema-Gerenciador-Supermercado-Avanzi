@@ -614,37 +614,8 @@ async function processarImportacaoGrande() {
     await salvarERenderizarGrande()
     document.getElementById('import-texto-grande').value = ''
 
-
-    if (contador === 0) {
-        logErros.style.display = 'block'
-    }
-
-    await salvarERenderizarGrande()
-    document.getElementById('import-texto-grande').value = ''
-
-    if (destino === 'pequena') {
-        document.getElementById('modal-import-grande').style.display = 'none'
-        if (document.getElementById('btn-placas-pequena')) document.getElementById('btn-placas-pequena').click()
-        else if (typeof carregarPlacasPequena === 'function') carregarPlacasPequena()
-        if (typeof salvarERenderizarPequena === 'function') await salvarERenderizarPequena()
-        alert(`${resImp.contador} placa(s) gerada(s).`)
-        document.getElementById('import-texto-grande').value = ''
-        return
-    }
-    if (destino === 'media') {
-        document.getElementById('modal-import-grande').style.display = 'none'
-        if (document.getElementById('btn-placas-media')) document.getElementById('btn-placas-media').click()
-        else if (typeof carregarPlacasMedia === 'function') carregarPlacasMedia()
-        if (typeof salvarERenderizarMedia === 'function') await salvarERenderizarMedia()
-        alert(`${resImp.contador} placa(s) gerada(s).`)
-        document.getElementById('import-texto-grande').value = ''
-        return
-    }
-
     document.getElementById('modal-import-grande').style.display = 'none'
-    alert(`${resImp.contador} placa(s) gerada(s).`)
-    await salvarERenderizarGrande()
-    document.getElementById('import-texto-grande').value = ''
+    alert(`${contador} placa(s) gerada(s).`)
 }
 
 async function onExcluirPlacaGrande() {

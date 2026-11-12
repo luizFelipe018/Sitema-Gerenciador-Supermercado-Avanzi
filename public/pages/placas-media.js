@@ -752,8 +752,8 @@ async function processarImportacaoMedia() {
             const descProcurada = colunas[0].trim().toUpperCase()
             const precoNovo = parseFloat(colunas[1].replace('R$', '').replace(/\s/g, '').replace(',', '.').trim())
             if (!isNaN(precoNovo)) {
-                let prod = placasBancoMedia.find(p => p.descricao?.toUpperCase() === descProcurada) ||
-                           placasBancoMedia.find(p => p.descricao?.toUpperCase().includes(descProcurada))
+                let prod = plaquesBancoMedia.find(p => p.descricao?.toUpperCase() === descProcurada) ||
+                           plaquesBancoMedia.find(p => p.descricao?.toUpperCase().includes(descProcurada))
                 if (!prod) {
                     try {
                         const res = await fetch(API+'/produtos/busca?q='+encodeURIComponent(descProcurada), { headers: authHeaders() })
@@ -763,7 +763,7 @@ async function processarImportacaoMedia() {
                                 const res2 = await fetch(API+'/produtos/'+encodeURIComponent(lista[0].codigo), { headers: authHeaders() })
                                 if (res2.ok) {
                                     const p = await res2.json()
-                                    placasBancoMedia.push(p)
+                                    plaquesBancoMedia.push(p)
                                     prod = p
                                 }
                             }
@@ -774,14 +774,14 @@ async function processarImportacaoMedia() {
                     const qtdKgL = parseFloat(prod.quantidade_kg_l)
                     const precoUn = qtdKgL > 0 ? (precoNovo / qtdKgL).toFixed(2).replace('.', ',') : prod.preco_venda
                     for (let i = 0; i < qtdGlobal; i++) {
-                        placasSalvasMedia.push(coreAplicarPresetPadrao({ ...prod, preco: precoNovo, preco_info: precoUn, id_unico: Date.now() + Math.random() }, 'media'))
+                        plaquesSalvasMedia.push(coreAplicarPresetPadrao({ ...prod, preco: precoNovo, preco_info: precoUn, id_unico: Date.now() + Math.random() }, 'media'))
                     }
                     contador++
                 } else {
                     const qtdKgL = extrairKgLtG(descProcurada)
                     const precoUn = qtdKgL > 0 ? (precoNovo / qtdKgL).toFixed(2).replace('.', ',') : precoNovo.toFixed(2).replace('.', ',')
                     for (let i = 0; i < qtdGlobal; i++) {
-                        placasSalvasMedia.push(coreAplicarPresetPadrao({ descricao: colunas[0].trim(), codigo: '', ean: '', preco: precoNovo, preco_info: precoUn, quantidade_kg_l: qtdKgL, id_unico: Date.now() + Math.random() }, 'media'))
+                        plaquesSalvasMedia.push(coreAplicarPresetPadrao({ descricao: colunas[0].trim(), codigo: '', ean: '', preco: precoNovo, preco_info: precoUn, quantidade_kg_l: qtdKgL, id_unico: Date.now() + Math.random() }, 'media'))
                     }
                     contador++
                 }
@@ -793,25 +793,6 @@ async function processarImportacaoMedia() {
     alert(contador + ' placa(s) gerada(s).')
     await salvarERenderizarMedia()
     document.getElementById('import-texto-media').value = ''
-
-
-    fecharModaisMedia()
-    alert(contador + ' placa(s) gerada(s).')
-    await salvarERenderizarMedia()
-    document.getElementById('import-texto-media').value = ''
-
-    if (destino === 'pequena') {
-        if (document.getElementById('btn-placas-pequena')) document.getElementById('btn-placas-pequena').click()
-        else if (typeof carregarPlacasPequena === 'function') carregarPlacasPequena()
-        if (typeof salvarERenderizarPequena === 'function') await salvarERenderizarPequena()
-        document.getElementById('import-texto-media').value=''; return
-    }
-    if (destino === 'grande') {
-        if (document.getElementById('btn-placas-grande')) document.getElementById('btn-placas-grande').click()
-        else if (typeof carregarPlacasGrande === 'function') carregarPlacasGrande()
-        if (typeof salvarERenderizarGrande === 'function') await salvarERenderizarGrande()
-        document.getElementById('import-texto-media').value=''; return
-    }
 
     await salvarERenderizarMedia()
     document.getElementById('import-texto-media').value = ''
