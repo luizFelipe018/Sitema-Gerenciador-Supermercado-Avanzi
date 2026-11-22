@@ -536,6 +536,14 @@ document.getElementById('btn-busca-rapida').addEventListener('click', () => {
     carregarBuscaRapida()
 })
 
+document.getElementById('btn-precificacao')?.addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
+    carregarPrecificacao()
+})
+
 document.getElementById('btn-marcas-massa')?.addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
@@ -760,6 +768,7 @@ const MAPA_PAGINAS = {
     'btn-remover-fundo': 'carregarRemoverFundo',
     'btn-imagens-site': 'carregarImagensSite',
     'btn-busca-rapida': 'carregarBuscaRapida',
+    'btn-precificacao': 'carregarPrecificacao',
     'btn-marcas-massa': 'carregarMarcasMassa',
     'btn-importar-cardapio': 'carregarImportarCardapio',
     'btn-qrcode': 'carregarQrcode',

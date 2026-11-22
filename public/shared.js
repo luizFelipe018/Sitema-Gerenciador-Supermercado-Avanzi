@@ -107,6 +107,7 @@ window.PERMISSOES = {
     'placas-grande': ['atendente', 'gerente', 'administrador'],
     imagens: ['atendente', 'gerente', 'administrador'],
     'busca-rapida': ['atendente', 'gerente', 'administrador'],
+    precificacao: ['atendente', 'gerente', 'administrador'],
     
     // Páginas de ofertas - gerente e admin
     'terca-pizza': ['gerente', 'administrador'],
