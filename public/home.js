@@ -388,14 +388,6 @@ document.getElementById('btn-placas-grande').addEventListener('click', () => {
     carregarPlacasGrande()
 })
 
-document.getElementById('btn-gerenciador-placas')?.addEventListener('click', () => {
-    submenuPlacas.classList.remove('open')
-    btnPlacasMenu.classList.remove('open')
-    submenuImagens.classList.remove('open')
-    btnImagensMenu.classList.remove('open')
-    carregarGerenciadorPlacas()
-})
-
 document.getElementById('btn-arte-semanal')?.addEventListener('click', () => {
     if (submenuPlacas) { submenuPlacas.classList.remove('open') }
     if (btnPlacasMenu) { btnPlacasMenu.classList.remove('open') }

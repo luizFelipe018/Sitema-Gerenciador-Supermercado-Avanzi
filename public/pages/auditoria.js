@@ -4,6 +4,8 @@
    ═══════════════════════════════════════════════════════════════ */
 
 const AUDIT_FILTROS = { de: '', ate: '', usuario: '', acao: '' }
+const AUD_PLACAS_FILTROS = { descricao: '', usuario: '', impressa: '' }
+const AUD_PLACAS_LIMITE = 50
 
 function carregarAuditoria() {
     if (!window.podeAcessar || !window.podeAcessar('auditoria')) {
@@ -126,11 +128,48 @@ function carregarAuditoria() {
                 </div>
             </div>
         </div>
+
+        <!-- Detalhe das placas: produto, preço, quem gerou e impressão -->
+        <div class="ds-card" style="margin-top:24px; overflow:hidden">
+            <div class="ds-card-head">
+                <div class="ds-card-title">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+                    Detalhe das placas
+                </div>
+                <span class="ds-chip" id="aud-pl-contagem">—</span>
+            </div>
+            <div class="ds-toolbar">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <label class="ds-label" for="aud-pl-desc">Produto</label>
+                    <input id="aud-pl-desc" type="text" class="ds-input" style="width:210px; height:34px;" placeholder="Buscar produto...">
+                </div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <label class="ds-label" for="aud-pl-usuario">Quem gerou</label>
+                    <input id="aud-pl-usuario" type="text" class="ds-input" style="width:150px; height:34px;" placeholder="Ex.: fabricio">
+                </div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <label class="ds-label" for="aud-pl-status">Status</label>
+                    <select id="aud-pl-status" class="ds-input" style="width:130px; height:34px;">
+                        <option value="">Todos</option>
+                        <option value="0">Pendente</option>
+                        <option value="1">Impressa</option>
+                    </select>
+                </div>
+                <span class="muted" style="font-size:11px">Período: filtros no topo da página</span>
+                <div class="ds-toolbar-spacer"></div>
+                <button id="aud-pl-limpar" class="ds-btn ds-btn-sm">Limpar</button>
+            </div>
+            <div id="aud-pl-tabela" style="max-height:520px; overflow:auto">
+                <div class="ds-empty" style="padding:40px"><div class="ds-empty-text">Carregando…</div></div>
+            </div>
+            <div id="aud-pl-paginacao" style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding:12px 16px; border-top:1px solid var(--border); font-size:12px; color:var(--text-3);"></div>
+        </div>
     `, 'Auditoria')
 
     vincularEventosAuditoria()
     carregarResumoAuditoria()
     carregarEventosAuditoria()
+    carregarDetalhePlacas(1)
 }
 
 function vincularEventosAuditoria() {
@@ -144,6 +183,7 @@ function vincularEventosAuditoria() {
             AUDIT_FILTROS.acao = get('aud-acao').value
             carregarResumoAuditoria()
             carregarEventosAuditoria()
+            carregarDetalhePlacas(1)
         })
     })
 
@@ -152,13 +192,33 @@ function vincularEventosAuditoria() {
         ;['aud-de', 'aud-ate'].forEach(id => { if (get(id)) get(id).value = '' })
         if (get('aud-usuario')) get('aud-usuario').value = ''
         if (get('aud-acao')) get('aud-acao').value = ''
+        AUD_PLACAS_FILTROS.descricao = AUD_PLACAS_FILTROS.usuario = AUD_PLACAS_FILTROS.impressa = ''
+        ;['aud-pl-desc', 'aud-pl-usuario', 'aud-pl-status'].forEach(id => { if (get(id)) get(id).value = '' })
         carregarResumoAuditoria()
         carregarEventosAuditoria()
+        carregarDetalhePlacas(1)
     })
 
     get('aud-btn-atualizar')?.addEventListener('click', () => {
         carregarResumoAuditoria()
         carregarEventosAuditoria()
+        carregarDetalhePlacas(1)
+    })
+
+    const aoFiltrarPlacas = () => {
+        AUD_PLACAS_FILTROS.descricao = get('aud-pl-desc').value.trim()
+        AUD_PLACAS_FILTROS.usuario = get('aud-pl-usuario').value.trim()
+        AUD_PLACAS_FILTROS.impressa = get('aud-pl-status').value
+        carregarDetalhePlacas(1)
+    }
+    ;['aud-pl-desc', 'aud-pl-usuario', 'aud-pl-status'].forEach(id => {
+        get(id)?.addEventListener('change', aoFiltrarPlacas)
+        if (id !== 'aud-pl-status') get(id)?.addEventListener('keydown', e => { if (e.key === 'Enter') aoFiltrarPlacas() })
+    })
+    get('aud-pl-limpar')?.addEventListener('click', () => {
+        AUD_PLACAS_FILTROS.descricao = AUD_PLACAS_FILTROS.usuario = AUD_PLACAS_FILTROS.impressa = ''
+        ;['aud-pl-desc', 'aud-pl-usuario', 'aud-pl-status'].forEach(id => { if (get(id)) get(id).value = '' })
+        carregarDetalhePlacas(1)
     })
 
     get('aud-btn-exportar')?.addEventListener('click', () => {
@@ -180,6 +240,86 @@ function vincularEventosAuditoria() {
             })
             .catch(() => alert('Erro ao exportar.'))
     })
+}
+
+async function carregarDetalhePlacas(pagina = 1) {
+    const alvo = document.getElementById('aud-pl-tabela')
+    if (!alvo) return
+    alvo.innerHTML = '<div class="ds-empty" style="padding:40px"><div class="ds-empty-text">Carregando…</div></div>'
+
+    try {
+        const params = new URLSearchParams()
+        if (AUDIT_FILTROS.de) params.set('de', AUDIT_FILTROS.de)
+        if (AUDIT_FILTROS.ate) params.set('ate', AUDIT_FILTROS.ate)
+        Object.entries(AUD_PLACAS_FILTROS).forEach(([k, v]) => { if (v) params.set(k, v) })
+        params.set('paginado', '1')
+        params.set('pagina', String(pagina))
+        params.set('limite', String(AUD_PLACAS_LIMITE))
+
+        const res = await fetch(API + '/log-placas?' + params.toString(), { headers: authHeaders() })
+        const out = await res.json()
+        if (!res.ok) throw new Error(out.error || 'Erro ao carregar')
+
+        const total = Number(out.total || 0)
+        const paginas = out.paginas || 1
+        const chip = document.getElementById('aud-pl-contagem')
+        if (chip) chip.textContent = `${total.toLocaleString('pt-BR')} placa(s)`
+        const linhas = out.rows || []
+
+        if (!linhas.length) {
+            alvo.innerHTML = '<div class="ds-empty" style="padding:50px"><div class="ds-empty-title">Nenhuma placa encontrada</div><div class="ds-empty-text">Ajuste os filtros ou o período acima.</div></div>'
+        } else {
+            alvo.innerHTML = `
+                <table class="ds-table-prod">
+                    <thead><tr>
+                        <th style="width:118px;">Data/Hora</th>
+                        <th>Produto</th>
+                        <th style="width:100px; text-align:right;">Preço</th>
+                        <th style="width:140px;">Quem gerou</th>
+                        <th style="width:100px; text-align:center;">Tipo</th>
+                        <th style="width:130px; text-align:center;">Status</th>
+                    </tr></thead>
+                    <tbody>
+                    ${linhas.map(p => {
+                        const impressa = Number(p.impressa) === 1
+                        const tipo = ({ pequena: 'Pequena', media: 'Média', grande: 'Grande', 'media-pack': 'Media Pack' })[p.tipo_placa] || p.tipo_placa || '—'
+                        const quando = impressa && p.impressa_em
+                            ? `<div class="muted" style="font-size:10px; margin-top:2px">${audEsc(audDataHora(p.impressa_em))}</div>` : ''
+                        return `
+                        <tr>
+                            <td class="mono muted" style="white-space:nowrap">${audEsc(audDataHora(p.criado_em))}</td>
+                            <td class="strong">${audEsc(p.descricao || '—')}</td>
+                            <td class="preco" style="text-align:right; font-weight:600">${p.preco != null ? 'R$ ' + Number(p.preco).toFixed(2).replace('.', ',') : '—'}</td>
+                            <td class="muted">${audEsc(p.usuario_nome || p.usuario || '—')}</td>
+                            <td style="text-align:center"><span class="ds-badge" style="background:var(--surface-3); color:var(--text-2)">${audEsc(tipo)}</span></td>
+                            <td style="text-align:center">
+                                <span class="ds-badge" style="background:${impressa ? 'var(--ok-soft)' : 'var(--warn-soft)'}; color:${impressa ? 'var(--ok)' : 'var(--warn)'}">${impressa ? 'Impressa' : 'Pendente'}</span>
+                                ${quando}
+                            </td>
+                        </tr>`
+                    }).join('')}
+                    </tbody>
+                </table>`
+        }
+
+        const inicio = total ? ((pagina - 1) * AUD_PLACAS_LIMITE) + 1 : 0
+        const fim = Math.min(pagina * AUD_PLACAS_LIMITE, total)
+        const pag = document.getElementById('aud-pl-paginacao')
+        if (pag) {
+            pag.innerHTML = `
+                <span>${total ? `${inicio.toLocaleString('pt-BR')}–${fim.toLocaleString('pt-BR')} de ${total.toLocaleString('pt-BR')}` : '0 registro(s)'} · página ${pagina} de ${paginas}</span>
+                <div style="display:flex; gap:8px">
+                    <button class="ds-btn ds-btn-sm" id="aud-pl-anterior" ${pagina <= 1 ? 'disabled' : ''}>◀ Anterior</button>
+                    <button class="ds-btn ds-btn-sm" id="aud-pl-proxima" ${pagina >= paginas ? 'disabled' : ''}>Próxima ▶</button>
+                </div>`
+            const ant = document.getElementById('aud-pl-anterior')
+            const prox = document.getElementById('aud-pl-proxima')
+            if (ant) ant.onclick = () => carregarDetalhePlacas(pagina - 1)
+            if (prox) prox.onclick = () => carregarDetalhePlacas(pagina + 1)
+        }
+    } catch (e) {
+        alvo.innerHTML = `<div class="ds-empty" style="padding:40px"><div class="ds-empty-title">Erro ao carregar</div><div class="ds-empty-text">${audEsc(e.message)}</div></div>`
+    }
 }
 
 function audQuery() {
