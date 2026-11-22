@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const authMiddleware = require('../middlewares/authMiddleware')
+const { somenteAdmin } = require('../middlewares/roles')
 
 router.get('/dashboard', authMiddleware, async (req, res) => {
     try {
@@ -23,7 +24,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
             WHERE iv.status = 'sem_imagem' OR iv.status IS NULL
         `)
 
-        // Placas geradas no mês contam como placas únicas do log (dedup por código ou descrição+EAN+preço+tipo)
+        // Placas geradas hoje (únicas dedup por código/descrição/EAN/preço/tipo)
         const [[placasMes]] = await db.query(`
             SELECT
                 SUM(sub.tipo_placa = 'branca')  AS branca,
@@ -35,8 +36,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
             FROM (
                 SELECT MAX(tipo_placa) AS tipo_placa
                 FROM log_placas
-                WHERE MONTH(criado_em) = MONTH(CURDATE())
-                  AND YEAR(criado_em)  = YEAR(CURDATE())
+                WHERE criado_em >= CURDATE()
                 GROUP BY COALESCE(codigo, CONCAT(descricao, ean, preco, tipo_placa))
             ) sub
         `)
@@ -48,8 +48,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
             FROM (
                 SELECT MAX(l.impressa) AS impressa_max
                 FROM log_placas l
-                WHERE MONTH(l.criado_em) = MONTH(CURDATE())
-                  AND YEAR(l.criado_em)  = YEAR(CURDATE())
+                WHERE criado_em >= CURDATE()
                 GROUP BY COALESCE(l.codigo, CONCAT(l.descricao, l.ean, l.preco, l.tipo_placa))
             ) sub
         `)
@@ -100,7 +99,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
     }
 })
 
-router.delete('/dashboard/zerar', authMiddleware, async (req, res) => {
+router.delete('/dashboard/zerar', authMiddleware, somenteAdmin, async (req, res) => {
     try {
         const db = require('../config/database')
         await db.query('DELETE FROM registros_placas')

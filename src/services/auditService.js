@@ -237,7 +237,7 @@ async function completarItensPlacas(rows, detalhado = false) {
             if (logs.length) {
                 r.detalhes = JSON.stringify({
                     ...(det || {}),
-                    itens: logs.map(l => ({
+                    itens: logs.map(/** @param {any} l */ (l) => ({
                         descricao: l.descricao,
                         codigo: l.codigo,
                         ean: l.ean,

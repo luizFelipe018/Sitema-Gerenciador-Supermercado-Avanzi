@@ -45,6 +45,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.0.1",
+    "apexcharts": "^8.9.1",
     "electron": "^40.6.1",
     "electron-builder": "^26.8.1",
     "nodemon": "^3.1.14",
@@ -71,15 +72,12 @@
     },
     "files": [
       "**/*",
+      "!.env",
       "!node_modules/.cache",
       "!**/*.md",
       "!**/*.map"
     ],
     "extraResources": [
-      {
-        "from": ".env",
-        "to": ".env"
-      },
       {
         "from": "src/importar_produtos_xlsx.py",
         "to": "importar_produtos_xlsx.py"

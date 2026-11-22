@@ -193,12 +193,32 @@ async function carregarPlacasMedia() {
     window._placasAtuais = plaquesSalvasMedia
 }
 
+let _ctxLarguraMedia = null
+function _ctxWidthMedia() {
+    if (!_ctxLarguraMedia) _ctxLarguraMedia = document.createElement('canvas').getContext('2d')
+    return _ctxLarguraMedia
+}
+
+// Ajusta a fonte para o texto caber na largura. As linhas 1 e 3 usam
+// white-space:nowrap; sem esse ajuste, descrições longas eram cortadas
+// pelo overflow:hidden na borda da placa.
+function fitFontSizeMedia(texto, maxFontSize, availableWidth, fontWeight = '900') {
+    if (!texto) return maxFontSize
+    const ctx = _ctxWidthMedia()
+    ctx.font = `${fontWeight} ${maxFontSize}px 'Arial Black', Arial, sans-serif`
+    const width = ctx.measureText(String(texto).toUpperCase()).width
+    if (width <= availableWidth) return maxFontSize
+    const fator = availableWidth / width
+    return Math.max(8, Math.floor(maxFontSize * fator))
+}
+
 function calcBrandFontSize(texto) {
     if (!texto) return 100
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
+    const ctx = _ctxWidthMedia()
     const availableWidth = 472
-    let fontSize = 400
+    // Teto: sem ele uma palavra curta (ex.: "DE") vira centenas de px e
+    // transborda a placa inteira, invadindo o preço.
+    let fontSize = 130
     ctx.font = `900 ${fontSize}px 'Arial Black', Arial, sans-serif`
     let textWidth = ctx.measureText(texto.toUpperCase()).width
     while (textWidth > availableWidth && fontSize > 8) {
@@ -237,11 +257,22 @@ function montarPlacaMediaHTML(p) {
     const precoUn = (preco / precoKgL).toFixed(2).replace('.', ',')
     const rodape = p._fs?.rodape || `${semEan ? '' : 'NESTA EMBALAGEM '}${artRodape} ${uniRodape} SAI A R$ ${precoUn}`
 
+    // Largura útil da placa (561px) com folga nas laterais. As linhas 1/3 usam
+    // white-space:nowrap, então a fonte é reduzida até o texto caber por inteiro.
+    const LARGURA_TEXTO_G = 540
     const brandFontSize = calcBrandFontSize(linha2)
-    const linha1FontSize = p._fs?.linha1 || Math.max(Math.round(brandFontSize * 0.4), 12)
-    const linha3FontSize = p._fs?.linha3 || Math.max(Math.round(brandFontSize * 0.4), 12)
-    const brandSz = p._fs?.linha2 || brandFontSize
-    const gapLinha3 = p._fs?.gap3 ?? Math.max(Math.round(linha3FontSize * 0.6), 4)
+    const maxLinha13 = Math.max(Math.round(brandFontSize * 0.4), 12)
+    const fitLinha1 = fitFontSizeMedia(linha1, maxLinha13, LARGURA_TEXTO_G, 'bold')
+    const fitLinha3 = fitFontSizeMedia(linha3, maxLinha13, LARGURA_TEXTO_G, 'bold')
+    const fitBrand = fitFontSizeMedia(linha2, brandFontSize, 472, '900')
+    // Ajuste automático apenas para o tamanho padrão. Se o usuário editou o
+    // tamanho manualmente (p._fs), o valor dele é preservado sem limite.
+    const linha1FontSize = p._fs?.linha1 || fitLinha1
+    const linha3FontSize = p._fs?.linha3 || fitLinha3
+    const brandSz = p._fs?.linha2 || fitBrand
+    const gapLinha3 = p._fs?.gap3 != null
+        ? p._fs.gap3
+        : Math.max(Math.round(linha3FontSize * 0.6), 4) + 6
 
     return `
         <div id="placa-media-conteudo" class="placa-media-conteudo" style="width:561px; height:794px; margin:0 auto 88px; position:relative; box-sizing:border-box; font-family:'Arial Black',Arial,sans-serif; font-weight:900; background-image:url('assets/MODELOS PLACAS 2026.png'); background-size:100% 100%; background-position:center; background-repeat:no-repeat;">
@@ -251,12 +282,12 @@ function montarPlacaMediaHTML(p) {
                     <div class="pg-linha1" data-field="linha1" style="font-size:${linha1FontSize}px; font-weight:bold; text-transform:uppercase; white-space:nowrap; overflow:hidden; transform:scaleY(1.3);">${linha1}</div>
                 </div>
 
-                <div class="pg-linha2-wrapper" style="width:90%; text-align:center; display:flex; align-items:center; justify-content:center; margin-top:14px;">
-                    <div class="pg-linha2" data-field="linha2" style="font-size:${brandSz}px; font-weight:900; text-transform:uppercase; line-height:0.66; letter-spacing:2px; white-space:nowrap; width:100%; transform:scaleY(1.3);">${linha2}</div>
+                <div class="pg-linha2-wrapper" style="width:90%; text-align:center; display:flex; align-items:center; justify-content:center; margin-top:20px;">
+                    <div class="pg-linha2" data-field="linha2" style="font-size:${brandSz}px; font-weight:900; text-transform:uppercase; line-height:0.66; letter-spacing:2px; white-space:nowrap; width:100%; -webkit-text-stroke:2px #000; transform:scaleY(1.6);">${linha2}</div>
                 </div>
 
                 <div class="pg-linha3-wrapper" style="width:100%; text-align:center; margin-top:${gapLinha3}px;">
-                    <div class="pg-linha3" data-field="linha3" style="font-size:${linha3FontSize}px; font-weight:bold; text-transform:uppercase; transform:scaleY(1.3);">${linha3}</div>
+                    <div class="pg-linha3" data-field="linha3" style="font-size:${linha3FontSize}px; font-weight:bold; text-transform:uppercase; white-space:nowrap; overflow:hidden; transform:scaleY(1.3);">${linha3}</div>
                 </div>
             </div>
 
@@ -692,7 +723,7 @@ async function adicionarPlacaMedia() {
 }
 
 function abrirBuscaNomeMedia() {
-    coreAbrirBuscaNome('-g')
+    coreAbrirBuscaNome('-media')
 }
 
 async function onBuscaNomeKeydownMedia(e) {

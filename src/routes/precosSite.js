@@ -8,6 +8,7 @@
 const router = require('express').Router()
 const https = require('https')
 const authMiddleware = require('../middlewares/authMiddleware')
+const { somenteGestao } = require('../middlewares/roles')
 
 const SEARCH_ENGINE = 'https://sense.osuper.com.br/279/1369/v2'
 const SITE_ORIGIN = 'https://lojasuperavanzi.com.br'
@@ -166,7 +167,7 @@ router.get('/precos-site/comparar', authMiddleware, async (req, res) => {
 })
 
 /* POST /precos-site/atualizar-preco {codigo, preco} — atualiza preco_venda do ERP */
-router.post('/precos-site/atualizar-preco', authMiddleware, async (req, res) => {
+router.post('/precos-site/atualizar-preco', authMiddleware, somenteGestao, async (req, res) => {
     try {
         const codigo = String(req.body?.codigo || '').trim()
         const preco = Number(req.body?.preco)

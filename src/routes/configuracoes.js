@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const authMiddleware = require('../middlewares/authMiddleware')
+const { somenteAdmin } = require('../middlewares/roles')
 
 router.get('/configuracao/:chave', authMiddleware, async (req, res) => {
     try {
@@ -12,7 +13,7 @@ router.get('/configuracao/:chave', authMiddleware, async (req, res) => {
     }
 })
 
-router.put('/configuracao/:chave', authMiddleware, async (req, res) => {
+router.put('/configuracao/:chave', authMiddleware, somenteAdmin, async (req, res) => {
     try {
         const db = require('../config/database')
         const { valor } = req.body

@@ -3,11 +3,41 @@ const productController = require('../controllers/productController')
 const authController    = require('../controllers/authController')
 const userController    = require('../controllers/userController')
 const authMiddleware    = require('../middlewares/authMiddleware')
+const { somenteAdmin }  = require('../middlewares/roles')
 const auditService      = require('../services/auditService')
+
+// Limite simples de tentativas de login por IP — evita força bruta na rede da loja.
+const LOGIN_MAX = 10
+const LOGIN_JANELA_MS = 15 * 60 * 1000
+const tentativasLogin = new Map()
+
+function limiteLogin(req, res, next) {
+    const ip = req.ip || req.socket?.remoteAddress || 'desconhecido'
+    const agora = Date.now()
+    const reg = tentativasLogin.get(ip) || { count: 0, inicio: agora }
+    if (agora - reg.inicio > LOGIN_JANELA_MS) {
+        reg.count = 0
+        reg.inicio = agora
+    }
+    if (reg.count >= LOGIN_MAX) {
+        return res.status(429).json({ error: 'Muitas tentativas de login. Aguarde 15 minutos.' })
+    }
+    reg.count++
+    tentativasLogin.set(ip, reg)
+    if (tentativasLogin.size > 500) {
+        for (const [chave, valor] of tentativasLogin) {
+            if (agora - valor.inicio > LOGIN_JANELA_MS) tentativasLogin.delete(chave)
+        }
+    }
+    res.on('finish', () => {
+        if (res.statusCode < 400) tentativasLogin.delete(ip)
+    })
+    next()
+}
 
 router.get('/', (req, res) => res.json({ message: 'API OK 🔥' }))
 
-router.post('/login', authController.login)
+router.post('/login', limiteLogin, authController.login)
 
 // Saída do sistema — fica registrada na trilha de auditoria
 router.post('/logout', authMiddleware, async (req, res) => {
@@ -18,7 +48,7 @@ router.post('/logout', authMiddleware, async (req, res) => {
     res.json({ ok: true })
 })
 
-router.post('/usuarios', userController.create)
+router.post('/usuarios', authMiddleware, somenteAdmin, userController.create)
 
 router.get('/usuarios/minha-conta', authMiddleware, async (req, res) => {
     try {

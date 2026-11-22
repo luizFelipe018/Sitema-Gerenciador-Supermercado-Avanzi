@@ -11,7 +11,7 @@ function somenteAdmin(req, res, next) {
     next()
 }
 
-router.post('/migrar-cargos', authMiddleware, async (req, res) => {
+router.post('/migrar-cargos', authMiddleware, somenteAdmin, async (req, res) => {
     try {
         const db = require('../config/database')
         const [cols] = await db.query('SHOW COLUMNS FROM usuarios LIKE "cargo"')
@@ -151,7 +151,7 @@ router.get('/alertas', authMiddleware, somenteAdmin, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }) }
 })
 
-router.get('/usuarios', authMiddleware, async (req, res) => {
+router.get('/usuarios', authMiddleware, somenteAdmin, async (req, res) => {
     try {
         const db = require('../config/database')
         const [rows] = await db.query(

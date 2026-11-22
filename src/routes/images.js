@@ -4,6 +4,24 @@ const fs = require('fs')
 const https = require('https')
 const authMiddleware = require('../middlewares/authMiddleware')
 
+// Somente hosts de onde realmente buscamos imagens — evita proxy aberto (SSRF).
+const HOSTS_IMAGEM_PERMITIDOS = new Set([
+    'images.openfoodfacts.org',
+    'static.openfoodfacts.org',
+    'world.openfoodfacts.org',
+    'edge.osuper.com.br',
+    'lojasuperavanzi.com.br',
+    'www.lojasuperavanzi.com.br',
+    'sense.osuper.com.br'
+])
+
+function urlImagemPermitida(u) {
+    try {
+        const alvo = new URL(String(u).replace(/^http:\/\//i, 'https://'))
+        return alvo.protocol === 'https:' && HOSTS_IMAGEM_PERMITIDOS.has(alvo.hostname.toLowerCase())
+    } catch { return false }
+}
+
 async function getPastaImagens() {
     try {
         const db = require('../config/database')
@@ -240,10 +258,19 @@ router.get('/off-image', (req, res) => {
         } catch {
             return res.status(400).json({ error: 'URL inválida' })
         }
+        if (!urlImagemPermitida(u)) {
+            return res.status(400).json({ error: 'Host de imagem não permitido' })
+        }
         https.get({ hostname: alvo.hostname, path: alvo.pathname + alvo.search, headers }, (imgRes) => {
             if (imgRes.statusCode >= 300 && imgRes.statusCode < 400 && imgRes.headers.location && redirects < 5) {
                 imgRes.resume()
-                return buscar(imgRes.headers.location, redirects + 1)
+                let proxima
+                try { proxima = new URL(imgRes.headers.location, alvo).toString() }
+                catch { return res.status(400).json({ error: 'Redirecionamento inválido' }) }
+                if (!urlImagemPermitida(proxima)) {
+                    return res.status(400).json({ error: 'Host de imagem não permitido' })
+                }
+                return buscar(proxima, redirects + 1)
             }
             if (imgRes.statusCode !== 200) {
                 imgRes.resume()

@@ -1,22 +1,139 @@
 let buscaRapidaTimer = null
 
+/** Estilos próprios da Busca Rápida — injetados uma vez, escopados ao #conteudo. */
+function brInjetarEstilos() {
+    if (document.getElementById('br-styles')) return
+    const style = document.createElement('style')
+    style.id = 'br-styles'
+    style.textContent = `
+        @keyframes brFadeUp { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
+
+        #conteudo > div.br-panel {
+            background: var(--surface-1) !important;
+            border: 1px solid var(--border);
+            border-radius: var(--r-lg);
+            padding: 22px;
+            margin-bottom: 18px;
+            box-shadow: var(--shadow-sm);
+            animation: brFadeUp var(--dur) var(--ease-out) both;
+        }
+        #conteudo .br-head { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+        #conteudo .br-icon {
+            width:34px; height:34px; flex:none; display:grid; place-items:center;
+            border-radius:var(--r-sm); background:var(--brand-soft) !important; color:var(--brand-text) !important;
+        }
+        #conteudo .br-title {
+            font-size:12px; font-weight:700; text-transform:uppercase;
+            letter-spacing:.08em; color:var(--text-3) !important;
+        }
+        #conteudo .br-row { display:flex; gap:12px; align-items:stretch; }
+
+        #conteudo .br-input {
+            flex:1 1 280px; min-width:0; padding:13px 16px;
+            border:1px solid var(--border-strong); border-radius:var(--r-md);
+            background:var(--surface-2); color:var(--text-1); font-size:14px;
+            outline:none; transition:border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background var(--dur);
+        }
+        #conteudo .br-input::placeholder { color:var(--text-3); }
+        #conteudo .br-input:hover { border-color:var(--brand-soft-2); }
+        #conteudo .br-input:focus { border-color:var(--brand); box-shadow:var(--ring); background:var(--surface-1); }
+
+        #conteudo .br-btn {
+            padding:0 24px; min-height:46px; border:0; border-radius:var(--r-md);
+            font-size:13px; font-weight:700; color:var(--text-inv); background:var(--brand);
+            box-shadow:0 4px 14px rgba(181,21,21,.28); cursor:pointer;
+            transition:transform var(--dur) var(--ease), filter var(--dur), box-shadow var(--dur);
+        }
+        #conteudo .br-btn:hover { filter:brightness(1.08); transform:translateY(-1px); box-shadow:0 8px 20px rgba(181,21,21,.34); }
+        #conteudo .br-btn:active { transform:translateY(0); }
+        #conteudo .br-btn:focus-visible { outline:none; box-shadow:var(--ring); }
+
+        #conteudo .br-sugestoes:empty { display:none; }
+        #conteudo .br-sugestoes {
+            margin-top:12px; max-height:340px; overflow-y:auto;
+            border:1px solid var(--border); border-radius:var(--r-md);
+            background:var(--surface-2); animation:brFadeUp var(--dur) var(--ease-out) both;
+        }
+        #conteudo .br-sugestao {
+            display:flex; align-items:center; justify-content:space-between; gap:12px;
+            padding:11px 16px; cursor:pointer; border-bottom:1px solid var(--border-soft);
+            transition:background var(--dur), padding-left var(--dur) var(--ease);
+        }
+        #conteudo .br-sugestao:last-child { border-bottom:0; }
+        #conteudo .br-sugestao:hover { background:var(--surface-hover); padding-left:20px; }
+        #conteudo .br-sugestao-nome {
+            font-size:13px; font-weight:500; color:var(--text-1);
+            overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+        }
+        #conteudo .br-sugestao-meta { display:flex; align-items:center; gap:14px; flex:none; }
+        #conteudo .br-codigo { font-size:11px; font-family:ui-monospace,Consolas,monospace; color:var(--text-3) !important; }
+        #conteudo .br-preco { font-size:13px; font-weight:700; color:var(--brand-text) !important; white-space:nowrap; }
+
+        #conteudo .br-card {
+            background:var(--surface-1); border:1px solid var(--border);
+            border-radius:var(--r-lg); padding:22px; box-shadow:var(--shadow-sm);
+            animation:brFadeUp var(--dur) var(--ease-out) both;
+        }
+        #conteudo .br-card-top { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:20px; }
+        #conteudo .br-nome { font-size:18px; font-weight:700; color:var(--text-1); }
+        #conteudo .br-meta { font-size:11px; color:var(--text-3) !important; margin-top:4px; }
+        #conteudo .br-preco-grande { font-size:28px; font-weight:800; color:var(--brand-text) !important; text-align:right; line-height:1.1; }
+        #conteudo .br-oferta { font-size:12px; font-weight:600; color:var(--ok) !important; text-align:right; margin-top:4px; }
+
+        #conteudo .br-kpis { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-bottom:20px; }
+        #conteudo .br-kpi { padding:12px; background:var(--surface-2); border:1px solid var(--border-soft); border-radius:var(--r-sm); }
+        #conteudo .br-kpi-label { font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--text-3) !important; }
+        #conteudo .br-kpi-valor {
+            font-size:13px; font-weight:600; color:var(--text-1) !important; margin-top:4px;
+            overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+        }
+
+        #conteudo .br-acoes { display:flex; gap:10px; flex-wrap:wrap; }
+        #conteudo .br-acao {
+            padding:9px 16px; border-radius:var(--r-sm); font-size:12px; font-weight:600;
+            cursor:pointer; transition:transform var(--dur) var(--ease), filter var(--dur);
+        }
+        #conteudo .br-acao:hover { transform:translateY(-1px); filter:brightness(1.1); }
+        #conteudo .br-acao-img { border:1px solid var(--info); color:var(--info); background:var(--info-soft); }
+        #conteudo .br-acao-placa { border:1px solid var(--ok); color:var(--ok); background:var(--ok-soft); }
+
+        #conteudo .br-estado { padding:40px 20px; text-align:center; color:var(--text-3) !important; font-size:13px; }
+        #conteudo .br-estado-erro { color:var(--danger) !important; }
+        #conteudo .br-foto {
+            margin-top:16px; padding:16px; background:var(--surface-2);
+            border-radius:var(--r-md); display:flex; justify-content:center;
+        }
+        #conteudo .br-foto img { max-height:300px; object-fit:contain; border-radius:var(--r-sm); }
+
+        @media (min-width:768px) { #conteudo .br-kpis { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+        @media (max-width:640px) {
+            #conteudo .br-row { flex-direction:column; }
+            #conteudo .br-btn { width:100%; }
+        }
+        @media (prefers-reduced-motion:reduce) {
+            #conteudo > div.br-panel, #conteudo .br-sugestoes, #conteudo .br-card { animation:none; }
+            #conteudo .br-btn, #conteudo .br-sugestao, #conteudo .br-acao { transition:none; }
+        }
+    `
+    document.head.appendChild(style)
+}
+
 async function carregarBuscaRapida() {
+    brInjetarEstilos()
     setActive('btn-busca-rapida')
     setConteudo(`
-        <div class="dash-glass dash-animate" style="padding:20px; margin-bottom:20px;">
-            <div class="flex items-center gap-3 mb-4">
-                <svg width="18" height="18" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                <span style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.4);">Busca Rápida de Produtos</span>
+        <div class="br-panel">
+            <div class="br-head">
+                <span class="br-icon">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                </span>
+                <span class="br-title">Busca Rápida de Produtos</span>
             </div>
-            <div class="flex gap-3">
-                <input id="br-input" type="text" autofocus placeholder="Digite código, EAN ou descrição..."
-                    style="flex:1; padding:12px 16px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; font-size:14px; color:#fafafa; background:#252525; outline:none; transition:border-color 0.3s; box-sizing:border-box;"
-                    onfocus="this.style.borderColor='rgba(181,21,21,0.4)'"
-                    onblur="this.style.borderColor='rgba(255,255,255,0.08)'">
-                <button id="br-btn" style="padding:12px 24px; border:none; border-radius:10px; font-size:13px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3); transition:all 0.3s;"
-                    onmouseenter="this.style.opacity='0.85'" onmouseleave="this.style.opacity='1'">Buscar</button>
+            <div class="br-row">
+                <input id="br-input" class="br-input" type="text" autofocus placeholder="Digite código, EAN ou descrição...">
+                <button id="br-btn" class="br-btn" type="button">Buscar</button>
             </div>
-            <div id="br-sugestoes" style="margin-top:12px;"></div>
+            <div id="br-sugestoes" class="br-sugestoes"></div>
         </div>
         <div id="br-resultado"></div>
     `, 'Busca Rápida')
@@ -57,23 +174,15 @@ async function buscarSugestoesBR(termo) {
         const resultados = await res.json()
         if (!resultados.length) { el.innerHTML = ''; return }
 
-        el.innerHTML = `
-            <div class="dash-glass" style="padding:8px; overflow:hidden;">
-                ${resultados.map(p => `
-                    <div class="br-sugestao flex items-center justify-between px-4 py-2.5 rounded-lg cursor-pointer transition-all"
-                        style="transition:background 0.2s;"
-                        data-codigo="${p.codigo}" data-desc="${p.descricao}" data-ean="${p.ean || ''}" data-preco="${p.preco_venda || ''}"
-                        onmouseenter="this.style.background='rgba(255,255,255,0.05)'"
-                        onmouseleave="this.style.background='transparent'">
-                        <span style="font-size:13px; font-weight:500; color:rgba(255,255,255,0.85);">${p.descricao}</span>
-                        <div class="flex items-center gap-3">
-                            <span style="font-size:11px; color:rgba(255,255,255,0.3); font-family:monospace;">${p.codigo}</span>
-                            <span style="font-size:13px; font-weight:700; color:rgba(181,21,21,0.9);">R$ ${parseFloat(p.preco_venda || 0).toFixed(2).replace('.', ',')}</span>
-                        </div>
-                    </div>
-                `).join('')}
+        el.innerHTML = resultados.map(p => `
+            <div class="br-sugestao" data-codigo="${p.codigo}" data-desc="${p.descricao}" data-ean="${p.ean || ''}" data-preco="${p.preco_venda || ''}">
+                <span class="br-sugestao-nome">${p.descricao}</span>
+                <div class="br-sugestao-meta">
+                    <span class="br-codigo">${p.codigo}</span>
+                    <span class="br-preco">R$ ${parseFloat(p.preco_venda || 0).toFixed(2).replace('.', ',')}</span>
+                </div>
             </div>
-        `
+        `).join('')
 
         el.querySelectorAll('.br-sugestao').forEach(item => {
             item.onclick = () => {
@@ -88,70 +197,56 @@ async function buscarSugestoesBR(termo) {
 async function executarBuscaRapida(termo) {
     if (!termo) return
     const resultado = document.getElementById('br-resultado')
-    resultado.innerHTML = `<div class="dash-glass dash-animate" style="padding:40px; text-align:center;"><p style="color:rgba(255,255,255,0.3); font-size:13px;">Buscando...</p></div>`
+    resultado.innerHTML = `<div class="br-card"><div class="br-estado">Buscando...</div></div>`
 
     try {
         const res = await fetch(API+`/produtos/${encodeURIComponent(termo)}`, { headers: authHeaders() })
         if (!res.ok) {
-            resultado.innerHTML = `<div class="dash-glass dash-animate" style="padding:40px; text-align:center;"><p style="color:#ef4444; font-size:13px;">Produto não encontrado: <strong>${termo}</strong></p></div>`
+            resultado.innerHTML = `<div class="br-card"><div class="br-estado br-estado-erro">Produto não encontrado: <strong>${termo}</strong></div></div>`
             return
         }
         const prod = await res.json()
         resultado.innerHTML = `
-            <div class="dash-glass dash-animate" style="padding:20px;">
-                <div class="flex items-center justify-between flex-wrap gap-4 mb-6">
+            <div class="br-card">
+                <div class="br-card-top">
                     <div>
-                        <h3 style="font-size:18px; font-weight:700; color:rgba(255,255,255,0.9);">${prod.descricao}</h3>
-                        <p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:4px;">Código: ${prod.codigo} | EAN: ${prod.ean || '—'}</p>
+                        <h3 class="br-nome">${prod.descricao}</h3>
+                        <p class="br-meta">Código: ${prod.codigo} | EAN: ${prod.ean || '—'}</p>
                     </div>
-                    <div style="text-align:right;">
-                        <p style="font-size:28px; font-weight:800; color:rgba(181,21,21,0.9);">R$ ${parseFloat(prod.preco_venda || 0).toFixed(2).replace('.', ',')}</p>
-                        ${prod.preco_oferta ? `<p style="font-size:12px; font-weight:600; color:#22c55e;">Oferta: R$ ${parseFloat(prod.preco_oferta).toFixed(2).replace('.', ',')}</p>` : ''}
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div style="padding:12px; background:rgba(255,255,255,0.03); border-radius:8px;">
-                        <p style="font-size:10px; color:rgba(255,255,255,0.25); text-transform:uppercase;">Departamento</p>
-                        <p style="font-size:13px; font-weight:600; color:rgba(255,255,255,0.7);">${prod.descricao_departamento || '—'}</p>
-                    </div>
-                    <div style="padding:12px; background:rgba(255,255,255,0.03); border-radius:8px;">
-                        <p style="font-size:10px; color:rgba(255,255,255,0.25); text-transform:uppercase;">Seção</p>
-                        <p style="font-size:13px; font-weight:600; color:rgba(255,255,255,0.7);">${prod.secao || '—'}</p>
-                    </div>
-                    <div style="padding:12px; background:rgba(255,255,255,0.03); border-radius:8px;">
-                        <p style="font-size:10px; color:rgba(255,255,255,0.25); text-transform:uppercase;">Grupo</p>
-                        <p style="font-size:13px; font-weight:600; color:rgba(255,255,255,0.7);">${prod.grupo || '—'}</p>
-                    </div>
-                    <div style="padding:12px; background:rgba(255,255,255,0.03); border-radius:8px;">
-                        <p style="font-size:10px; color:rgba(255,255,255,0.25); text-transform:uppercase;">Marca</p>
-                        <p style="font-size:13px; font-weight:600; color:rgba(255,255,255,0.7);">${prod.marca || '—'}</p>
+                    <div>
+                        <p class="br-preco-grande">R$ ${parseFloat(prod.preco_venda || 0).toFixed(2).replace('.', ',')}</p>
+                        ${Number(prod.preco_oferta) > 0 ? `<p class="br-oferta">Oferta: R$ ${parseFloat(prod.preco_oferta).toFixed(2).replace('.', ',')}</p>` : ''}
                     </div>
                 </div>
-                <div class="flex gap-3 flex-wrap">
-                    <button id="br-btn-imagem" style="padding:8px 16px; border:1px solid rgba(59,130,246,0.3); border-radius:8px; font-size:12px; font-weight:600; color:#3b82f6; background:rgba(59,130,246,0.08); cursor:pointer; transition:all 0.3s;"
-                        onmouseenter="this.style.background='rgba(59,130,246,0.15)'" onmouseleave="this.style.background='rgba(59,130,246,0.08)'">📷 Ver Imagem</button>
-                    <button id="br-btn-placa" style="padding:8px 16px; border:1px solid rgba(34,197,94,0.3); border-radius:8px; font-size:12px; font-weight:600; color:#22c55e; background:rgba(34,197,94,0.08); cursor:pointer; transition:all 0.3s;"
-                        onmouseenter="this.style.background='rgba(34,197,94,0.15)'" onmouseleave="this.style.background='rgba(34,197,94,0.08)'">🏷️ Gerar Placa</button>
+                <div class="br-kpis">
+                    <div class="br-kpi"><p class="br-kpi-label">Departamento</p><p class="br-kpi-valor" title="${prod.descricao_departamento || ''}">${prod.descricao_departamento || '—'}</p></div>
+                    <div class="br-kpi"><p class="br-kpi-label">Seção</p><p class="br-kpi-valor" title="${prod.secao || ''}">${prod.secao || '—'}</p></div>
+                    <div class="br-kpi"><p class="br-kpi-label">Grupo</p><p class="br-kpi-valor" title="${prod.grupo || ''}">${prod.grupo || '—'}</p></div>
+                    <div class="br-kpi"><p class="br-kpi-label">Marca</p><p class="br-kpi-valor" title="${prod.marca || ''}">${prod.marca || '—'}</p></div>
                 </div>
-                <div id="br-acao-resultado" style="margin-top:16px;"></div>
+                <div class="br-acoes">
+                    <button id="br-btn-imagem" class="br-acao br-acao-img" type="button">📷 Ver Imagem</button>
+                    <button id="br-btn-placa" class="br-acao br-acao-placa" type="button">🏷️ Gerar Placa</button>
+                </div>
+                <div id="br-acao-resultado"></div>
             </div>
         `
 
         document.getElementById('br-btn-imagem').onclick = async () => {
-            document.getElementById('br-acao-resultado').innerHTML = `<div style="padding:20px; text-align:center; color:rgba(255,255,255,0.3); font-size:13px;">Carregando imagem...</div>`
+            document.getElementById('br-acao-resultado').innerHTML = `<div class="br-estado">Carregando imagem...</div>`
             try {
                 const res = await fetch(API+`/imagem?nome=${encodeURIComponent(prod.descricao)}`, { headers: authHeaders() })
                 if (res.ok) {
                     const blob = await res.blob()
                     const url = URL.createObjectURL(blob)
                     document.getElementById('br-acao-resultado').innerHTML = `
-                        <div style="padding:16px; background:rgba(255,255,255,0.03); border-radius:10px; display:flex; justify-content:center;">
-                            <img src="${url}" style="max-height:300px; object-fit:contain; border-radius:8px;">
-                        </div>`
+                        <div class="br-foto"><img src="${url}" alt="${prod.descricao}"></div>`
                 } else {
-                    document.getElementById('br-acao-resultado').innerHTML = `<div style="padding:20px; text-align:center; color:#ef4444; font-size:13px;">Imagem não encontrada</div>`
+                    document.getElementById('br-acao-resultado').innerHTML = `<div class="br-estado br-estado-erro">Imagem não encontrada</div>`
                 }
-            } catch { document.getElementById('br-acao-resultado').innerHTML = `<div style="padding:20px; text-align:center; color:#ef4444; font-size:13px;">Erro ao carregar imagem</div>` }
+            } catch {
+                document.getElementById('br-acao-resultado').innerHTML = `<div class="br-estado br-estado-erro">Erro ao carregar imagem</div>`
+            }
         }
 
         document.getElementById('br-btn-placa').onclick = () => {
@@ -165,6 +260,6 @@ async function executarBuscaRapida(termo) {
             }, 100)
         }
     } catch {
-        resultado.innerHTML = `<div class="dash-glass dash-animate" style="padding:40px; text-align:center;"><p style="color:#ef4444; font-size:13px;">Erro ao conectar com o servidor</p></div>`
+        resultado.innerHTML = `<div class="br-card"><div class="br-estado br-estado-erro">Erro ao conectar com o servidor</div></div>`
     }
 }

@@ -247,21 +247,7 @@ router.post('/registros-placas', authMiddleware, async (req, res) => {
     }
 })
 
-router.delete('/registros-placas/:id', authMiddleware, async (req, res) => {
-    try {
-        const db = require('../config/database')
-        await db.query('DELETE FROM registros_placas WHERE id = ? AND usuario = ?', [req.params.id, req.user.usuario])
-        await auditService.registrar(req, auditService.ACOES.EXCLUIR_PLACA, {
-            descricao: `excluiu uma placa`,
-            entidade: 'registros_placas',
-            detalhes: { id: req.params.id }
-        })
-        res.json({ ok: true })
-    } catch (err) {
-        res.status(500).json({ error: err.message })
-    }
-})
-
+// Rota específica ANTES de /:id — senão "limpar" é capturado como id.
 router.delete('/registros-placas/limpar/:tipo', authMiddleware, async (req, res) => {
     try {
         const db = require('../config/database')
@@ -274,6 +260,21 @@ router.delete('/registros-placas/limpar/:tipo', authMiddleware, async (req, res)
             quantidade: r.affectedRows
         })
         res.json({ ok: true, removidos: r.affectedRows })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+router.delete('/registros-placas/:id', authMiddleware, async (req, res) => {
+    try {
+        const db = require('../config/database')
+        await db.query('DELETE FROM registros_placas WHERE id = ? AND usuario = ?', [req.params.id, req.user.usuario])
+        await auditService.registrar(req, auditService.ACOES.EXCLUIR_PLACA, {
+            descricao: `excluiu uma placa`,
+            entidade: 'registros_placas',
+            detalhes: { id: req.params.id }
+        })
+        res.json({ ok: true })
     } catch (err) {
         res.status(500).json({ error: err.message })
     }

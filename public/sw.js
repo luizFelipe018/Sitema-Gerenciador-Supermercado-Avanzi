@@ -1,10 +1,11 @@
-const CACHE_NAME = 'avanzi-erp-v4';
+const CACHE_NAME = 'avanzi-erp-v5';
 const ASSETS_TO_CACHE = [
   '/',
   '/login.html',
   '/home.html',
   '/shared.js',
-  '/manifest.json'
+  '/manifest.json',
+  '/vendor/apexcharts.min.js'
 ];
 
 // Instalar - cachear assets

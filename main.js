@@ -1,12 +1,51 @@
-const { app, BrowserWindow, dialog } = require('electron')
+const { app, BrowserWindow, dialog, shell } = require('electron')
 const { autoUpdater } = require('electron-updater')
 const path = require('path')
+const fs = require('fs')
+const crypto = require('crypto')
 
-const envPath = app.isPackaged
-    ? path.join(process.resourcesPath, '.env')
-    : path.join(__dirname, '.env')
+let configPendente = false
+let caminhoConfig = ''
 
-require('dotenv').config({ path: envPath })
+/**
+ * Em desenvolvimento continua usando a raiz do projeto.
+ * No instalado, a configuração fica em %APPDATA%/Super Avanzi ERP/.env —
+ * fora do pacote, para não distribuir senha do banco nem JWT_SECRET.
+ */
+function carregarConfigEnv() {
+    if (!app.isPackaged) {
+        require('dotenv').config({ path: path.join(__dirname, '.env') })
+        return
+    }
+
+    const dir = app.getPath('userData')
+    const envPath = path.join(dir, '.env')
+    caminhoConfig = envPath
+
+    if (!fs.existsSync(envPath)) {
+        const modelo = [
+            '# Configuração do Super Avanzi ERP — preencha e reinicie o app',
+            'DB_HOST=localhost',
+            'DB_PORT=3399',
+            'DB_NAME=supermercado',
+            'DB_USER=',
+            'DB_PASSWORD=',
+            `JWT_SECRET=${crypto.randomBytes(32).toString('hex')}`,
+            'PASTA_IMAGENS=',
+            'PASTA_PRATOS=',
+            ''
+        ].join('\n')
+        fs.mkdirSync(dir, { recursive: true })
+        fs.writeFileSync(envPath, modelo, 'utf8')
+        configPendente = true
+    }
+
+    require('dotenv').config({ path: envPath })
+
+    if (!process.env.DB_USER || !process.env.DB_PASSWORD || !process.env.JWT_SECRET) {
+        configPendente = true
+    }
+}
 
 function createWindow() {
     const win = new BrowserWindow({
@@ -132,6 +171,22 @@ function setupAutoUpdate(mainWin) {
 }
 
 app.whenReady().then(() => {
+    carregarConfigEnv()
+
+    if (configPendente) {
+        dialog.showMessageBoxSync({
+            type: 'warning',
+            title: 'Configuração necessária',
+            message: 'Configure o banco de dados',
+            detail: `Um arquivo .env foi criado em:\n\n${caminhoConfig}\n\nPreencha DB_USER e DB_PASSWORD (o JWT_SECRET já foi gerado) e reinicie o app.`,
+            buttons: ['Abrir arquivo', 'Fechar'],
+            defaultId: 0
+        })
+        shell.showItemInFolder(caminhoConfig)
+        app.quit()
+        return
+    }
+
     require('./server')
     const win = createWindow()
     setupAutoUpdate(win)

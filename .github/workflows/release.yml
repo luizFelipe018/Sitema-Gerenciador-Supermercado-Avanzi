@@ -11,7 +11,50 @@ permissions:
   contents: write
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: supermercado
+        ports:
+          - 3399:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Checar tipos
+        run: npm run typecheck
+
+      - name: Criar schema de teste
+        run: mysql -h 127.0.0.1 -P 3399 -uroot -proot supermercado < src/__tests__/schema.sql
+
+      - name: Rodar testes
+        run: npm test
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: '3399'
+          DB_USER: root
+          DB_PASSWORD: root
+          DB_NAME: supermercado
+          JWT_SECRET: test-secret
+
   release:
+    needs: test
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,19 +67,8 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
-      # O .env (credenciais do banco / JWT) vem do Secret do repositorio — nunca commitado
-      - name: Criar .env a partir dos secrets
-        shell: bash
-        run: |
-          cat > .env << 'EOF'
-          DB_HOST=${{ secrets.DB_HOST }}
-          DB_USER=${{ secrets.DB_USER }}
-          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          DB_NAME=${{ secrets.DB_NAME }}
-          DB_PORT=${{ secrets.DB_PORT }}
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          EOF
-
+      # Credenciais NÃO entram mais no instalador: na primeira execução o app
+      # cria %APPDATA%/Super Avanzi ERP/.env e pede ao administrador para preencher.
       - name: Buildar e publicar na Release
         run: npm run build:publish
         env:

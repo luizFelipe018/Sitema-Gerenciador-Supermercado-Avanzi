@@ -23,7 +23,7 @@ function dashEsc(v) {
 /* ─────────────────────────────────────────────────────────────
    Estilos 3D (injetados uma única vez)
    ───────────────────────────────────────────────────────────── */
-function dashInjectStyles() {
+function dashInjectStylesLegado() {
     if (document.getElementById('dash-3d-styles')) return
 
     const style = document.createElement('style')
@@ -633,7 +633,7 @@ function dashInjectStyles() {
    Carregamento principal
    ───────────────────────────────────────────────────────────── */
 async function carregarDashboard() {
-    dashInjectStyles()
+    dashInjectStylesLegado()
     setActive('btn-dashboard')
 
     setConteudo(`
@@ -828,14 +828,14 @@ function dashRenderizar(d) {
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="18" y="3" width="4" height="18"/><rect x="10" y="8" width="4" height="13"/><rect x="2" y="13" width="4" height="8"/></svg>
                     Produtos por Departamento
                 </div>
-                <div class="d3-chart"><canvas id="chart-depto"></canvas></div>
+                <div class="d3-chart"><div id="chart-depto" style="width:100%;height:100%"></div></div>
             </div>
             <div class="d3-card d3-animate">
                 <div class="d3-card-title">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                     Placas nos Últimos 30 Dias
                 </div>
-                <div class="d3-chart"><canvas id="chart-dias"></canvas></div>
+                <div class="d3-chart"><div id="chart-dias" style="width:100%;height:100%"></div></div>
             </div>
         </div>
 
@@ -1344,4 +1344,156 @@ async function dashGraficoDias(placasDias) {
             }
         }
     })
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GRÁFICOS APEXCHARTS
+   As implementações Chart.js acima ficam apenas como referência
+   dormente; estas versões as sobrescrevem e usam o bundle local.
+   ═══════════════════════════════════════════════════════════════ */
+
+const DASH_APEX_CORES = [
+    '#e11d48', '#f97316', '#f59e0b', '#eab308', '#22c55e',
+    '#10b981', '#14b8a6', '#06b6d4', '#3b82f6', '#6366f1',
+    '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#fb7185',
+    '#fbbf24', '#34d399', '#38bdf8', '#818cf8', '#c084fc'
+]
+
+function dashApexBase(t, altura) {
+    const light = document.body.classList.contains('theme-light')
+    return {
+        chart: {
+            height: altura,
+            width: '100%',
+            fontFamily: 'Inter, Arial, sans-serif',
+            background: 'transparent',
+            foreColor: t.tick,
+            toolbar: { show: false },
+            zoom: { enabled: false },
+            parentHeightOffset: 0,
+            animations: {
+                enabled: true,
+                easing: 'easeinout',
+                speed: 900,
+                animateGradually: { enabled: true, delay: 90 },
+                dynamicAnimation: { enabled: true, speed: 400 }
+            }
+        },
+        theme: { mode: light ? 'light' : 'dark' },
+        grid: { borderColor: light ? '#e2e8f0' : '#24242c', strokeDashArray: 4, padding: { left: 0, right: 8, top: -8, bottom: 0 } },
+        legend: { show: false },
+        dataLabels: { enabled: false },
+        tooltip: { theme: light ? 'light' : 'dark' }
+    }
+}
+
+async function dashGraficoDepto(porDepto) {
+    const node = document.getElementById('chart-depto')
+    if (!node || !window.ApexCharts) return
+    if (window._chartDepto) { window._chartDepto.destroy(); window._chartDepto = null }
+
+    const t = dashChartTheme()
+    const labels = porDepto.map(d => {
+        const nome = String(d.depto || 'Sem Depto')
+        return nome.length > 16 ? nome.slice(0, 16) + '…' : nome
+    })
+    const valores = porDepto.map(d => Number(d.total) || 0)
+
+    window._chartDepto = new ApexCharts(node, {
+        ...dashApexBase(t, 260),
+        chart: { ...dashApexBase(t, 260).chart, type: 'bar' },
+        series: [{ name: 'Produtos', data: valores }],
+        colors: labels.map((_, i) => DASH_APEX_CORES[i % DASH_APEX_CORES.length]),
+        plotOptions: {
+            bar: {
+                distributed: true,
+                borderRadius: 6,
+                borderRadiusApplication: 'end',
+                columnWidth: '55%',
+                dataLabels: { position: 'top' }
+            }
+        },
+        xaxis: {
+            categories: labels,
+            axisBorder: { show: false },
+            axisTicks: { show: false },
+            labels: { rotate: -42, trim: true, hideOverlappingLabels: false, style: { fontSize: '10px', colors: t.tick } }
+        },
+        yaxis: {
+            min: 0,
+            forceNiceScale: true,
+            labels: { formatter: v => Math.round(v).toLocaleString('pt-BR'), style: { fontSize: '10px', colors: t.tick } }
+        },
+        tooltip: { theme: document.body.classList.contains('theme-light') ? 'light' : 'dark', y: { formatter: v => `${v.toLocaleString('pt-BR')} produto(s)` } }
+    })
+    window._chartDepto.render()
+}
+
+async function dashGraficoDias(placasDias) {
+    const node = document.getElementById('chart-dias')
+    if (!node || !window.ApexCharts) return
+    if (window._chartDias) { window._chartDias.destroy(); window._chartDias = null }
+
+    const t = dashChartTheme()
+    const hoje = new Date()
+    const labels = []
+    const valores = []
+
+    for (let i = 29; i >= 0; i--) {
+        const d = new Date(hoje)
+        d.setDate(hoje.getDate() - i)
+        const key = d.toISOString().slice(0, 10)
+        const dd = String(d.getDate()).padStart(2, '0')
+        const mm = String(d.getMonth() + 1).padStart(2, '0')
+        labels.push(`${dd}/${mm}`)
+        const found = placasDias.find(p => {
+            const raw = p.dia instanceof Date ? p.dia : new Date(String(p.dia).replace(' ', 'T'))
+            return !isNaN(raw.getTime()) && raw.toISOString().slice(0, 10) === key
+        })
+        valores.push(found ? Number(found.total) || 0 : 0)
+    }
+
+    const fundo = document.body.classList.contains('theme-light') ? '#ffffff' : '#141418'
+
+    window._chartDias = new ApexCharts(node, {
+        ...dashApexBase(t, 260),
+        chart: { ...dashApexBase(t, 260).chart, type: 'area' },
+        series: [{ name: 'Placas', data: valores }],
+        colors: ['#e11d48'],
+        stroke: { curve: 'smooth', width: 3 },
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.42,
+                opacityTo: 0.03,
+                stops: [0, 70, 100],
+                colorStops: [
+                    { offset: 0, color: '#e11d48', opacity: 0.4 },
+                    { offset: 60, color: '#a855f7', opacity: 0.16 },
+                    { offset: 100, color: '#3b82f6', opacity: 0.02 }
+                ]
+            }
+        },
+        markers: {
+            size: valores.map(v => v > 0 ? 4 : 0),
+            colors: valores.map((_, i) => DASH_APEX_CORES[i % DASH_APEX_CORES.length]),
+            strokeColors: fundo,
+            strokeWidth: 2,
+            hover: { size: 7 }
+        },
+        xaxis: {
+            categories: labels,
+            axisBorder: { show: false },
+            axisTicks: { show: false },
+            labels: { rotate: 0, trim: true, hideOverlappingLabels: true, style: { fontSize: '9px', colors: t.tick } }
+        },
+        yaxis: {
+            min: 0,
+            forceNiceScale: true,
+            labels: { formatter: v => Math.round(v).toLocaleString('pt-BR'), style: { fontSize: '10px', colors: t.tick } }
+        },
+        tooltip: { theme: document.body.classList.contains('theme-light') ? 'light' : 'dark', y: { formatter: v => `${v} placa(s)` } }
+    })
+    window._chartDias.render()
 }

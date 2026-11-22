@@ -1,7 +1,8 @@
 const router = require('express').Router()
 const authMiddleware = require('../middlewares/authMiddleware')
+const { somenteAdmin } = require('../middlewares/roles')
 
-router.get('/database/tables', authMiddleware, async (req, res) => {
+router.get('/database/tables', authMiddleware, somenteAdmin, async (req, res) => {
     try {
         const db = require('../config/database')
         const [tables] = await db.query(`
@@ -15,7 +16,7 @@ router.get('/database/tables', authMiddleware, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }) }
 })
 
-router.get('/database/tables/:table', authMiddleware, async (req, res) => {
+router.get('/database/tables/:table', authMiddleware, somenteAdmin, async (req, res) => {
     try {
         const db = require('../config/database')
         const table = req.params.table.replace(/[^a-zA-Z0-9_]/g, '')
@@ -34,7 +35,7 @@ router.get('/database/tables/:table', authMiddleware, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }) }
 })
 
-router.get('/database/tables/:table/data', authMiddleware, async (req, res) => {
+router.get('/database/tables/:table/data', authMiddleware, somenteAdmin, async (req, res) => {
     try {
         const db = require('../config/database')
         const table = req.params.table.replace(/[^a-zA-Z0-9_]/g, '')
@@ -47,7 +48,7 @@ router.get('/database/tables/:table/data', authMiddleware, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }) }
 })
 
-router.put('/database/tables/:table/row', authMiddleware, async (req, res) => {
+router.put('/database/tables/:table/row', authMiddleware, somenteAdmin, async (req, res) => {
     try {
         const db = require('../config/database')
         const table = req.params.table.replace(/[^a-zA-Z0-9_]/g, '')

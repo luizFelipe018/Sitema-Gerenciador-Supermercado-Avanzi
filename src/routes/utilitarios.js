@@ -150,12 +150,19 @@ router.delete('/atalhos/:id', authMiddleware, async (req, res) => {
 
 router.post('/atalhos/abrir', authMiddleware, (req, res) => {
     const { caminho, tipo } = req.body
-    if (!caminho) return res.status(400).json({ error: 'Caminho obrigatório' })
-    const { exec } = require('child_process')
-    const cmd = tipo === 'pasta'
-        ? `explorer "${caminho}"`
-        : `start "" "${caminho}"`
-    exec(cmd, (err) => {
+    if (!caminho || typeof caminho !== 'string') {
+        return res.status(400).json({ error: 'Caminho obrigatório' })
+    }
+    if (tipo === 'url') {
+        let alvo
+        try { alvo = new URL(caminho) } catch { return res.status(400).json({ error: 'URL inválida' }) }
+        if (alvo.protocol !== 'http:' && alvo.protocol !== 'https:') {
+            return res.status(400).json({ error: 'Somente URLs http/https são permitidas' })
+        }
+    }
+    // Sem shell: explorer.exe abre arquivos, pastas e URLs sem interpretar ; | & ` etc.
+    const { execFile } = require('child_process')
+    execFile('explorer.exe', [caminho], (err) => {
         if (err) return res.status(500).json({ error: err.message })
         res.json({ ok: true })
     })
