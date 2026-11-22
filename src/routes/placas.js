@@ -80,20 +80,49 @@ router.post('/log-placas/imprimir', authMiddleware, async (req, res) => {
 router.get('/log-placas', authMiddleware, async (req, res) => {
     try {
         const db = require('../config/database')
-        const { de, ate, descricao, usuario, tipo } = req.query
+        const { de, ate, descricao, usuario, tipo, impressa } = req.query
 
-        let query = `SELECT * FROM log_placas WHERE 1=1`
+        let where = `WHERE 1=1`
         const params = []
 
-        if (de)        { query += ` AND DATE(criado_em) >= ?`; params.push(de) }
-        if (ate)       { query += ` AND DATE(criado_em) <= ?`; params.push(ate) }
-        if (descricao) { query += ` AND descricao LIKE ?`;     params.push(`%${descricao}%`) }
-        if (usuario)   { query += ` AND usuario = ?`;           params.push(usuario) }
-        if (tipo)      { query += ` AND tipo_placa = ?`;        params.push(tipo) }
+        if (de)         { where += ` AND DATE(criado_em) >= ?`; params.push(de) }
+        if (ate)        { where += ` AND DATE(criado_em) <= ?`; params.push(ate) }
+        if (descricao)  { where += ` AND descricao LIKE ?`;     params.push(`%${descricao}%`) }
+        if (usuario)    { where += ` AND usuario = ?`;           params.push(usuario) }
+        if (tipo)       { where += ` AND tipo_placa = ?`;        params.push(tipo) }
+        if (impressa === '0' || impressa === '1') { where += ` AND impressa = ?`; params.push(Number(impressa)) }
 
-        query += ` ORDER BY criado_em DESC`
+        const ordem = ` ORDER BY criado_em DESC, id DESC`
 
-        const [rows] = await db.query(query, params)
+        // Histórico usa paginação no servidor (a tabela tem centenas de milhares de linhas).
+        // Sem `paginado=1` mantém o retorno em array, compatível com os callers antigos.
+        if (req.query.paginado === '1') {
+            const pagina = Math.max(1, parseInt(req.query.pagina) || 1)
+            const limite = Math.min(200, Math.max(1, parseInt(req.query.limite) || 50))
+            const offset = (pagina - 1) * limite
+
+            const [resumo] = await db.query(
+                `SELECT COUNT(*) AS total, COALESCE(SUM(impressa = 1), 0) AS impressas FROM log_placas ${where}`,
+                params
+            )
+            const total = Number(resumo[0]?.total || 0)
+            const impressas = Number(resumo[0]?.impressas || 0)
+            const [rows] = await db.query(
+                `SELECT * FROM log_placas ${where}${ordem} LIMIT ? OFFSET ?`,
+                [...params, limite, offset]
+            )
+            return res.json({
+                rows,
+                total,
+                impressas,
+                pendentes: total - impressas,
+                pagina,
+                limite,
+                paginas: Math.max(1, Math.ceil(total / limite))
+            })
+        }
+
+        const [rows] = await db.query(`SELECT * FROM log_placas ${where}${ordem}`, params)
         res.json(rows)
     } catch (err) {
         res.status(500).json({ error: err.message })

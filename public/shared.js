@@ -113,6 +113,9 @@ window.PERMISSOES = {
     cardapio: ['gerente', 'administrador'],
     'importar-cardapio': ['gerente', 'administrador'],
     
+    // Relatórios - gerente e admin
+    'gerenciador-placas': ['gerente', 'administrador'],
+
     // Utilitários - gerente e admin
     auditoria: ['gerente', 'administrador'],
     importar: ['gerente', 'administrador'],

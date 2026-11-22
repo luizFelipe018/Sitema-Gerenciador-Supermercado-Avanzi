@@ -46,6 +46,7 @@ export const PERMISSOES = {
     cardapio: ['gerente', 'administrador'],
     'importar-cardapio': ['gerente', 'administrador'],
     auditoria: ['gerente', 'administrador'],
+    'gerenciador-placas': ['gerente', 'administrador'],
     importar: ['gerente', 'administrador'],
     listas: ['atendente', 'gerente', 'administrador'],
     admin: ['administrador'],
