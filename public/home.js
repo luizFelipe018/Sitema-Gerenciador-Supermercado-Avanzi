@@ -96,7 +96,26 @@ const usuarioLogado = payload?.usuario ?? ''
 // getUsuario já definido em shared.js (carregado antes dos page scripts)
 
 // ── UTILITÁRIOS GLOBAIS ────────────────────────────────
+// Mantém a tela atual após Ctrl+R/F5 (só nesta guia, via sessionStorage).
+const CHAVE_PAGINA_ATIVA = 'erp-pagina-ativa'
+function salvarPaginaAtiva(chave, extra) {
+    try {
+        sessionStorage.setItem(CHAVE_PAGINA_ATIVA, chave)
+        if (extra) sessionStorage.setItem(CHAVE_PAGINA_ATIVA + '-extra', extra)
+        else sessionStorage.removeItem(CHAVE_PAGINA_ATIVA + '-extra')
+    } catch { /* sessionStorage pode estar indisponível */ }
+}
+function paginaAtivaSalva() {
+    try {
+        return {
+            chave: sessionStorage.getItem(CHAVE_PAGINA_ATIVA),
+            extra: sessionStorage.getItem(CHAVE_PAGINA_ATIVA + '-extra')
+        }
+    } catch { return { chave: null, extra: null } }
+}
+
 function setActive(id) {
+    salvarPaginaAtiva(id)
     document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'))
     document.querySelectorAll('.submenu-btn').forEach(b => b.classList.remove('active'))
     document.querySelectorAll('.submenu3-btn').forEach(b => b.classList.remove('active'))
@@ -592,6 +611,10 @@ document.getElementById('btn-logout-popover')?.addEventListener('click', async (
     localStorage.removeItem('usuarioNome')
     localStorage.removeItem('usuario')
     localStorage.removeItem('usuarioCargo')
+    try {
+        sessionStorage.removeItem(CHAVE_PAGINA_ATIVA)
+        sessionStorage.removeItem(CHAVE_PAGINA_ATIVA + '-extra')
+    } catch { /* ignora */ }
     window.location.href = 'login.html'
 })
 
@@ -713,13 +736,75 @@ function renderUsuarioLogado() {
     if (painelPerm) painelPerm.textContent = permissoes
 }
 
+// ── RESTAURA A TELA ATIVA APÓS F5/CTRL+R ──────────────
+const MAPA_PAGINAS = {
+    'btn-inicio': 'carregarInicio',
+    'btn-placas-media': 'carregarPlacasMedia',
+    'btn-placas-media-pack': 'carregarPlacasMediaPack',
+    'btn-placas-pequena': 'carregarPlacasPequena',
+    'btn-placas-grande': 'carregarPlacasGrande',
+    'btn-arte-semanal': 'carregarArteSemanal',
+    'btn-cardapio': 'carregarCardapio',
+    'btn-terca-pizza': 'carregarTercaPizza',
+    'btn-atalhos': 'carregarAtalhos',
+    'btn-formatos': 'carregarFormatos',
+    'btn-capitalize': 'carregarCapitalize',
+    'btn-importar': 'carregarImportar',
+    'btn-textos': 'carregarTextos',
+    'btn-criar-texto': 'carregarCriarTexto',
+    'btn-listas': 'carregarListas',
+    'btn-imagens': 'carregarImagens',
+    'btn-verificar-imagens': 'carregarVerificarImagens',
+    'btn-conversor-webp': 'carregarConversorWebp',
+    'btn-baixar-site': 'carregarBaixarSite',
+    'btn-remover-fundo': 'carregarRemoverFundo',
+    'btn-imagens-site': 'carregarImagensSite',
+    'btn-busca-rapida': 'carregarBuscaRapida',
+    'btn-marcas-massa': 'carregarMarcasMassa',
+    'btn-importar-cardapio': 'carregarImportarCardapio',
+    'btn-qrcode': 'carregarQrcode',
+    'btn-feriados': 'carregarFeriados',
+    'btn-auditoria': 'carregarAuditoria',
+    'btn-admin': 'carregarAdmin',
+    'btn-database': 'carregarDatabase',
+    'btn-novidades': 'carregarNovidades'
+}
+
+function restaurarPaginaAtiva() {
+    const { chave, extra } = paginaAtivaSalva()
+
+    // Detalhe de auditoria: reabre o mesmo evento salvo antes do refresh.
+    if (chave === 'detalhe-evento' && extra && typeof window.abrirDetalheEvento === 'function') {
+        window.abrirDetalheEvento(extra)
+        return true
+    }
+
+    const nomeFuncao = MAPA_PAGINAS[chave]
+    if (!nomeFuncao || typeof window[nomeFuncao] !== 'function') return false
+
+    if (['btn-placas-media', 'btn-placas-media-pack', 'btn-placas-pequena', 'btn-placas-grande'].includes(chave)) {
+        abrirSubmenuPlacas()
+        document.getElementById('submenu-modelos')?.classList.add('open')
+        document.getElementById('btn-modelos-menu')?.classList.add('open2')
+    }
+    if (['btn-imagens', 'btn-verificar-imagens', 'btn-conversor-webp', 'btn-baixar-site', 'btn-remover-fundo', 'btn-imagens-site'].includes(chave)) {
+        abrirSubmenuImagens()
+    }
+    if (['btn-arte-semanal', 'btn-cardapio', 'btn-terca-pizza'].includes(chave) && typeof abrirSubmenuMarketing === 'function') {
+        abrirSubmenuMarketing()
+    }
+
+    window[nomeFuncao]()
+    return true
+}
+
 // ── INÍCIO ────────────────────────────────────────────
 initTema()
 document.getElementById('data-atual').textContent = new Date().toLocaleDateString('pt-BR', {
     weekday: 'long', day: '2-digit', month: 'long', year: 'numeric'
 })
 renderUsuarioLogado()
-carregarInicio()
+if (!restaurarPaginaAtiva()) carregarInicio()
 
 
 /** Quantas páginas o usuário atual pode acessar */

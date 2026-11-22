@@ -29,6 +29,8 @@ if (!DET_INTERNO) {
 /** Abre o detalhe como aba do próprio ERP (chamado pelo duplo clique) */
 window.abrirDetalheEvento = function (id) {
     setActive('btn-auditoria')
+    // Guarda também o ID para o F5/Ctrl+R reabrir exatamente este evento.
+    if (typeof window.salvarPaginaAtiva === 'function') window.salvarPaginaAtiva('detalhe-evento', id)
     setConteudo('<div class="ds-card ds-card-pad">Carregando…</div>', 'Detalhe do evento')
     carregarDetalheEvento(id)
 }
