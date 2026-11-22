@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS log_placas (
   preco        DECIMAL(10,2) NULL,
   tipo_placa   VARCHAR(20) NULL,
   impressa     TINYINT(1) NOT NULL DEFAULT 0,
+  impressa_em  DATETIME NULL,
   usuario      VARCHAR(100) NULL,
   usuario_id   INT NULL,
   usuario_nome VARCHAR(255) NULL,

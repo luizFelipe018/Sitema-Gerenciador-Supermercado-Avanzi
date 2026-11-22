@@ -68,6 +68,7 @@ async function garantirEsquema() {
         await addColumnIfMissing('log_placas', 'usuario', 'VARCHAR(100) NULL')
         await addColumnIfMissing('log_placas', 'usuario_id', 'INT NULL')
         await addColumnIfMissing('log_placas', 'usuario_nome', 'VARCHAR(255) NULL')
+        await addColumnIfMissing('log_placas', 'impressa_em', 'DATETIME NULL')
 
         // ── usuarios: controle de acesso ──
         await addColumnIfMissing('usuarios', 'ativo', 'TINYINT(1) NOT NULL DEFAULT 1')
