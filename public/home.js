@@ -552,6 +552,14 @@ document.getElementById('btn-feriados').addEventListener('click', () => {
 })
 
 
+document.getElementById('btn-auditoria')?.addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
+    carregarAuditoria()
+})
+
 document.getElementById('btn-admin').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')

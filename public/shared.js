@@ -114,6 +114,7 @@ window.PERMISSOES = {
     'importar-cardapio': ['gerente', 'administrador'],
     
     // Utilitários - gerente e admin
+    auditoria: ['gerente', 'administrador'],
     importar: ['gerente', 'administrador'],
     listas: ['atendente', 'gerente', 'administrador'],
     

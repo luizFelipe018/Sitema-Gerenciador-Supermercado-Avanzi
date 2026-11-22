@@ -45,6 +45,7 @@ export const PERMISSOES = {
     'terca-pizza': ['gerente', 'administrador'],
     cardapio: ['gerente', 'administrador'],
     'importar-cardapio': ['gerente', 'administrador'],
+    auditoria: ['gerente', 'administrador'],
     importar: ['gerente', 'administrador'],
     listas: ['atendente', 'gerente', 'administrador'],
     admin: ['administrador'],
