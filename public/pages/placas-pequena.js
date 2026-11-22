@@ -461,6 +461,7 @@ function montarPlacaPequenaHTML(p) {
 
     return `
         <div id="placa-pequena-conteudo" class="placa-pequena-conteudo" style="width:561px; height:794px; margin:0; position:relative; box-sizing:border-box; font-family:'Arial Black',Arial,sans-serif; font-weight:900; background-image:url('assets/MODELOS PLACAS 2026.png'); background-size:100% 100%; background-position:center; background-repeat:no-repeat;">
+            ${htmlLinhaDobraPlaca()}
             <div class="pg-texto-wrapper" style="width:100%; display:flex; flex-direction:column; align-items:center; padding-bottom:110px; margin-top:${212 + MARGEM_TOPO_PEQUENA}px;">
                 <div class="pg-linha1-wrapper" style="width:100%; text-align:center; margin-top:30px; height:${M.m1.altura}px;">
                     <div class="pg-linha1" data-field="linha1" style="font-size:${linha1FontSize}px; font-weight:bold; line-height:${LH_L1}; text-transform:uppercase; white-space:nowrap; overflow:hidden; position:relative; top:${M.m1.deslocamento}px; transform:scaleY(${ESCALA_Y_PEQUENA});">${linha1}</div>

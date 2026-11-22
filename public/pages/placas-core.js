@@ -1,3 +1,11 @@
+// Linha pontilhada de dobra: atravessa a placa de ponta a ponta na horizontal,
+// logo acima do personagem e do banner SUPER OFERTAS (a arte começa em ~87px no
+// layout 561x794). Vale para tela e impressão; a escala da placa escala a linha.
+const Y_LINHA_DOBRA_PLACA = 78
+function htmlLinhaDobraPlaca() {
+    return `<div class="placa-linha-dobra" aria-hidden="true" style="position:absolute;top:${Y_LINHA_DOBRA_PLACA}px;left:0;right:0;height:0;border-top:2px dashed #000;opacity:.85;z-index:6;pointer-events:none;print-color-adjust:exact;-webkit-print-color-adjust:exact;"></div>`
+}
+
 function coreCriarEstado(salvas, banco, pagina, porPagina, clicada, salvando, dragIdx) {
     return { salvas, banco, pagina, porPagina, clicada, salvando, dragIdx }
 }
