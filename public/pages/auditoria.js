@@ -522,7 +522,11 @@ function audPreco(v) {
     return Number.isFinite(n) ? 'R$ ' + n.toFixed(2).replace('.', ',') : audEsc(v)
 }
 
-/** Abre o detalhe completo do evento em outra guia */
+/** Abre o detalhe completo do evento como aba do próprio ERP */
 function audAbrirDetalhe(id) {
-    window.open('detalhe-evento.html?id=' + encodeURIComponent(id), '_blank')
+    if (typeof window.abrirDetalheEvento === 'function') {
+        window.abrirDetalheEvento(id)
+    } else {
+        window.open('detalhe-evento.html?id=' + encodeURIComponent(id), '_blank')
+    }
 }

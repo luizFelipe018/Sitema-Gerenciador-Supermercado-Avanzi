@@ -2065,3 +2065,15 @@ body:has(#login-card) {
 .btn-preco-site { cursor: pointer; user-select: none; }
 .btn-preco-site input { accent-color: var(--ok); width: 15px; height: 15px; margin: 0; cursor: pointer; }
 .btn-preco-site.is-on { border-color: var(--ok) !important; color: var(--ok) !important; box-shadow: 0 0 0 3px var(--ok-soft); }
+
+/* ─────────────────────────────────────────────────────────────
+   Detalhe do evento (Auditoria) — usado na aba do ERP e na página avulsa
+   ───────────────────────────────────────────────────────────── */
+.det-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 12px; margin: 16px 0 20px; }
+.det-kpi { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--r-md); padding: 14px 16px; }
+.det-kpi-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); }
+.det-kpi-valor { font-size: 22px; font-weight: 750; margin-top: 4px; }
+.det-linha { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border-soft); font-size: 12.5px; }
+.det-linha:last-child { border-bottom: 0; }
+.det-linha-chave { width: 130px; flex: none; color: var(--text-3); }
+.det-tabela-wrap { overflow: auto; max-height: 62vh; }

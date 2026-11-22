@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
-   DETALHE DO EVENTO — nova guia aberta pelo duplo clique na Auditoria
+   DETALHE DO EVENTO — aba do ERP aberta pelo duplo clique na Auditoria
+   Também serve a página avulsa detalhe-evento.html (acesso direto).
    Design system v2 (public/design.css)
    ═══════════════════════════════════════════════════════════════ */
 
@@ -14,26 +15,52 @@
     }
 })()
 
-document.getElementById('det-voltar').addEventListener('click', () => {
-    if (window.opener && !window.opener.closed) window.close()
-    else window.location.href = 'home.html'
-})
+// Dentro do ERP usa #conteudo; na página avulsa usa #det-conteudo.
+const DET_INTERNO = !!document.getElementById('conteudo')
 
-carregarDetalheEvento()
+if (!DET_INTERNO) {
+    document.getElementById('det-voltar')?.addEventListener('click', () => {
+        if (window.opener && !window.opener.closed) window.close()
+        else window.location.href = 'home.html'
+    })
+    carregarDetalheEvento()
+}
 
-async function carregarDetalheEvento() {
-    const alvo = document.getElementById('det-conteudo')
-    const id = new URLSearchParams(location.search).get('id')
+/** Abre o detalhe como aba do próprio ERP (chamado pelo duplo clique) */
+window.abrirDetalheEvento = function (id) {
+    setActive('btn-auditoria')
+    setConteudo('<div class="ds-card ds-card-pad">Carregando…</div>', 'Detalhe do evento')
+    carregarDetalheEvento(id)
+}
+
+/** Volta para a Auditoria (ou fecha a página avulsa) */
+window.voltarAuditoria = function () {
+    if (DET_INTERNO && typeof window.carregarAuditoria === 'function') {
+        window.carregarAuditoria()
+    } else if (window.opener && !window.opener.closed) {
+        window.close()
+    } else {
+        window.location.href = 'home.html'
+    }
+}
+
+async function carregarDetalheEvento(id) {
+    const alvo = DET_INTERNO ? document.getElementById('conteudo') : document.getElementById('det-conteudo')
+    const mostrar = html => {
+        if (DET_INTERNO) setConteudo(html, 'Detalhe do evento')
+        else alvo.innerHTML = html
+    }
+    id = id || new URLSearchParams(location.search).get('id')
 
     if (window.podeAcessar && !window.podeAcessar('auditoria')) {
-        alvo.innerHTML = `<div class="ds-card ds-card-pad" style="max-width:520px; margin:40px auto; text-align:center">
+        mostrar(`<div class="ds-card ds-card-pad" style="max-width:520px; margin:40px auto; text-align:center">
             <div class="ds-empty-title">Acesso restrito</div>
             <div class="ds-empty-text">O detalhe da auditoria está disponível para gerentes e administradores.</div>
-        </div>`
+        </div>`)
         return
     }
     if (!id) {
-        alvo.innerHTML = `<div class="ds-card ds-card-pad">Evento não informado.</div>`
+        mostrar(`<div class="ds-card ds-card-pad">Evento não informado.</div>`)
         return
     }
 
@@ -120,9 +147,12 @@ async function carregarDetalheEvento() {
             </div>`
         }
 
-        alvo.innerHTML = kpis + cabecalho + corpo
+        const voltar = DET_INTERNO
+            ? `<div style="margin-bottom:14px"><button class="ds-btn ds-btn-sm" onclick="voltarAuditoria()">← Voltar para Auditoria</button></div>`
+            : ''
+        mostrar(voltar + kpis + cabecalho + corpo)
     } catch (e) {
-        alvo.innerHTML = `<div class="ds-card ds-card-pad" style="color:var(--danger)">${detEsc(e.message)}</div>`
+        mostrar(`<div class="ds-card ds-card-pad" style="color:var(--danger)">${detEsc(e.message)}</div>`)
     }
 }
 
