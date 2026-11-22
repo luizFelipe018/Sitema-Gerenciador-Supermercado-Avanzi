@@ -1726,10 +1726,74 @@ body.theme-light .hover\:bg-white\/10:hover {
         #popupBuscaGlobal .modal-header,
         #popupBuscaGlobal .modal-body,
         #popupBuscaGlobal .modal-footer { flex: 0 0 auto; }
-        #popupBuscaGlobal .modal-header h3 { color: var(--text-1) !important; }
-        #popupBuscaGlobal .modal-header button { color: var(--text-3) !important; }
-        #popupBuscaGlobal .modal-footer { color: var(--text-3) !important; }
+        /* output.css não contém os utilitários Tailwind usados aqui:
+           declarar o layout na mão evita ícone esticado e título empilhado. */
+        #popupBuscaGlobal .modal-header {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+        }
+        #popupBuscaGlobal .br-titulo-wrap {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            min-width: 0 !important;
+        }
+        #popupBuscaGlobal .br-icon {
+            width: 40px !important;
+            height: 40px !important;
+            flex: 0 0 40px !important;
+            border-radius: 12px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            color: #fff !important;
+        }
+        #popupBuscaGlobal .modal-header h3 {
+            margin: 0 !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            color: var(--text-1) !important;
+        }
+        #popupBuscaGlobal .br-fechar {
+            width: 36px !important;
+            height: 36px !important;
+            flex: 0 0 36px !important;
+            border-radius: 8px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            color: var(--text-3) !important;
+            transition: background var(--dur) var(--ease), color var(--dur) var(--ease) !important;
+        }
+        #popupBuscaGlobal .br-fechar:hover {
+            color: var(--text-1) !important;
+            background: var(--surface-2) !important;
+        }
+        #popupBuscaGlobal .modal-footer {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            color: var(--text-3) !important;
+            font-size: 11px !important;
+        }
+        #popupBuscaGlobal .br-atalhos {
+            display: flex !important;
+            align-items: center !important;
+            gap: 16px !important;
+        }
+        #popupBuscaGlobal .br-atalhos span { display: inline-flex; align-items: center; gap: 6px; }
         #popupBuscaGlobal .modal-footer kbd { color: var(--text-2) !important; }
+        #popupBuscaGlobal #resultado-busca-global > .text-center {
+            text-align: center !important;
+            padding: 40px 0 !important;
+            font-size: 13px !important;
+            color: var(--text-3) !important;
+        }
+        #popupBuscaGlobal .item-busca-global > div:first-child {
+            flex: 1 1 auto !important;
+            min-width: 0 !important;
+        }
         #popupBuscaGlobal #resultado-busca-global {
             flex: 1 1 auto !important;
             min-height: 72px !important;
@@ -1737,7 +1801,6 @@ body.theme-light .hover\:bg-white\/10:hover {
             overflow-y: auto !important;
             padding: 8px 24px 16px !important;
         }
-        #popupBuscaGlobal #resultado-busca-global > .text-center { color: var(--text-3) !important; }
         #popupBuscaGlobal .item-busca-global {
             display: flex;
             align-items: center;
@@ -2034,13 +2097,13 @@ body.theme-light .hover\:bg-white\/10:hover {
     <div id="popupBuscaGlobal" class="modal-overlay">
         <div class="modal-box" style="width:680px; max-width:90vw;">
             <div class="modal-header">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark));">
+                <div class="br-titulo-wrap">
+                    <div class="br-icon" style="background: linear-gradient(135deg, var(--primary), var(--primary-dark));">
                         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                     </div>
                     <h3 class="font-semibold text-white text-lg">Busca Rápida</h3>
                 </div>
-                <button onclick="fecharPopupBuscaGlobal()" class="w-9 h-9 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+                <button type="button" class="br-fechar" onclick="fecharPopupBuscaGlobal()" aria-label="Fechar busca rápida">
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
@@ -2050,8 +2113,8 @@ body.theme-light .hover\:bg-white\/10:hover {
             <div id="resultado-busca-global" class="px-6 pb-4" style="max-height:400px; overflow-y:auto;">
                 <div class="text-center text-white/30 py-12 text-sm">Digite para buscar...</div>
             </div>
-            <div class="modal-footer flex items-center justify-between text-xs text-white/40">
-                <div class="flex items-center gap-4">
+            <div class="modal-footer">
+                <div class="br-atalhos">
                     <span>Pressione <kbd class="kbd">Enter</kbd> para selecionar</span>
                     <span>Pressione <kbd class="kbd">ESC</kbd> para fechar</span>
                 </div>
