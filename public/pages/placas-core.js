@@ -385,3 +385,45 @@ function coreAplicarPresetEmTodas(placas, tipo, selecionada) {
     coreSalvarPresetPadrao(tipo, modelo)
     return aplicadas
 }
+
+/* ── Botões laterais do mouse trocam de página nas placas ─────────
+   Listener único: ao trocar de modelo, os botões da página antiga saem do
+   DOM, então um handler por carregamento acabaria se acumulando. Aqui a
+   variante ativa é descoberta pelos próprios controles de paginação. */
+;(function () {
+    const VARIANTES = [
+        { ant: 'btn-pag-ant-pequena', prox: 'btn-pag-prox-pequena', fn: 'mudarPaginaPlacasPequena' },
+        { ant: 'btn-pag-ant-g',       prox: 'btn-pag-prox-g',       fn: 'mudarPaginaPlacasMedia' },
+        { ant: 'btn-pag-ant-mp',      prox: 'btn-pag-prox-mp',      fn: 'mudarPaginaPlacasMediaPack' },
+        { ant: 'btn-pag-ant-grande',  prox: 'btn-pag-prox-grande',  fn: 'mudarPaginaPlacasGrande' }
+    ]
+    let ultimoMousedown = 0
+
+    function modalAberto() {
+        return !!document.querySelector('.modal-overlay[style*="display: flex"], .modal-overlay[style*="display:flex"]')
+    }
+
+    function trocarPagina(e) {
+        if (e.button !== 3 && e.button !== 4) return
+        if (modalAberto()) return
+        const variante = VARIANTES.find(v => document.getElementById(v.ant) || document.getElementById(v.prox))
+        if (!variante) return
+        const fn = window[variante.fn]
+        if (typeof fn !== 'function') return
+        e.preventDefault()
+        e.stopPropagation()
+        fn(e.button === 3 ? -1 : 1)
+    }
+
+    document.addEventListener('mousedown', (e) => {
+        if (e.button !== 3 && e.button !== 4) return
+        ultimoMousedown = Date.now()
+        trocarPagina(e)
+    }, true)
+
+    // Fallback para navegadores que disparam apenas auxclick no botão lateral.
+    document.addEventListener('auxclick', (e) => {
+        if (Date.now() - ultimoMousedown < 300) return
+        trocarPagina(e)
+    }, true)
+})()
