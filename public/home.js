@@ -570,7 +570,7 @@ document.getElementById('btn-novidades').addEventListener('click', () => {
     carregarNovidades()
 })
 
-document.getElementById('btn-logout').addEventListener('click', async () => {
+document.getElementById('btn-logout-popover')?.addEventListener('click', async () => {
     // Registra a saída na trilha de auditoria antes de limpar a sessão
     try {
         await fetch(API + '/logout', {
@@ -787,12 +787,6 @@ document.addEventListener('click', (e) => {
         painel.style.display = 'none'
     }
 })
-
-// logout pelo painel
-document.getElementById('btn-logout-popover')?.addEventListener('click', () => {
-    document.getElementById('btn-logout').click()
-})
-
 
 // ── POPUP BUSCA RÁPIDA GLOBAL (Ctrl+Tab) ───────────
 let popupBuscaAberto = false
