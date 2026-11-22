@@ -77,3 +77,23 @@ CREATE TABLE IF NOT EXISTS listas_precos (
   lista_pai_id INT NULL,
   criado_em    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- usada pelo cleanup dos testes e pela trilha de auditoria
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id          INT AUTO_INCREMENT PRIMARY KEY,
+  usuario_id  INT NULL,
+  usuario     VARCHAR(100) NOT NULL,
+  nome        VARCHAR(255) NULL,
+  cargo       VARCHAR(20) NULL,
+  acao        VARCHAR(50) NOT NULL,
+  entidade    VARCHAR(50) NULL,
+  tipo_placa  VARCHAR(20) NULL,
+  descricao   VARCHAR(255) NULL,
+  quantidade  INT NULL,
+  detalhes    TEXT NULL,
+  ip          VARCHAR(45) NULL,
+  criado_em   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_audit_criado (criado_em),
+  INDEX idx_audit_usuario (usuario),
+  INDEX idx_audit_acao (acao)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
