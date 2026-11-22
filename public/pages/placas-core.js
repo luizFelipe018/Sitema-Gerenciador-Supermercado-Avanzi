@@ -86,6 +86,64 @@ function coreMarcaArte(descricao, marca) {
     return descricao.slice(idx).trim()
 }
 
+// ── Quebra de texto e medição de fonte compartilhadas ──────────
+// Antes duplicadas em placas-media.js e placas-pequena.js. Cada variante
+// continua com seu próprio template: tamanhos, scaleY e _fs não mudam.
+function coreQuebrarNome(descricao) {
+    const palavras = descricao.trim().split(/\s+/)
+    if (palavras.length === 1) return { linha1: '', linha2: palavras[0], linha3: '' }
+    if (palavras.length === 2) return { linha1: palavras[0], linha2: palavras[1], linha3: '' }
+    return {
+        linha1: palavras[0],
+        linha2: palavras[1],
+        linha3: palavras.slice(2).join(' ')
+    }
+}
+
+function coreQuebrarPorMarca(descricao, marca) {
+    if (!marca || !marca.trim()) return coreQuebrarNome(descricao)
+    const idx = descricao.toUpperCase().indexOf(marca.trim().toUpperCase())
+    if (idx === -1) return coreQuebrarNome(descricao)
+    return {
+        linha1: descricao.slice(0, idx).trim(),
+        linha2: descricao.slice(idx, idx + marca.trim().length),
+        linha3: descricao.slice(idx + marca.trim().length).trim()
+    }
+}
+
+let _ctxLarguraCore = null
+function coreCtxMedicao() {
+    if (!_ctxLarguraCore) _ctxLarguraCore = document.createElement('canvas').getContext('2d')
+    return _ctxLarguraCore
+}
+
+function coreFitFontSize(texto, maxFontSize, availableWidth, fontWeight = '900') {
+    if (!texto) return maxFontSize
+    const ctx = coreCtxMedicao()
+    ctx.font = `${fontWeight} ${maxFontSize}px 'Arial Black', Arial, sans-serif`
+    const width = ctx.measureText(String(texto).toUpperCase()).width
+    if (width <= availableWidth) return maxFontSize
+    const fator = availableWidth / width
+    return Math.max(8, Math.floor(maxFontSize * fator))
+}
+
+function coreCalcBrandFontSize(texto) {
+    if (!texto) return 100
+    const ctx = coreCtxMedicao()
+    const availableWidth = 472
+    // Teto: sem ele uma palavra curta (ex.: "DE") vira centenas de px e
+    // transborda a placa inteira, invadindo o preço.
+    let fontSize = 130
+    ctx.font = `900 ${fontSize}px 'Arial Black', Arial, sans-serif`
+    let textWidth = ctx.measureText(texto.toUpperCase()).width
+    while (textWidth > availableWidth && fontSize > 8) {
+        fontSize -= 2
+        ctx.font = `900 ${fontSize}px 'Arial Black', Arial, sans-serif`
+        textWidth = ctx.measureText(texto.toUpperCase()).width
+    }
+    return fontSize
+}
+
 function corePrintFolha(conteudo, css, opts) {
     const w = window.open('', '_blank', 'width=800,height=600')
     if (!w) { alert('Permita pop-ups para imprimir.'); return }

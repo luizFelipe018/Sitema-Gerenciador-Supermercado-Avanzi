@@ -50,28 +50,6 @@ function atualizarStatusBanco(texto, cor) {
     if (el) { el.style.display = 'block'; el.textContent = texto; if (cor) el.style.color = cor }
 }
 
-function quebrarNome(descricao) {
-    const palavras = descricao.trim().split(/\s+/)
-    if (palavras.length === 1) return { linha1: '', linha2: palavras[0], linha3: '' }
-    if (palavras.length === 2) return { linha1: palavras[0], linha2: palavras[1], linha3: '' }
-    return {
-        linha1: palavras[0],
-        linha2: palavras[1],
-        linha3: palavras.slice(2).join(' ')
-    }
-}
-
-function quebrarPorMarca(descricao, marca) {
-    if (!marca || !marca.trim()) return quebrarNome(descricao)
-    const idx = descricao.toUpperCase().indexOf(marca.trim().toUpperCase())
-    if (idx === -1) return quebrarNome(descricao)
-    return {
-        linha1: descricao.slice(0, idx).trim(),
-        linha2: descricao.slice(idx, idx + marca.trim().length),
-        linha3: descricao.slice(idx + marca.trim().length).trim()
-    }
-}
-
 async function carregarPlacasMedia() {
     carregarEstilosMedia()
     setActive('btn-placas-media')
@@ -193,45 +171,9 @@ async function carregarPlacasMedia() {
     window._placasAtuais = plaquesSalvasMedia
 }
 
-let _ctxLarguraMedia = null
-function _ctxWidthMedia() {
-    if (!_ctxLarguraMedia) _ctxLarguraMedia = document.createElement('canvas').getContext('2d')
-    return _ctxLarguraMedia
-}
-
-// Ajusta a fonte para o texto caber na largura. As linhas 1 e 3 usam
-// white-space:nowrap; sem esse ajuste, descrições longas eram cortadas
-// pelo overflow:hidden na borda da placa.
-function fitFontSizeMedia(texto, maxFontSize, availableWidth, fontWeight = '900') {
-    if (!texto) return maxFontSize
-    const ctx = _ctxWidthMedia()
-    ctx.font = `${fontWeight} ${maxFontSize}px 'Arial Black', Arial, sans-serif`
-    const width = ctx.measureText(String(texto).toUpperCase()).width
-    if (width <= availableWidth) return maxFontSize
-    const fator = availableWidth / width
-    return Math.max(8, Math.floor(maxFontSize * fator))
-}
-
-function calcBrandFontSize(texto) {
-    if (!texto) return 100
-    const ctx = _ctxWidthMedia()
-    const availableWidth = 472
-    // Teto: sem ele uma palavra curta (ex.: "DE") vira centenas de px e
-    // transborda a placa inteira, invadindo o preço.
-    let fontSize = 130
-    ctx.font = `900 ${fontSize}px 'Arial Black', Arial, sans-serif`
-    let textWidth = ctx.measureText(texto.toUpperCase()).width
-    while (textWidth > availableWidth && fontSize > 8) {
-        fontSize -= 2
-        ctx.font = `900 ${fontSize}px 'Arial Black', Arial, sans-serif`
-        textWidth = ctx.measureText(texto.toUpperCase()).width
-    }
-    return fontSize
-}
-
 function montarPlacaMediaHTML(p) {
     const descricaoLimpa = (p.descricao || '').replace(/\s+(KG|LT|LITRO|LITROS|KILO|KILOS|QUILO|QUILOS)$/i, '')
-    const { linha1, linha2, linha3 } = quebrarPorMarca(descricaoLimpa, p.marca)
+    const { linha1, linha2, linha3 } = coreQuebrarPorMarca(descricaoLimpa, p.marca)
     const preco = parseFloat(p.preco)
 
     const semEan = !p.ean || String(p.ean).trim() === ''
@@ -260,11 +202,11 @@ function montarPlacaMediaHTML(p) {
     // Largura útil da placa (561px) com folga nas laterais. As linhas 1/3 usam
     // white-space:nowrap, então a fonte é reduzida até o texto caber por inteiro.
     const LARGURA_TEXTO_G = 540
-    const brandFontSize = calcBrandFontSize(linha2)
+    const brandFontSize = coreCalcBrandFontSize(linha2)
     const maxLinha13 = Math.max(Math.round(brandFontSize * 0.4), 12)
-    const fitLinha1 = fitFontSizeMedia(linha1, maxLinha13, LARGURA_TEXTO_G, 'bold')
-    const fitLinha3 = fitFontSizeMedia(linha3, maxLinha13, LARGURA_TEXTO_G, 'bold')
-    const fitBrand = fitFontSizeMedia(linha2, brandFontSize, 472, '900')
+    const fitLinha1 = coreFitFontSize(linha1, maxLinha13, LARGURA_TEXTO_G, 'bold')
+    const fitLinha3 = coreFitFontSize(linha3, maxLinha13, LARGURA_TEXTO_G, 'bold')
+    const fitBrand = coreFitFontSize(linha2, brandFontSize, 472, '900')
     // Ajuste automático apenas para o tamanho padrão. Se o usuário editou o
     // tamanho manualmente (p._fs), o valor dele é preservado sem limite.
     const linha1FontSize = p._fs?.linha1 || fitLinha1
@@ -517,14 +459,14 @@ function renderizarPlacasMedia() {    const container = document.getElementById(
                             delete p._fs.rodape
                         }
                     } else if (field === 'linha1') {
-                        const partes = quebrarPorMarca(p.descricao, p.marca)
+                        const partes = coreQuebrarPorMarca(p.descricao, p.marca)
                         p.descricao = v.toUpperCase() + (partes.linha2 ? ' ' + partes.linha2 + (partes.linha3 ? ' ' + partes.linha3 : '') : '')
                     } else if (field === 'linha2') {
-                        const partes = quebrarPorMarca(p.descricao, p.marca)
+                        const partes = coreQuebrarPorMarca(p.descricao, p.marca)
                         p.descricao = (partes.linha1 ? partes.linha1 + ' ' : '') + v.toUpperCase() + (partes.linha3 ? ' ' + partes.linha3 : '')
                         p.marca = v.toUpperCase()
                     } else if (field === 'linha3') {
-                        const partes = quebrarPorMarca(p.descricao, p.marca)
+                        const partes = coreQuebrarPorMarca(p.descricao, p.marca)
                         p.descricao = (partes.linha1 ? partes.linha1 + ' ' : '') + (partes.linha2 ? partes.linha2 + ' ' : '') + v.toUpperCase()
                     } else if (field === 'rodape') {
                         if (!p._fs) p._fs = {}
@@ -832,12 +774,6 @@ async function processarImportacaoMedia() {
     document.getElementById('import-texto-media').value = ''
 }
 
-
-function fecharModaisMedia() {
-    document.getElementById('modal-busca-media').style.display = 'none'
-    document.getElementById('modal-import-media').style.display = 'none'
-    if (document.getElementById('log-erros-media')) document.getElementById('log-erros-media').style.display = 'none'
-}
 
 function vincularEventosPlacasMedia() {
     const eanInput   = document.getElementById('ean-input-g')

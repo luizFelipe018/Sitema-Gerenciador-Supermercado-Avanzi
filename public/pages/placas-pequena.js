@@ -160,28 +160,6 @@ function encaixarZoomPequena() {
     aplicarZoomTelaPequena()
 }
 
-function quebrarNome(descricao) {
-    const palavras = descricao.trim().split(/\s+/)
-    if (palavras.length === 1) return { linha1: '', linha2: palavras[0], linha3: '' }
-    if (palavras.length === 2) return { linha1: palavras[0], linha2: palavras[1], linha3: '' }
-    return {
-        linha1: palavras[0],
-        linha2: palavras[1],
-        linha3: palavras.slice(2).join(' ')
-    }
-}
-
-function quebrarPorMarca(descricao, marca) {
-    if (!marca || !marca.trim()) return quebrarNome(descricao)
-    const idx = descricao.toUpperCase().indexOf(marca.trim().toUpperCase())
-    if (idx === -1) return quebrarNome(descricao)
-    return {
-        linha1: descricao.slice(0, idx).trim(),
-        linha2: descricao.slice(idx, idx + marca.trim().length),
-        linha3: descricao.slice(idx + marca.trim().length).trim()
-    }
-}
-
 async function carregarPlacasPequena() {
     carregarEstilosPequena()
     setActive('btn-placas-pequena')
@@ -311,44 +289,6 @@ async function carregarPlacasPequena() {
     window._placasAtuais = plaquesSalvasPequena
 }
 
-const _ctxLargura = { ctx: null }
-function _ctxWidth() {
-    if (!_ctxLargura.ctx) _ctxLargura.ctx = document.createElement('canvas').getContext('2d')
-    return _ctxLargura.ctx
-}
-
-// Ajusta a fonte para o texto caber na largura. Sem isso as linhas 1 e 3
-// (que podem ser bem mais longas que a marca) estouravam a placa e o
-// overflow:hidden cortava as letras.
-function fitFontSize(texto, maxFontSize, availableWidth, fontWeight = '900') {
-    if (!texto) return maxFontSize
-    const ctx = _ctxWidth()
-    ctx.font = `${fontWeight} ${maxFontSize}px 'Arial Black', Arial, sans-serif`
-    let width = ctx.measureText(String(texto).toUpperCase()).width
-    if (width <= availableWidth) return maxFontSize
-    const fator = availableWidth / width
-    return Math.max(8, Math.floor(maxFontSize * fator))
-}
-
-function calcBrandFontSize(texto) {
-    if (!texto) return 100
-    const ctx = _ctxWidth()
-    const availableWidth = 472
-    // Teto: sem isso uma palavra curta (ex.: "DE") vira 314px e o texto
-    // transborda a placa inteira. O bloco de texto precisa caber entre o
-    // banner (termina em ~202px) e o preco (comeca em ~549px).
-    const maxFontSize = 130
-    let fontSize = maxFontSize
-    ctx.font = `900 ${fontSize}px 'Arial Black', Arial, sans-serif`
-    let textWidth = ctx.measureText(texto.toUpperCase()).width
-    while (textWidth > availableWidth && fontSize > 8) {
-        fontSize -= 2
-        ctx.font = `900 ${fontSize}px 'Arial Black', Arial, sans-serif`
-        textWidth = ctx.measureText(texto.toUpperCase()).width
-    }
-    return fontSize
-}
-
 const ESCALA_Y_PEQUENA = 1.3
 const FONTE_PLACA_PEQUENA = "'Arial Black', Arial, sans-serif"
 let _ctxPequena = null
@@ -384,7 +324,7 @@ function metricasLinhaPequena(texto, fontSize, fontWeight, lineHeight) {
 
 function montarPlacaPequenaHTML(p) {
     const descricaoLimpa = (p.descricao || '').replace(/\s+(KG|LT|LITRO|LITROS|KILO|KILOS|QUILO|QUILOS)$/i, '')
-    const { linha1, linha2, linha3 } = quebrarPorMarca(descricaoLimpa, p.marca)
+    const { linha1, linha2, linha3 } = coreQuebrarPorMarca(descricaoLimpa, p.marca)
     const preco = parseFloat(p.preco)
 
     const semEan = !p.ean || String(p.ean).trim() === ''
@@ -410,13 +350,13 @@ function montarPlacaPequenaHTML(p) {
     const precoUn = (preco / precoKgL).toFixed(2).replace('.', ',')
     const rodape = p._fs?.rodape || `${semEan ? '' : 'NESTA EMBALAGEM '}${artRodape} ${uniRodape} SAI A R$ ${precoUn}`
 
-    const brandFontSize = calcBrandFontSize(linha2)
+    const brandFontSize = coreCalcBrandFontSize(linha2)
     // Largura util: a placa tem 561px e as linhas 1/3 sao white-space:nowrap,
     // entao qualquer excesso seria cortado pelo overflow:hidden.
     const LARGURA_PEQUENA = 540
-    let linha1FontSize = p._fs?.linha1 || fitFontSize(linha1, Math.max(Math.round(brandFontSize * 0.4), 12), LARGURA_PEQUENA, 'bold')
-    let linha3FontSize = p._fs?.linha3 || fitFontSize(linha3, Math.max(Math.round(brandFontSize * 0.4), 12), LARGURA_PEQUENA, 'bold')
-    let brandSz = p._fs?.linha2 || fitFontSize(linha2, brandFontSize, 472, '900')
+    let linha1FontSize = p._fs?.linha1 || coreFitFontSize(linha1, Math.max(Math.round(brandFontSize * 0.4), 12), LARGURA_PEQUENA, 'bold')
+    let linha3FontSize = p._fs?.linha3 || coreFitFontSize(linha3, Math.max(Math.round(brandFontSize * 0.4), 12), LARGURA_PEQUENA, 'bold')
+    let brandSz = p._fs?.linha2 || coreFitFontSize(linha2, brandFontSize, 472, '900')
 
     // Espacamento medido entre as TINTAS. Cada linha tem caixa com a altura
     // exata da sua tinta, entao a margem entre as caixas E o espaco visual.
@@ -721,14 +661,14 @@ function renderizarPlacasPequena() {
                             delete p._fs.rodape
                         }
                     } else if (field === 'linha1') {
-                        const partes = quebrarPorMarca(p.descricao, p.marca)
+                        const partes = coreQuebrarPorMarca(p.descricao, p.marca)
                         p.descricao = v.toUpperCase() + (partes.linha2 ? ' ' + partes.linha2 + (partes.linha3 ? ' ' + partes.linha3 : '') : '')
                     } else if (field === 'linha2') {
-                        const partes = quebrarPorMarca(p.descricao, p.marca)
+                        const partes = coreQuebrarPorMarca(p.descricao, p.marca)
                         p.descricao = (partes.linha1 ? partes.linha1 + ' ' : '') + v.toUpperCase() + (partes.linha3 ? ' ' + partes.linha3 : '')
                         p.marca = v.toUpperCase()
                     } else if (field === 'linha3') {
-                        const partes = quebrarPorMarca(p.descricao, p.marca)
+                        const partes = coreQuebrarPorMarca(p.descricao, p.marca)
                         p.descricao = (partes.linha1 ? partes.linha1 + ' ' : '') + (partes.linha2 ? partes.linha2 + ' ' : '') + v.toUpperCase()
                     } else if (field === 'rodape') {
                         if (!p._fs) p._fs = {}
