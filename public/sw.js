@@ -1,4 +1,4 @@
-const CACHE_NAME = 'avanzi-erp-v3';
+const CACHE_NAME = 'avanzi-erp-v4';
 const ASSETS_TO_CACHE = [
   '/',
   '/login.html',
@@ -49,8 +49,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Não cachear requisições API (qualquer host na porta 3000)
-  if (url.port === '3000' &&
+  // Não cachear requisições API (qualquer host/porta usada pelo ERP).
+  // Resposta antiga em cache pode esconder dados novos, como os itens da auditoria.
+  const ehApi = ['3000', '3001'].includes(url.port) ||
+                 request.headers.has('authorization') ||
+                 /\/(auditoria|log-placas|registros-placas|saude|login|logout|usuarios|produtos|configuracoes|backup)(?:\/|\?|$)/.test(url.pathname);
+  if (ehApi &&
       !url.pathname.includes('/imagem') &&
       !url.pathname.includes('/terca')) {
     return;

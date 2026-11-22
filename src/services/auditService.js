@@ -52,6 +52,9 @@ const ROTULOS = {
     exportar_xlsx: 'Exportou planilha'
 }
 
+/** Eventos de placas cujo detalhe pode ser completado pelo log_placas */
+const ACOES_DE_PLACAS = new Set([ACOES.CRIAR_PLACAS, ACOES.SALVAR_PLACAS, ACOES.IMPORTAR_PLACAS])
+
 let esquemaPronto = false
 
 /**
@@ -189,6 +192,58 @@ async function registrarEvento(dados) {
 }
 
 /**
+ * Eventos antigos não tinham os produtos no detalhe. Completa com o log_placas
+ * (pelos IDs salvos ou pela janela de tempo do evento) sem perder os detalhes
+ * que já existem. Eventos novos já nascem com `detalhes.itens` preenchido.
+ * @param {any[]} rows
+ */
+async function completarItensPlacas(rows) {
+    for (const r of rows) {
+        if (!ACOES_DE_PLACAS.has(r.acao)) continue
+        try {
+            let det = null
+            try { det = typeof r.detalhes === 'string' ? JSON.parse(r.detalhes) : r.detalhes } catch {}
+            if (Array.isArray(det?.itens) && det.itens.length) continue
+
+            let logs = []
+            const ids = Array.isArray(det?.ids) ? det.ids : []
+            const qtd = Number(r.quantidade) || 0
+            const limiteItens = Math.min(Math.max(qtd || 50, 1), 50)
+
+            if (ids.length) {
+                const [encontrados] = /** @type {any} */ (await db.query(
+                    `SELECT descricao, codigo, ean, preco FROM log_placas WHERE id IN (?) ORDER BY id DESC LIMIT 50`,
+                    [ids]
+                ))
+                logs = encontrados
+            }
+            // log_placas e audit_logs são gravados no mesmo instante (mesmo segundo),
+            // então casar pelo horário exato evita misturar itens de eventos vizinhos.
+            if (!logs.length && qtd > 0 && r.criado_em) {
+                const [encontrados] = /** @type {any} */ (await db.query(
+                    `SELECT descricao, codigo, ean, preco FROM log_placas
+                      WHERE usuario = ? AND criado_em = ?
+                      ORDER BY id DESC LIMIT ?`,
+                    [r.usuario, r.criado_em, limiteItens]
+                ))
+                logs = encontrados
+            }
+            if (logs.length) {
+                r.detalhes = JSON.stringify({
+                    ...(det || {}),
+                    itens: logs.map(l => ({
+                        descricao: l.descricao,
+                        codigo: l.codigo,
+                        ean: l.ean,
+                        preco: l.preco
+                    }))
+                })
+            }
+        } catch { /* detalhe é informativo: não pode derrubar a consulta */ }
+    }
+}
+
+/**
  * Busca logs com filtros e paginação.
  * @param {{de?: string, ate?: string, usuario?: string, acao?: string, busca?: string, limite?: number, offset?: number}} filtros
  */
@@ -214,6 +269,8 @@ async function buscarLogs(filtros = {}) {
         `SELECT * FROM audit_logs ${clause} ORDER BY criado_em DESC, id DESC LIMIT ? OFFSET ?`,
         [...params, limite, offset]
     ))
+
+    await completarItensPlacas(rows)
 
     const [totais] = /** @type {any} */ (await db.query(`SELECT COUNT(*) AS total FROM audit_logs ${clause}`, params))
 

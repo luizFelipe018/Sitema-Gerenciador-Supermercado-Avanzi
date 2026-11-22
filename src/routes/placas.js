@@ -47,7 +47,15 @@ router.post('/log-placas', authMiddleware, async (req, res) => {
             entidade: 'log_placas',
             tipoPlaca: tipos.join(', ').slice(0, 20),
             quantidade: valores.length,
-            detalhes: { tipos, ids: ids.slice(0, 50) }
+            detalhes: {
+                tipos,
+                ids: ids.slice(0, 50),
+                itens: registros.slice(0, 50).map(p => ({
+                    descricao: p.descricao || '',
+                    codigo: p.codigo || p.ean || null,
+                    preco: p.preco ?? null
+                }))
+            }
         })
 
         res.json({ inseridos: valores.length, ids })
@@ -219,7 +227,14 @@ router.post('/registros-placas', authMiddleware, async (req, res) => {
             descricao: `salvou ${placas.length} placa(s) do tipo ${tipoLimpo}`,
             entidade: 'registros_placas',
             tipoPlaca: tipoLimpo,
-            quantidade: placas.length
+            quantidade: placas.length,
+            detalhes: {
+                itens: placas.slice(0, 50).map(p => ({
+                    descricao: p.descricao || '',
+                    codigo: p.codigo || p.ean || null,
+                    preco: p.preco ?? null
+                }))
+            }
         })
 
         res.json({ ok: true, total: placas.length, logIds })

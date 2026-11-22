@@ -357,10 +357,27 @@ async function carregarEventosAuditoria() {
             const desc = String(r.descricao || '').trim()
             const repetir = desc.toLowerCase() === String(rotulo).toLowerCase()
                 || desc.toLowerCase() === String(rotulo).toLowerCase() + '.'
+            const detalhes = audParseDetalhes(r.detalhes)
+            const itens = Array.isArray(detalhes?.itens) ? detalhes.itens : []
+            const qtd = Number(r.quantidade || itens.length || 0)
+            const ehPlaca = ['criar_placas', 'salvar_placas', 'importar_placas'].includes(r.acao)
             const extras = []
             if (r.tipo_placa) extras.push(`tipo: ${r.tipo_placa}`)
-            if (r.quantidade) extras.push(`${Number(r.quantidade).toLocaleString('pt-BR')} item(ns)`)
+            if (qtd) extras.push(ehPlaca
+                ? (qtd === 1 ? '1 placa criada' : `${qtd.toLocaleString('pt-BR')} placas criadas`)
+                : `${qtd.toLocaleString('pt-BR')} item(ns)`)
             if (r.ip) extras.push(r.ip)
+            const itensHtml = itens.length ? `
+                <div style="margin-top:7px; display:flex; flex-direction:column; gap:3px; padding:7px 9px; border-radius:8px; background:var(--surface-2)">
+                    ${itens.slice(0, 20).map((item, i) => `
+                        <div style="font-size:11px; color:var(--text-1); line-height:1.35">
+                            <span class="muted">${i + 1}.</span>
+                            <strong>${audEsc(item.descricao || '—')}</strong>
+                            <span class="muted mono">· cód. ${audEsc(item.codigo || item.ean || '—')}</span>
+                            <span class="mono" style="color:var(--brand-text)">· ${audPreco(item.preco)}</span>
+                        </div>`).join('')}
+                    ${itens.length > 20 ? `<div class="muted" style="font-size:10px">+ ${itens.length - 20} item(ns)…</div>` : ''}
+                </div>` : ''
             return `
             <tr>
                 <td class="mono muted" style="white-space:nowrap">${audDataHora(r.criado_em)}</td>
@@ -372,6 +389,7 @@ async function carregarEventosAuditoria() {
                 <td>
                     ${repetir ? '' : `<div style="font-size:12.5px">${audEsc(desc)}</div>`}
                     ${extras.length ? `<div class="muted mono" style="font-size:10.5px; margin-top:2px">${audEsc(extras.join(' · '))}</div>` : ''}
+                    ${itensHtml}
                 </td>
             </tr>`
         }).join('')
@@ -482,4 +500,16 @@ function audEsc(v) {
     return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[c]))
+}
+
+function audParseDetalhes(v) {
+    if (!v) return null
+    if (typeof v === 'object') return v
+    try { return JSON.parse(v) } catch { return null }
+}
+
+function audPreco(v) {
+    if (v == null || v === '') return '—'
+    const n = Number(v)
+    return Number.isFinite(n) ? 'R$ ' + n.toFixed(2).replace('.', ',') : audEsc(v)
 }
