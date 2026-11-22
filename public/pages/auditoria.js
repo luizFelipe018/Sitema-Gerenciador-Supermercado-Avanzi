@@ -98,7 +98,10 @@ function carregarAuditoria() {
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                         Eventos
                     </div>
-                    <span class="ds-chip" id="aud-contagem">—</span>
+                    <div style="display:flex; align-items:center; gap:10px">
+                        <span class="muted" style="font-size:10.5px">Duplo clique = detalhe completo</span>
+                        <span class="ds-chip" id="aud-contagem">—</span>
+                    </div>
                 </div>
                 <div style="max-height:620px; overflow:auto">
                     <table class="ds-table-prod" id="aud-tabela">
@@ -379,7 +382,7 @@ async function carregarEventosAuditoria() {
                     ${itens.length > 20 ? `<div class="muted" style="font-size:10px">+ ${itens.length - 20} item(ns)…</div>` : ''}
                 </div>` : ''
             return `
-            <tr>
+            <tr data-aud-id="${r.id}" title="Duplo clique para ver o detalhe completo" style="cursor:pointer">
                 <td class="mono muted" style="white-space:nowrap">${audDataHora(r.criado_em)}</td>
                 <td>
                     <div class="strong" style="font-size:12.5px">${audEsc(r.nome || r.usuario)}</div>
@@ -393,6 +396,11 @@ async function carregarEventosAuditoria() {
                 </td>
             </tr>`
         }).join('')
+
+        tbody.ondblclick = e => {
+            const tr = e.target.closest?.('tr[data-aud-id]')
+            if (tr) audAbrirDetalhe(tr.dataset.audId)
+        }
     } catch (e) {
         tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:28px; color:var(--danger); font-size:12.5px;">${audEsc(e.message)}</td></tr>`
     }
@@ -512,4 +520,9 @@ function audPreco(v) {
     if (v == null || v === '') return '—'
     const n = Number(v)
     return Number.isFinite(n) ? 'R$ ' + n.toFixed(2).replace('.', ',') : audEsc(v)
+}
+
+/** Abre o detalhe completo do evento em outra guia */
+function audAbrirDetalhe(id) {
+    window.open('detalhe-evento.html?id=' + encodeURIComponent(id), '_blank')
 }

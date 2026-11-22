@@ -148,4 +148,15 @@ router.get('/auditoria/acessos', authMiddleware, somenteGestao, async (req, res)
     }
 })
 
+/** Detalhe completo de um evento (aberto em nova guia ao dar duplo clique) */
+router.get('/auditoria/:id', authMiddleware, somenteGestao, async (req, res) => {
+    try {
+        const evento = await auditService.buscarDetalheEvento(req.params.id)
+        if (!evento) return res.status(404).json({ error: 'Evento não encontrado' })
+        res.json({ ...evento, rotulos: auditService.ROTULOS })
+    } catch (err) {
+        res.status(500).json({ error: /** @type {Error} */ (err).message })
+    }
+})
+
 module.exports = router

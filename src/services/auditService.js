@@ -196,14 +196,20 @@ async function registrarEvento(dados) {
  * (pelos IDs salvos ou pela janela de tempo do evento) sem perder os detalhes
  * que já existem. Eventos novos já nascem com `detalhes.itens` preenchido.
  * @param {any[]} rows
+ * @param {boolean} [detalhado] inclui impressão, tipo e horário de cada placa
  */
-async function completarItensPlacas(rows) {
+async function completarItensPlacas(rows, detalhado = false) {
     for (const r of rows) {
         if (!ACOES_DE_PLACAS.has(r.acao)) continue
         try {
             let det = null
             try { det = typeof r.detalhes === 'string' ? JSON.parse(r.detalhes) : r.detalhes } catch {}
-            if (Array.isArray(det?.itens) && det.itens.length) continue
+            const atuais = Array.isArray(det?.itens) ? det.itens : []
+            if (atuais.length && (!detalhado || 'impressa' in (atuais[0] || {}))) continue
+
+            const colunas = detalhado
+                ? 'id, descricao, codigo, ean, preco, tipo_placa, criado_em, impressa, impressa_em'
+                : 'descricao, codigo, ean, preco'
 
             let logs = []
             const ids = Array.isArray(det?.ids) ? det.ids : []
@@ -212,7 +218,7 @@ async function completarItensPlacas(rows) {
 
             if (ids.length) {
                 const [encontrados] = /** @type {any} */ (await db.query(
-                    `SELECT descricao, codigo, ean, preco FROM log_placas WHERE id IN (?) ORDER BY id DESC LIMIT 50`,
+                    `SELECT ${colunas} FROM log_placas WHERE id IN (?) ORDER BY id DESC LIMIT 50`,
                     [ids]
                 ))
                 logs = encontrados
@@ -221,7 +227,7 @@ async function completarItensPlacas(rows) {
             // então casar pelo horário exato evita misturar itens de eventos vizinhos.
             if (!logs.length && qtd > 0 && r.criado_em) {
                 const [encontrados] = /** @type {any} */ (await db.query(
-                    `SELECT descricao, codigo, ean, preco FROM log_placas
+                    `SELECT ${colunas} FROM log_placas
                       WHERE usuario = ? AND criado_em = ?
                       ORDER BY id DESC LIMIT ?`,
                     [r.usuario, r.criado_em, limiteItens]
@@ -235,7 +241,14 @@ async function completarItensPlacas(rows) {
                         descricao: l.descricao,
                         codigo: l.codigo,
                         ean: l.ean,
-                        preco: l.preco
+                        preco: l.preco,
+                        ...(detalhado ? {
+                            id: l.id,
+                            tipo_placa: l.tipo_placa,
+                            criado_em: l.criado_em,
+                            impressa: l.impressa,
+                            impressa_em: l.impressa_em
+                        } : {})
                     }))
                 })
             }
@@ -275,6 +288,21 @@ async function buscarLogs(filtros = {}) {
     const [totais] = /** @type {any} */ (await db.query(`SELECT COUNT(*) AS total FROM audit_logs ${clause}`, params))
 
     return { rows, total: Number(totais[0]?.total || 0) }
+}
+
+/**
+ * Evento único com o detalhe completo das placas (para a página de detalhe).
+ * @param {string|number} id
+ */
+async function buscarDetalheEvento(id) {
+    await garantirEsquema()
+    const [rows] = /** @type {any} */ (await db.query('SELECT * FROM audit_logs WHERE id = ?', [id]))
+    if (!rows.length) return null
+    const evento = rows[0]
+    if (ACOES_DE_PLACAS.has(evento.acao)) {
+        await completarItensPlacas([evento], true)
+    }
+    return evento
 }
 
 /**
@@ -331,4 +359,4 @@ async function resumo(filtros = {}) {
     return { porUsuario, porAcao, porDia, placasPorUsuario }
 }
 
-module.exports = { ACOES, ROTULOS, garantirEsquema, registrar, registrarEvento, buscarLogs, resumo }
+module.exports = { ACOES, ROTULOS, garantirEsquema, registrar, registrarEvento, buscarLogs, buscarDetalheEvento, resumo }
