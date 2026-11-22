@@ -486,6 +486,14 @@ document.getElementById('btn-listas').addEventListener('click', () => {
     carregarListas()
 })
 
+document.getElementById('btn-centro-imagens')?.addEventListener('click', () => {
+    submenuPlacas.classList.remove('open')
+    btnPlacasMenu.classList.remove('open')
+    submenuImagens.classList.remove('open')
+    btnImagensMenu.classList.remove('open')
+    carregarCentroImagens()
+})
+
 document.getElementById('btn-imagens').addEventListener('click', () => {
     submenuPlacas.classList.remove('open')
     btnPlacasMenu.classList.remove('open')
@@ -761,6 +769,7 @@ const MAPA_PAGINAS = {
     'btn-textos': 'carregarTextos',
     'btn-criar-texto': 'carregarCriarTexto',
     'btn-listas': 'carregarListas',
+    'btn-centro-imagens': 'carregarCentroImagens',
     'btn-imagens': 'carregarImagens',
     'btn-verificar-imagens': 'carregarVerificarImagens',
     'btn-conversor-webp': 'carregarConversorWebp',

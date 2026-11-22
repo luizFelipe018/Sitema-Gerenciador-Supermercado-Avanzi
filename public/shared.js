@@ -106,6 +106,7 @@ window.PERMISSOES = {
     'placas-pequena': ['atendente', 'gerente', 'administrador'],
     'placas-grande': ['atendente', 'gerente', 'administrador'],
     imagens: ['atendente', 'gerente', 'administrador'],
+    'centro-imagens': ['atendente', 'gerente', 'administrador'],
     'busca-rapida': ['atendente', 'gerente', 'administrador'],
     precificacao: ['atendente', 'gerente', 'administrador'],
     
