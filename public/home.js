@@ -853,20 +853,7 @@ function alternarPainelUsuario(alvo, jaPosicionado) {
         .catch(() => { if (ultimo) ultimo.textContent = '—' })
 }
 
-// listeners dos dois botões de conta
-document.getElementById('btn-minha-conta')?.addEventListener('click', (e) => {
-    e.stopPropagation()
-    const alvo = e.currentTarget
-    const painel = document.getElementById('painel-usuario')
-    if (!painel) return
-    const r = alvo.getBoundingClientRect()
-    // no rodapé da sidebar o painel abre para cima
-    painel.style.left = `${r.left}px`
-    painel.style.right = 'auto'
-    painel.style.top = `${r.top - painel.offsetHeight - 10}px`
-    alternarPainelUsuario(alvo, true)
-})
-
+// listener do botão de conta no cabeçalho (a sidebar não tem usuário/logout)
 document.getElementById('btn-minha-conta-header')?.addEventListener('click', (e) => {
     e.stopPropagation()
     alternarPainelUsuario(e.currentTarget)
@@ -876,7 +863,7 @@ document.getElementById('btn-minha-conta-header')?.addEventListener('click', (e)
 document.addEventListener('click', (e) => {
     const painel = document.getElementById('painel-usuario')
     if (!painel || painel.style.display === 'none') return
-    if (!painel.contains(e.target) && !e.target.closest('#btn-minha-conta') && !e.target.closest('#btn-minha-conta-header')) {
+    if (!painel.contains(e.target) && !e.target.closest('#btn-minha-conta-header')) {
         painel.style.display = 'none'
     }
 })

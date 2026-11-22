@@ -13,6 +13,9 @@ const homeHtml = fs.readFileSync(path.join(raiz, 'public/home.html'), 'utf8')
 const homeJs = fs.readFileSync(path.join(raiz, 'public/home.js'), 'utf8')
 const paginasDir = path.join(raiz, 'public/pages')
 
+// Páginas mantidas em disco como referência, mas deliberadamente não carregadas no shell atual
+const paginasDormantes = new Set(['dashboard.js', 'cotacao.js'])
+
 const arquivosPagina = fs.readdirSync(paginasDir).filter(f => f.endsWith('.js'))
 const jsPaginas = arquivosPagina.map(f => fs.readFileSync(path.join(paginasDir, f), 'utf8')).join('\n')
 const todoJs = homeJs + '\n' + jsPaginas
@@ -54,9 +57,9 @@ for (const m of homeHtml.matchAll(/<script src="pages\/([^"]+)"><\/script>/g)) {
     }
 }
 
-// 5. páginas órfãs
+// 5. páginas órfãs (exceto as mantidas deliberadamente como dormentes)
 for (const f of arquivosPagina) {
-    if (!homeHtml.includes(`pages/${f}`)) {
+    if (!paginasDormantes.has(f) && !homeHtml.includes(`pages/${f}`)) {
         problemas.push(`pages/${f} existe mas não é carregado no home.html`)
     }
 }

@@ -79,8 +79,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
 
         const [[{ listasMes }]] = await db.query(`
             SELECT COUNT(*) AS listasMes FROM listas_precos
-            WHERE MONTH(criado_em) = MONTH(CURDATE())
-              AND YEAR(criado_em)  = YEAR(CURDATE())
+            WHERE DATE(criado_em) = CURDATE()
         `)
 
         res.json({

@@ -267,13 +267,4 @@ async function aplicarMarcasMassa() {
     }
 }
 
-function toast(msg, tipo = 'ok') {
-    if (typeof window.toastApp === 'function') { window.toastApp(msg, tipo); return }
-    const el = document.createElement('div')
-    el.style.cssText = 'position:fixed;top:20px;right:20px;z-index:99999;padding:10px 16px;border-radius:8px;color:#fff;font-weight:600;font-size:13px;background:' + (tipo === 'erro' ? '#ef4444' : tipo === 'aviso' ? '#f59e0b' : tipo === 'info' ? '#3b82f6' : '#22c55e')
-    el.textContent = msg
-    document.body.appendChild(el)
-    setTimeout(() => el.remove(), 2800)
-}
-
 window.carregarMarcasMassa = carregarMarcasMassa

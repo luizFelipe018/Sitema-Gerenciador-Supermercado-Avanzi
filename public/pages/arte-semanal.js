@@ -413,14 +413,4 @@ function escapeHtml(t) {
     return String(t).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;" })[m])
 }
 
-/** Toast */
-function toast(msg, tipo = 'ok') {
-    if (typeof window.toastApp === 'function') { window.toastApp(msg, tipo); return }
-    const el = document.createElement('div')
-    el.style.cssText = 'position:fixed; top:20px; right:20px; z-index:9999; padding:10px 16px; border-radius:8px; color:#fff; font-size:13px; font-weight:600; background:' + (tipo === 'erro' ? '#ef4444' : tipo === 'aviso' ? '#f59e0b' : '#22c55e')
-    el.textContent = msg
-    document.body.appendChild(el)
-    setTimeout(() => el.remove(), 2500)
-}
-
 window.carregarArteSemanal = carregarArteSemanal

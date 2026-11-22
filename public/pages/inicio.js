@@ -72,9 +72,9 @@ function carregarInicio() {
         <!-- KPIs principais com tendência -->
         <div class="ds-grid ds-grid-4" style="margin-bottom:28px">
             ${kpiCard('Produtos cadastrados', 'dv-total-produtos', 'var(--brand)', 'var(--brand-soft)', '<path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 002 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/>', 'dv-trend-produtos')}
-            ${kpiCard('Placas este mês', 'dv-placas-total', 'var(--brand-2)', 'var(--brand-soft-2)', '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>', 'dv-trend-placas')}
+            ${kpiCard('Placas hoje', 'dv-placas-total', 'var(--brand-2)', 'var(--brand-soft-2)', '<rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>', 'dv-trend-placas')}
             ${kpiCard('Sem EAN', 'dv-sem-ean', 'var(--warn)', 'var(--warn-soft)', '<path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 002 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/>', 'dv-trend-ean')}
-            ${kpiCard('Listas este mês', 'dv-listas-mes', 'var(--ok)', 'var(--ok-soft)', '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>', 'dv-trend-listas')}
+            ${kpiCard('Listas hoje', 'dv-listas-mes', 'var(--ok)', 'var(--ok-soft)', '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>', 'dv-trend-listas')}
         </div>
 
         <!-- Linha de gráficos -->

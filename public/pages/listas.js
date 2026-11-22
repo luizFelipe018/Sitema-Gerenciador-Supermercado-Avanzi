@@ -10,36 +10,6 @@ let selecaoProduto = null   // produto escolhido na busca
 let sugestoesAtuais = []
 let sugestaoIndex = -1
 
-// ── TOASTS ──────────────────────────────────────────────
-function toast(mensagem, tipo = 'info') {
-    let cont = document.getElementById('ds-toasts')
-    if (!cont) {
-        cont = document.createElement('div')
-        cont.id = 'ds-toasts'
-        cont.className = 'ds-toasts'
-        document.body.appendChild(cont)
-    }
-    const icones = {
-        ok:    '<polyline points="20 6 9 17 4 12"/>',
-        erro:  '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>',
-        aviso: '<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
-        info:  '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>'
-    }
-    const el = document.createElement('div')
-    el.className = `ds-toast is-${tipo}`
-    el.innerHTML = `
-        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-             style="flex:0 0 auto;color:var(--${tipo === 'ok' ? 'ok' : tipo === 'erro' ? 'danger' : tipo === 'aviso' ? 'warn' : 'info'})">${icones[tipo] || icones.info}</svg>
-        <span>${String(mensagem).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]))}</span>`
-    cont.appendChild(el)
-    setTimeout(() => {
-        el.style.transition = 'opacity .25s, transform .25s'
-        el.style.opacity = '0'
-        el.style.transform = 'translateX(16px)'
-        setTimeout(() => el.remove(), 260)
-    }, 3200)
-}
-
 // ═══════════════════════════════════════════════════════════════
 // PÁGINA
 // ═══════════════════════════════════════════════════════════════
