@@ -63,7 +63,8 @@
       {
         "provider": "github",
         "owner": "luizFelipe018",
-        "repo": "Sitema-Gerenciador-Supermercado-Avanzi"
+        "repo": "Sitema-Gerenciador-Supermercado-Avanzi",
+        "releaseType": "release"
       }
     ],
     "win": {
