@@ -104,8 +104,10 @@ function injetarModaisMP() {
 }
 
 function atualizarStatusBancoMP(texto, cor) {
+    // A contagem de produtos carregados não interessa na tela: some com ela.
+    if (/produto\(s\) (carregado|em memória)/i.test(texto)) return
     const el = document.getElementById('mp-status-banco')
-    if (el) { el.textContent = texto; if (cor) el.style.color = cor }
+    if (el) { el.style.display = 'block'; el.textContent = texto; if (cor) el.style.color = cor }
 }
 
 function quebrarNomeMP(descricao) {
@@ -158,7 +160,7 @@ async function carregarPlacasMediaPack() {
     setConteudo(`
         <div class="mp-wrapper" style="max-width:1200px; margin:0 auto;">
             <div class="dash-glass dash-animate mp-card" style="padding:20px; margin-bottom:20px;">
-                <div class="mp-status" id="mp-status-banco" style="font-size:11px; color:rgba(255,255,255,0.3); margin-bottom:10px; padding:6px 10px; border-radius:6px; background:rgba(255,255,255,0.03);">Carregando produtos do banco...</div>
+                <div class="mp-status" id="mp-status-banco" style="display:none; font-size:11px; color:rgba(255,255,255,0.3); margin-bottom:10px; padding:6px 10px; border-radius:6px; background:rgba(255,255,255,0.03);"></div>
                 <div class="frc mb16" style="align-items:end;">
                     <div class="fcc">
                         <label class="lb">Código / EAN</label>
