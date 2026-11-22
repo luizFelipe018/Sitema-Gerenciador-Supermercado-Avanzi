@@ -1,111 +1,170 @@
+/* ═══════════════════════════════════════════════════════════════
+   ATALHOS — links rápidos para arquivos, pastas e URLs.
+   Layout 100% no design system (sem Tailwind CDN).
+   ═══════════════════════════════════════════════════════════════ */
+
 let atlEditandoId = null
+let atalhosCache = []
 
 const ATL_ICONES = ['📁','📄','🖼️','🎨','📊','📝','🎬','🎵','🔧','⚙️','🌐','📧','💼','🖥️','📱','🗂️','📦','🔗']
 
 function carregarAtalhos() {
     setActive('btn-atalhos')
+
+    if (!document.getElementById('atalhos-style')) {
+        const st = document.createElement('style')
+        st.id = 'atalhos-style'
+        st.textContent = `
+            .atl-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,2fr); gap:20px; align-items:start; }
+            .atl-col { display:flex; flex-direction:column; gap:16px; min-width:0; }
+            .atl-panel { padding:20px; background:var(--surface-1); border:1px solid var(--border); border-radius:var(--r-lg); }
+            .atl-panel-sm { padding:16px; }
+            .atl-title { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:var(--text-1); margin:0 0 16px; }
+            .atl-field { display:flex; flex-direction:column; gap:5px; }
+            .atl-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-3); }
+            .atl-input {
+                width:100%; box-sizing:border-box; padding:10px 14px; border:1px solid var(--border);
+                border-radius:10px; font-size:13px; color:var(--text-1); background:var(--surface-2);
+                outline:none; transition:border-color .2s, box-shadow .2s;
+            }
+            .atl-input:focus { border-color:var(--brand); box-shadow:0 0 0 3px var(--brand-soft); }
+            .atl-input::placeholder { color:var(--text-3); }
+            .atl-mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+            .atl-row { display:flex; gap:8px; }
+            .atl-tipo-btn {
+                flex:1; padding:8px; border:1px solid var(--border); border-radius:8px; font-size:11px;
+                font-weight:600; color:var(--text-3); background:var(--surface-2); cursor:pointer; transition:all .2s;
+            }
+            .atl-tipo-btn:hover { color:var(--text-1); border-color:var(--border-strong); }
+            .atl-tipo-btn.ativo { border-color:var(--brand); color:var(--brand-text); background:var(--brand-soft); }
+            .atl-icones { display:flex; flex-wrap:wrap; gap:5px; }
+            .atl-icone-btn {
+                width:36px; height:36px; font-size:16px; border:1px solid var(--border); border-radius:8px;
+                background:var(--surface-2); color:var(--text-1); cursor:pointer; display:flex;
+                align-items:center; justify-content:center; transition:all .2s;
+            }
+            .atl-icone-btn:hover { border-color:var(--border-strong); }
+            .atl-icone-btn.ativo { border-color:var(--brand); background:var(--brand-soft); }
+            .atl-hint { font-size:10px; color:var(--text-3); margin:5px 0 0; }
+            .atl-msg { font-size:11px; min-height:16px; color:var(--text-3); }
+            .atl-actions { display:flex; gap:8px; }
+            .atl-busca-row { display:flex; gap:12px; align-items:flex-end; }
+            .atl-grupo { margin-bottom:20px; }
+            .atl-grupo-titulo {
+                font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+                color:var(--text-3); margin:0 0 8px;
+            }
+            .atl-itens { display:flex; flex-direction:column; gap:8px; }
+            .atl-item { padding:14px 16px; display:flex; align-items:center; gap:12px; }
+            .atl-item-icone {
+                flex-shrink:0; width:48px; height:48px; border-radius:12px; display:flex; align-items:center;
+                justify-content:center; font-size:22px; background:var(--surface-2);
+                border:1px solid var(--border); cursor:pointer; color:var(--text-1); transition:all .2s;
+            }
+            .atl-item-icone:hover { border-color:var(--brand); }
+            .atl-item-info { flex:1; min-width:0; }
+            .atl-item-nome { display:flex; align-items:center; gap:8px; }
+            .atl-item-titulo { font-weight:600; color:var(--text-1); font-size:13px; }
+            .atl-badge {
+                font-size:10px; font-weight:600; padding:2px 8px; border-radius:20px;
+                background:var(--surface-3); color:var(--text-3);
+            }
+            .atl-badge-pasta { background:rgba(250,204,21,.15); color:#fbbf24; }
+            .atl-badge-url { background:rgba(59,130,246,.15); color:#60a5fa; }
+            .atl-caminho {
+                font-size:11px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+                color:var(--text-3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:2px;
+            }
+            .atl-desc { font-size:11px; color:var(--text-3); margin-top:2px; }
+            .atl-icon-btn {
+                flex-shrink:0; padding:6px; border-radius:8px; color:var(--text-3);
+                background:transparent; border:none; cursor:pointer; transition:all .2s;
+            }
+            @media (max-width: 900px) { .atl-layout { grid-template-columns:1fr; } }
+        `
+        document.head.appendChild(st)
+    }
+
     setConteudo(`
-        <div class="dash-glass dash-animate" style="padding:20px; display:grid; grid-template-columns:1fr 2fr; gap:20px;">
+        <div class="atl-layout fade-in">
 
             <!-- Coluna esquerda: formulário -->
-            <div style="display:flex; flex-direction:column; gap:16px;">
-                <div style="padding:20px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px;">
-                    <h3 id="atl-form-titulo" style="font-size:14px; font-weight:700; color:rgba(255,255,255,0.8); margin-bottom:16px; display:flex; align-items:center; gap:8px;">
-                        <svg width="16" height="16" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            <div class="atl-col">
+                <div class="atl-panel">
+                    <h3 id="atl-form-titulo" class="atl-title">
+                        <svg width="16" height="16" fill="none" stroke="var(--text-3)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
                         Novo Atalho
                     </h3>
-                    <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div style="display:flex; flex-direction:column; gap:14px;">
 
-                        <div class="flex flex-col gap-1">
-                            <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Nome</label>
-                            <input id="atl-nome" type="text" placeholder="Ex: Template Oferta Semanal"
-                                style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; transition:all 0.3s; width:100%; box-sizing:border-box;"
-                                onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
-                                onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
+                        <div class="atl-field">
+                            <label class="atl-label" for="atl-nome">Nome</label>
+                            <input id="atl-nome" class="atl-input" type="text" placeholder="Ex: Template Oferta Semanal">
                         </div>
 
-                        <div class="flex flex-col gap-1">
-                            <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Categoria</label>
-                            <input id="atl-categoria" type="text" placeholder="Ex: Photoshop, Planilhas, Documentos"
-                                style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; transition:all 0.3s; width:100%; box-sizing:border-box;"
-                                onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
-                                onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'"
-                                list="atl-cat-sugestoes">
+                        <div class="atl-field">
+                            <label class="atl-label" for="atl-categoria">Categoria</label>
+                            <input id="atl-categoria" class="atl-input" type="text" placeholder="Ex: Photoshop, Planilhas, Documentos" list="atl-cat-sugestoes">
                             <datalist id="atl-cat-sugestoes">
-                                <option value="Photoshop"><option value="Illustrator"><option value="Word"><option value="Excel"><option value="Planilhas"><option value="Documentos"><option value="Vídeos"><option value="Imagens"><option value="Pastas"><option value="Outros">
+                                ${['Photoshop','Illustrator','Word','Excel','Planilhas','Documentos','Vídeos','Imagens','Pastas','Outros'].map(v => `<option value="${v}"></option>`).join('')}
                             </datalist>
                         </div>
 
-                        <div class="flex flex-col gap-1">
-                            <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Tipo</label>
-                            <div class="flex gap-2">
+                        <div class="atl-field">
+                            <span class="atl-label">Tipo</span>
+                            <div class="atl-row">
                                 ${[['arquivo','Arquivo'],['pasta','Pasta'],['url','URL']].map(([val, label]) => `
-                                    <button class="atl-tipo-btn" data-tipo="${val}"
-                                        style="flex:1; padding:8px; border:1px solid rgba(255,255,255,0.08); border-radius:8px; font-size:11px; font-weight:600; color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.04); cursor:pointer; transition:all 0.2s;">
-                                        ${label}
-                                    </button>
+                                    <button type="button" class="atl-tipo-btn" data-tipo="${val}">${label}</button>
                                 `).join('')}
                             </div>
                             <input id="atl-tipo" type="hidden" value="arquivo">
                         </div>
 
-                        <div class="flex flex-col gap-1">
-                            <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Caminho / URL</label>
-                            <input id="atl-caminho" type="text" placeholder="Ex: D:\\Arquivos\\template.psd"
-                                style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; transition:all 0.3s; width:100%; box-sizing:border-box; font-family:monospace;"
-                                onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
-                                onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
-                            <p style="font-size:10px; color:rgba(255,255,255,0.3);">Cole o caminho completo do arquivo ou pasta</p>
+                        <div class="atl-field">
+                            <label class="atl-label" for="atl-caminho">Caminho / URL</label>
+                            <input id="atl-caminho" class="atl-input atl-mono" type="text" placeholder="Ex: D:\\Arquivos\\template.psd">
+                            <p class="atl-hint">Cole o caminho completo do arquivo ou pasta</p>
                         </div>
 
-                        <div class="flex flex-col gap-1">
-                            <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Ícone</label>
-                            <div class="flex flex-wrap gap-1" id="atl-icones-grid">
+                        <div class="atl-field">
+                            <span class="atl-label">Ícone</span>
+                            <div class="atl-icones" id="atl-icones-grid">
                                 ${ATL_ICONES.map(ic => `
-                                    <button class="atl-icone-btn" data-icone="${ic}"
-                                        style="width:36px; height:36px; font-size:16px; border:1px solid rgba(255,255,255,0.08); border-radius:8px; background:rgba(255,255,255,0.04); cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center;">${ic}</button>
+                                    <button type="button" class="atl-icone-btn" data-icone="${ic}">${ic}</button>
                                 `).join('')}
                             </div>
                             <input id="atl-icone" type="hidden" value="📄">
                         </div>
 
-                        <div class="flex flex-col gap-1">
-                            <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Descrição</label>
-                            <input id="atl-descricao" type="text" placeholder="Ex: Template de oferta semanal"
-                                style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; transition:all 0.3s; width:100%; box-sizing:border-box;"
-                                onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
-                                onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
+                        <div class="atl-field">
+                            <label class="atl-label" for="atl-descricao">Descrição</label>
+                            <input id="atl-descricao" class="atl-input" type="text" placeholder="Ex: Template de oferta semanal">
                         </div>
 
-                        <p id="atl-msg" style="font-size:11px; min-height:16px; color:rgba(255,255,255,0.3);"></p>
+                        <p id="atl-msg" class="atl-msg"></p>
 
-                        <div class="flex gap-2">
-                            <button id="atl-btn-salvar" style="flex:1; padding:12px; border:none; border-radius:10px; font-size:13px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); display:flex; align-items:center; justify-content:center; gap:6px;">
+                        <div class="atl-actions">
+                            <button id="atl-btn-salvar" class="ds-btn ds-btn-primary" style="flex:1;" type="button">
                                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                                 Salvar
                             </button>
-                            <button id="atl-btn-cancelar" style="padding:12px 16px; border:1px solid rgba(255,255,255,0.08); border-radius:10px; font-size:13px; font-weight:600; color:rgba(255,255,255,0.6); cursor:pointer; background:rgba(255,255,255,0.04); transition:all 0.3s; display:none;">
-                                Cancelar
-                            </button>
+                            <button id="atl-btn-cancelar" class="ds-btn" style="display:none;" type="button">Cancelar</button>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Coluna direita: atalhos -->
-            <div style="display:flex; flex-direction:column; gap:16px;">
+            <div class="atl-col">
 
                 <!-- Busca -->
-                <div style="padding:16px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:16px;">
-                    <div class="flex gap-3 items-end" style="display:flex; gap:12px; align-items:end;">
-                        <div class="flex flex-col gap-1 flex-1" style="flex:1;">
-                            <label style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3);">Buscar</label>
-                            <input id="atl-busca" type="text" placeholder="Nome, categoria ou caminho..."
-                                style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 14px; font-size:13px; color:#fafafa; outline:none; transition:all 0.3s; width:100%; box-sizing:border-box;"
-                                onfocus="this.style.borderColor='rgba(181,21,21,0.5)';this.style.boxShadow='0 0 0 3px rgba(181,21,21,0.1)'"
-                                onblur="this.style.borderColor='rgba(255,255,255,0.08)';this.style.boxShadow='none'">
+                <div class="atl-panel atl-panel-sm">
+                    <div class="atl-busca-row">
+                        <div class="atl-field" style="flex:1;">
+                            <label class="atl-label" for="atl-busca">Buscar</label>
+                            <input id="atl-busca" class="atl-input" type="text" placeholder="Nome, categoria ou caminho...">
                         </div>
-                        <button id="atl-btn-buscar" style="padding:10px 20px; border:none; border-radius:10px; font-size:13px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#b51515,#8a0f0f); box-shadow:0 4px 16px rgba(181,21,21,0.3); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); display:flex; align-items:center; gap:6px;">
+                        <button id="atl-btn-buscar" class="ds-btn ds-btn-primary" type="button">
                             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Buscar
                         </button>
                     </div>
@@ -120,24 +179,13 @@ function carregarAtalhos() {
     atlEditandoId = null
 
     document.querySelectorAll('.atl-tipo-btn').forEach(btn => {
-        if (btn.getAttribute('data-tipo') === 'arquivo') {
-            btn.style.borderColor = 'rgba(181,21,21,0.5)'
-            btn.style.color = '#b51515'
-            btn.style.background = 'rgba(181,21,21,0.1)'
-        }
+        btn.classList.toggle('ativo', btn.getAttribute('data-tipo') === 'arquivo')
         btn.onclick = () => {
-            document.querySelectorAll('.atl-tipo-btn').forEach(b => {
-                b.style.borderColor = 'rgba(255,255,255,0.08)'
-                b.style.color = 'rgba(255,255,255,0.5)'
-                b.style.background = 'rgba(255,255,255,0.04)'
-            })
-            btn.style.borderColor = 'rgba(181,21,21,0.5)'
-            btn.style.color = '#b51515'
-            btn.style.background = 'rgba(181,21,21,0.1)'
+            document.querySelectorAll('.atl-tipo-btn').forEach(b => b.classList.remove('ativo'))
+            btn.classList.add('ativo')
             document.getElementById('atl-tipo').value = btn.getAttribute('data-tipo')
             const icones = { arquivo: '📄', pasta: '📁', url: '🌐' }
-            const tipo = btn.getAttribute('data-tipo')
-            atlSelecionarIcone(icones[tipo])
+            atlSelecionarIcone(icones[btn.getAttribute('data-tipo')])
         }
     })
 
@@ -157,9 +205,7 @@ function carregarAtalhos() {
 function atlSelecionarIcone(icone) {
     document.getElementById('atl-icone').value = icone
     document.querySelectorAll('.atl-icone-btn').forEach(btn => {
-        const ativo = btn.getAttribute('data-icone') === icone
-        btn.style.borderColor = ativo ? 'rgba(181,21,21,0.5)' : 'rgba(255,255,255,0.08)'
-        btn.style.background = ativo ? 'rgba(181,21,21,0.1)' : 'rgba(255,255,255,0.04)'
+        btn.classList.toggle('ativo', btn.getAttribute('data-icone') === icone)
     })
 }
 
@@ -172,43 +218,37 @@ async function atlSalvar() {
     const descricao = document.getElementById('atl-descricao').value.trim()
     const msgEl     = document.getElementById('atl-msg')
 
-    if (!nome)    { msgEl.style.color = '#ef4444'; msgEl.textContent = 'Preencha o nome.'; return }
-    if (!caminho) { msgEl.style.color = '#ef4444'; msgEl.textContent = 'Preencha o caminho.'; return }
+    if (!nome)    { msgEl.style.color = 'var(--danger)'; msgEl.textContent = 'Preencha o nome.'; return }
+    if (!caminho) { msgEl.style.color = 'var(--danger)'; msgEl.textContent = 'Preencha o caminho.'; return }
 
-    msgEl.style.color = 'rgba(255,255,255,0.4)'; msgEl.textContent = 'Salvando...'
+    msgEl.style.color = 'var(--text-2)'; msgEl.textContent = 'Salvando...'
 
     try {
-        const url    = atlEditandoId ? `/atalhos/${atlEditandoId}` : '/atalhos'
+        const url    = API + (atlEditandoId ? `/atalhos/${atlEditandoId}` : '/atalhos')
         const method = atlEditandoId ? 'PUT' : 'POST'
         const res    = await fetch(url, { method, headers: authHeaders(), body: JSON.stringify({ nome, categoria, caminho, tipo, icone, descricao }) })
         if (res.ok) {
-            msgEl.style.color = '#22c55e'; msgEl.textContent = 'Salvo com sucesso!'
+            msgEl.style.color = 'var(--ok)'; msgEl.textContent = 'Salvo com sucesso!'
             atlCancelar(); atlBuscar()
-            setTimeout(() => { if (document.getElementById('atl-msg')) document.getElementById('atl-msg').textContent = '' }, 2000)
+            setTimeout(() => { const el = document.getElementById('atl-msg'); if (el) el.textContent = '' }, 2000)
         } else {
-            const d = await res.json(); msgEl.style.color = '#ef4444'; msgEl.textContent = d.error || 'Erro.'
+            const d = await res.json(); msgEl.style.color = 'var(--danger)'; msgEl.textContent = d.error || 'Erro.'
         }
-    } catch { msgEl.style.color = '#ef4444'; msgEl.textContent = 'Erro ao conectar.' }
+    } catch { msgEl.style.color = 'var(--danger)'; msgEl.textContent = 'Erro ao conectar.' }
 }
 
 function atlCancelar() {
     atlEditandoId = null
-    document.getElementById('atl-form-titulo').innerHTML = '<svg width="16" height="16" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> Novo Atalho'
-    document.getElementById('atl-btn-cancelar').style.display   = 'none'
-    document.getElementById('atl-btn-salvar').innerHTML       = '<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar'
-    document.getElementById('atl-nome').value                   = ''
-    document.getElementById('atl-categoria').value              = ''
-    document.getElementById('atl-caminho').value                = ''
-    document.getElementById('atl-descricao').value              = ''
-    document.getElementById('atl-msg').textContent              = ''
-    document.querySelectorAll('.atl-tipo-btn').forEach(b => {
-        b.style.borderColor = 'rgba(255,255,255,0.08)'
-        b.style.color = 'rgba(255,255,255,0.5)'
-        b.style.background = 'rgba(255,255,255,0.04)'
-    })
-    document.querySelector('.atl-tipo-btn[data-tipo="arquivo"]').style.borderColor = 'rgba(181,21,21,0.5)'
-    document.querySelector('.atl-tipo-btn[data-tipo="arquivo"]').style.color = '#b51515'
-    document.querySelector('.atl-tipo-btn[data-tipo="arquivo"]').style.background = 'rgba(181,21,21,0.1)'
+    document.getElementById('atl-form-titulo').innerHTML = '<svg width="16" height="16" fill="none" stroke="var(--text-3)" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> Novo Atalho'
+    document.getElementById('atl-btn-cancelar').style.display = 'none'
+    document.getElementById('atl-btn-salvar').innerHTML = '<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar'
+    document.getElementById('atl-nome').value        = ''
+    document.getElementById('atl-categoria').value   = ''
+    document.getElementById('atl-caminho').value     = ''
+    document.getElementById('atl-descricao').value   = ''
+    document.getElementById('atl-msg').textContent   = ''
+    document.querySelectorAll('.atl-tipo-btn').forEach(b => b.classList.remove('ativo'))
+    document.querySelector('.atl-tipo-btn[data-tipo="arquivo"]').classList.add('ativo')
     document.getElementById('atl-tipo').value = 'arquivo'
     atlSelecionarIcone('📄')
 }
@@ -221,9 +261,9 @@ async function atlAbrir(caminho, tipo) {
             body: JSON.stringify({ caminho, tipo })
         })
         const data = await res.json()
-        if (!res.ok) alert('Erro ao abrir: ' + (data.error || 'desconhecido'))
+        if (!res.ok) window.aviso('Erro ao abrir: ' + (data.error || 'desconhecido'), { titulo: 'Atalho' })
     } catch (e) {
-        alert('Erro ao conectar com o servidor.')
+        window.aviso('Erro ao conectar com o servidor.', { titulo: 'Atalho' })
     }
 }
 
@@ -232,58 +272,50 @@ async function atlBuscar() {
     const lista = document.getElementById('atl-lista')
     if (!lista) return
 
-    lista.innerHTML = '<p style="text-align:center; color:rgba(255,255,255,0.3); font-size:13px; padding:20px 0;">Carregando...</p>'
+    lista.innerHTML = '<p style="text-align:center; color:var(--text-3); font-size:13px; padding:20px 0;">Carregando...</p>'
 
     try {
         const params = new URLSearchParams()
         if (q) params.append('q', q)
 
         const res     = await fetch(API+`/atalhos?${params}`, { headers: authHeaders() })
-        const atalhos = await res.json()
+        atalhosCache = await res.json()
 
-        if (!atalhos.length) {
-            lista.innerHTML = '<p style="text-align:center; color:rgba(255,255,255,0.3); font-size:13px; padding:40px 0;">Nenhum atalho cadastrado. Adicione um ao lado!</p>'
+        if (!atalhosCache.length) {
+            lista.innerHTML = '<p style="text-align:center; color:var(--text-3); font-size:13px; padding:40px 0;">Nenhum atalho cadastrado. Adicione um ao lado!</p>'
             return
         }
 
         const grupos = {}
-        atalhos.forEach(a => {
+        atalhosCache.forEach(a => {
             const cat = a.categoria || 'Geral'
             if (!grupos[cat]) grupos[cat] = []
             grupos[cat].push(a)
         })
 
         lista.innerHTML = Object.entries(grupos).map(([cat, itens]) => `
-            <div style="margin-bottom:20px;">
-                <p style="font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:rgba(255,255,255,0.3); margin-bottom:8px;">${cat}</p>
-                <div style="display:flex; flex-direction:column; gap:8px;">
+            <div class="atl-grupo">
+                <p class="atl-grupo-titulo">${cat}</p>
+                <div class="atl-itens">
                     ${itens.map(a => {
-                        const tipoCor = a.tipo === 'pasta' ? 'rgba(250,204,21,0.15)' : a.tipo === 'url' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.05)'
-                        const tipoClr = a.tipo === 'pasta' ? '#fbbf24' : a.tipo === 'url' ? '#60a5fa' : 'rgba(255,255,255,0.4)'
+                        const badgeCls = a.tipo === 'pasta' ? 'atl-badge-pasta' : a.tipo === 'url' ? 'atl-badge-url' : ''
                         const tipoLabel = a.tipo === 'pasta' ? 'Pasta' : a.tipo === 'url' ? 'URL' : 'Arquivo'
                         return `
-                        <div class="dash-glass" style="padding:14px 16px; display:flex; align-items:center; gap:12px; transition:all 0.2s;"
-                            onmouseover="this.style.borderColor='rgba(255,255,255,0.1)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.06)'">
-                            <button class="atl-btn-abrir" style="flex-shrink:0; width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.06); cursor:pointer; transition:all 0.2s;"
-                                data-caminho="${a.caminho}" data-tipo="${a.tipo}" title="Clique para abrir">
-                                ${a.icone || '📄'}
-                            </button>
-                            <div style="flex:1; min-width:0;">
-                                <div class="flex items-center gap-2" style="display:flex; align-items:center; gap:8px;">
-                                    <p style="font-weight:600; color:rgba(255,255,255,0.85); font-size:13px;">${a.nome}</p>
-                                    <span style="font-size:10px; font-weight:600; padding:2px 8px; border-radius:20px; background:${tipoCor}; color:${tipoClr};">${tipoLabel}</span>
+                        <div class="dash-glass atl-item">
+                            <button class="atl-btn-abrir atl-item-icone" data-caminho="${a.caminho}" data-tipo="${a.tipo}" title="Clique para abrir">${a.icone || '📄'}</button>
+                            <div class="atl-item-info">
+                                <div class="atl-item-nome">
+                                    <p class="atl-item-titulo">${a.nome}</p>
+                                    <span class="atl-badge ${badgeCls}">${tipoLabel}</span>
                                 </div>
-                                <p style="font-size:11px; font-family:monospace; color:rgba(255,255,255,0.3); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:2px;" title="${a.caminho}">${a.caminho}</p>
-                                ${a.descricao ? `<p style="font-size:11px; color:rgba(255,255,255,0.3); margin-top:2px;">${a.descricao}</p>` : ''}
+                                <p class="atl-caminho" title="${a.caminho}">${a.caminho}</p>
+                                ${a.descricao ? `<p class="atl-desc">${a.descricao}</p>` : ''}
                             </div>
-                            <button class="atl-btn-abrir" style="flex-shrink:0; padding:8px 16px; border:none; border-radius:8px; font-size:11px; font-weight:700; color:#fff; cursor:pointer; background:linear-gradient(135deg,#b51515,#8a0f0f); transition:all 0.2s;"
-                                data-caminho="${a.caminho}" data-tipo="${a.tipo}">
-                                Abrir
-                            </button>
-                            <button class="atl-btn-editar" style="flex-shrink:0; padding:6px; border-radius:8px; color:rgba(255,255,255,0.3); background:transparent; cursor:pointer; transition:all 0.2s;" data-id="${a.id}" title="Editar">
+                            <button class="atl-btn-abrir ds-btn ds-btn-primary ds-btn-sm" data-caminho="${a.caminho}" data-tipo="${a.tipo}">Abrir</button>
+                            <button class="atl-btn-editar atl-icon-btn" data-id="${a.id}" title="Editar">
                                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                             </button>
-                            <button class="atl-btn-excluir" style="flex-shrink:0; padding:6px; border-radius:8px; color:rgba(255,255,255,0.3); background:transparent; cursor:pointer; transition:all 0.2s;" data-id="${a.id}" title="Excluir">
+                            <button class="atl-btn-excluir atl-icon-btn" data-id="${a.id}" title="Excluir">
                                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
                             </button>
                         </div>`
@@ -293,41 +325,34 @@ async function atlBuscar() {
         `).join('')
 
         lista.querySelectorAll('.atl-btn-abrir').forEach(btn => {
-            btn.onmouseover = () => { if (btn.textContent.trim() === 'Abrir') { btn.style.transform = 'translateY(-1px)'; btn.style.boxShadow = '0 4px 12px rgba(181,21,21,0.3)' } }
-            btn.onmouseout = () => { btn.style.transform = ''; btn.style.boxShadow = '' }
             btn.onclick = () => atlAbrir(btn.getAttribute('data-caminho'), btn.getAttribute('data-tipo'))
         })
 
         lista.querySelectorAll('.atl-btn-editar').forEach(btn => {
-            btn.onmouseover = () => { btn.style.color = '#60a5fa'; btn.style.background = 'rgba(59,130,246,0.1)' }
-            btn.onmouseout = () => { btn.style.color = ''; btn.style.background = '' }
+            btn.onmouseover = () => { btn.style.color = '#60a5fa' }
+            btn.onmouseout  = () => { btn.style.color = '' }
             btn.onclick = () => {
                 const id = parseInt(btn.getAttribute('data-id'))
-                const a  = atalhos.find(x => x.id === id)
+                const a  = atalhosCache.find(x => x.id === id)
                 if (!a) return
                 atlEditandoId = id
-                document.getElementById('atl-form-titulo').innerHTML = '<svg width="16" height="16" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editando'
-                document.getElementById('atl-nome').value                   = a.nome
-                document.getElementById('atl-categoria').value              = a.categoria || ''
-                document.getElementById('atl-caminho').value                = a.caminho
-                document.getElementById('atl-descricao').value              = a.descricao || ''
-                document.getElementById('atl-tipo').value                   = a.tipo || 'arquivo'
-                document.getElementById('atl-btn-cancelar').style.display   = 'block'
-                document.getElementById('atl-btn-salvar').innerHTML       = '<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Atualizar'
-                document.querySelectorAll('.atl-tipo-btn').forEach(b => {
-                    const ativo = b.getAttribute('data-tipo') === a.tipo
-                    b.style.borderColor = ativo ? 'rgba(181,21,21,0.5)' : 'rgba(255,255,255,0.08)'
-                    b.style.color = ativo ? '#b51515' : 'rgba(255,255,255,0.5)'
-                    b.style.background = ativo ? 'rgba(181,21,21,0.1)' : 'rgba(255,255,255,0.04)'
-                })
+                document.getElementById('atl-form-titulo').innerHTML = '<svg width="16" height="16" fill="none" stroke="var(--text-3)" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editando'
+                document.getElementById('atl-nome').value        = a.nome
+                document.getElementById('atl-categoria').value   = a.categoria || ''
+                document.getElementById('atl-caminho').value     = a.caminho
+                document.getElementById('atl-descricao').value   = a.descricao || ''
+                document.getElementById('atl-tipo').value        = a.tipo || 'arquivo'
+                document.getElementById('atl-btn-cancelar').style.display = ''
+                document.getElementById('atl-btn-salvar').innerHTML = '<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Atualizar'
+                document.querySelectorAll('.atl-tipo-btn').forEach(b => b.classList.toggle('ativo', b.getAttribute('data-tipo') === a.tipo))
                 atlSelecionarIcone(a.icone || '📄')
                 document.getElementById('atl-nome').scrollIntoView({ behavior: 'smooth', block: 'center' })
             }
         })
 
         lista.querySelectorAll('.atl-btn-excluir').forEach(btn => {
-            btn.onmouseover = () => { btn.style.color = '#ef4444'; btn.style.background = 'rgba(239,68,68,0.1)' }
-            btn.onmouseout = () => { btn.style.color = ''; btn.style.background = '' }
+            btn.onmouseover = () => { btn.style.color = 'var(--danger)' }
+            btn.onmouseout  = () => { btn.style.color = '' }
             btn.onclick = async () => {
                 const okExcluir = await avisoConfirmacao('Excluir este atalho?', { titulo: 'Excluir atalho?', tipo: 'aviso', okText: 'Excluir', cancelText: 'Cancelar' })
                 if (!okExcluir) return
@@ -338,6 +363,6 @@ async function atlBuscar() {
 
     } catch (e) {
         console.error(e)
-        lista.innerHTML = '<p style="text-align:center; color:#ef4444; font-size:13px; padding:40px 0;">Erro ao conectar com o servidor.</p>'
+        lista.innerHTML = '<p style="text-align:center; color:var(--danger); font-size:13px; padding:40px 0;">Erro ao conectar com o servidor.</p>'
     }
 }
