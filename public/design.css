@@ -618,10 +618,17 @@ body.theme-light .sidebar nav:hover::-webkit-scrollbar-thumb { background: #b9be
 }
 
 /* Modal */
+/* Só opacidade: o antigo fadeIn incluía translateY(10px) e deslocava o
+   modal-box (position:fixed) durante a abertura. */
+@keyframes modalFade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
 .modal-overlay {
     background: rgba(6, 6, 8, 0.72) !important;
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
+    animation: modalFade 180ms ease !important;
 }
 .modal-box {
     background: var(--surface-1) !important;

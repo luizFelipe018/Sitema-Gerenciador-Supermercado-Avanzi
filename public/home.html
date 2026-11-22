@@ -1703,6 +1703,87 @@ body.theme-light .hover\:bg-white\/10:hover {
             font-family: inherit;
         }
         .arte-wrapper .inp { font-family: inherit; }
+
+        /* ── Busca Rápida global (Ctrl+Tab): layout fixo e tema-consistente ── */
+        #popupBuscaGlobal.modal-overlay {
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 20px !important;
+            overflow: auto !important;
+        }
+        #popupBuscaGlobal .modal-box {
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            transform: none !important;
+            display: flex !important;
+            flex-direction: column !important;
+            width: min(680px, 94vw) !important;
+            max-width: 94vw !important;
+            max-height: min(760px, calc(100vh - 40px)) !important;
+            overflow: hidden !important;
+        }
+        #popupBuscaGlobal .modal-header,
+        #popupBuscaGlobal .modal-body,
+        #popupBuscaGlobal .modal-footer { flex: 0 0 auto; }
+        #popupBuscaGlobal .modal-header h3 { color: var(--text-1) !important; }
+        #popupBuscaGlobal .modal-header button { color: var(--text-3) !important; }
+        #popupBuscaGlobal .modal-footer { color: var(--text-3) !important; }
+        #popupBuscaGlobal .modal-footer kbd { color: var(--text-2) !important; }
+        #popupBuscaGlobal #resultado-busca-global {
+            flex: 1 1 auto !important;
+            min-height: 72px !important;
+            max-height: none !important;
+            overflow-y: auto !important;
+            padding: 8px 24px 16px !important;
+        }
+        #popupBuscaGlobal #resultado-busca-global > .text-center { color: var(--text-3) !important; }
+        #popupBuscaGlobal .item-busca-global {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            border: 1px solid var(--border) !important;
+            background: var(--surface-2) !important;
+            color: var(--text-1) !important;
+            cursor: pointer;
+            transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease), transform var(--dur) var(--ease);
+        }
+        #popupBuscaGlobal .item-busca-global:hover {
+            background: var(--surface-3) !important;
+            border-color: var(--border-strong) !important;
+            transform: translateY(-1px);
+        }
+        #popupBuscaGlobal .item-busca-global.selecionado {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark)) !important;
+            border-color: transparent !important;
+        }
+        #popupBuscaGlobal .item-busca-global .br-desc {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-1) !important;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        #popupBuscaGlobal .item-busca-global .br-meta {
+            margin-top: 3px;
+            font-size: 11px;
+            color: var(--text-3) !important;
+        }
+        #popupBuscaGlobal .item-busca-global .br-preco {
+            margin-left: 16px;
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--danger) !important;
+            white-space: nowrap;
+        }
+        #popupBuscaGlobal .item-busca-global.selecionado .br-desc,
+        #popupBuscaGlobal .item-busca-global.selecionado .br-meta,
+        #popupBuscaGlobal .item-busca-global.selecionado .br-preco { color: #fff !important; }
     </style>
 </head>
 <body class="h-screen flex overflow-hidden">

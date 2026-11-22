@@ -889,11 +889,19 @@ document.addEventListener('click', (e) => {
 // ── POPUP BUSCA RÁPIDA GLOBAL (Ctrl+Tab) ───────────
 let popupBuscaAberto = false
 let bancoBuscaGlobal = []
+let timerBuscaGlobal = null
+
+function escaparHtmlBusca(valor) {
+    return String(valor == null ? '' : valor).replace(/[<>&"']/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' }[c]))
+}
 
 document.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.key === 'Tab') {
         e.preventDefault()
-        abrirPopupBuscaGlobal()
+        // Ignora repetição e não limpa o que o usuário já digitou se o popup
+        // já estiver aberto (Ctrl+Tab segurado era percebido como "bug").
+        if (!e.repeat) abrirPopupBuscaGlobal()
+        return
     }
     if (e.key === 'Escape' && popupBuscaAberto) {
         fecharPopupBuscaGlobal()
@@ -901,6 +909,12 @@ document.addEventListener('keydown', (e) => {
 })
 
 function abrirPopupBuscaGlobal() {
+    if (popupBuscaAberto) {
+        const inputAberto = document.getElementById('input-busca-global')
+        inputAberto.focus()
+        inputAberto.select()
+        return
+    }
     popupBuscaAberto = true
     document.getElementById('popupBuscaGlobal').style.display = 'flex'
     document.getElementById('input-busca-global').value = ''
@@ -911,6 +925,7 @@ function abrirPopupBuscaGlobal() {
 
 function fecharPopupBuscaGlobal() {
     popupBuscaAberto = false
+    clearTimeout(timerBuscaGlobal)
     document.getElementById('popupBuscaGlobal').style.display = 'none'
 }
 
@@ -918,7 +933,6 @@ async function carregarBancoBusca() {
     // No longer needed — uses server-side search via /produtos/busca
 }
 
-let timerBuscaGlobal = null
 document.getElementById('input-busca-global').addEventListener('input', (e) => {
     clearTimeout(timerBuscaGlobal)
     timerBuscaGlobal = setTimeout(() => executarBuscaGlobal(e.target.value.trim()), 200)
@@ -950,18 +964,18 @@ async function executarBuscaGlobal(termo, selecionarPrimeiro = false) {
         }
 
         container.innerHTML = resultados.map((p, i) => `
-            <div class="item-busca-global cursor-pointer rounded-xl p-4 mb-2 flex items-center justify-between transition-all hover:scale-[1.01] hover:bg-white/5"
-                data-codigo="${p.codigo}" data-desc="${p.descricao}" data-ean="${p.ean || ''}" data-preco="${p.preco_venda || ''}"
-                style="${selecionarPrimeiro && i === 0 ? 'background:linear-gradient(135deg, var(--primary), var(--primary-dark)); border:none;' : 'background:rgba(255,255,255,0.03); border:1px solid var(--glass-border);'}">
+            <div class="item-busca-global${selecionarPrimeiro && i === 0 ? ' selecionado' : ''}"
+                data-codigo="${escaparHtmlBusca(p.codigo)}"
+                data-desc="${escaparHtmlBusca(p.descricao)}"
+                data-ean="${escaparHtmlBusca(p.ean || '')}"
+                data-preco="${escaparHtmlBusca(p.preco_venda || '')}">
                 <div class="flex-1 min-w-0">
-                    <div class="font-semibold text-sm truncate ${selecionarPrimeiro && i === 0 ? 'text-white' : 'text-white'}">${p.descricao}</div>
-                    <div class="text-xs mt-1 ${selecionarPrimeiro && i === 0 ? 'text-white/70' : 'text-white/40'}">${p.codigo} • ${p.ean || 'sem EAN'}</div>
+                    <div class="br-desc">${escaparHtmlBusca(p.descricao)}</div>
+                    <div class="br-meta">${escaparHtmlBusca(p.codigo)} • ${escaparHtmlBusca(p.ean || 'sem EAN')}</div>
                 </div>
-                <div class="font-bold text-lg ml-4 ${selecionarPrimeiro && i === 0 ? 'text-white' : 'text-red-400'}">
-                    R$ ${parseFloat(p.preco_venda || 0).toFixed(2).replace('.', ',')}
-                </div>
-        </div>
-    `).join('')
+                <div class="br-preco">R$ ${parseFloat(p.preco_venda || 0).toFixed(2).replace('.', ',')}</div>
+            </div>
+        `).join('')
 
     container.querySelectorAll('.item-busca-global').forEach(item => {
         item.onclick = () => {
